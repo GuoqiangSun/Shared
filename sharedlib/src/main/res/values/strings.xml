@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SharedLib</string>
+    <string name="goBack_again">请再按一次退出</string>
+    <string name="map_permission_access_location">你必须允许这个权限,否则无法开启地图</string>
+</resources>

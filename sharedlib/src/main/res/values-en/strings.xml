@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SharedLib</string>
+    <string name="goBack_again">Please drop out one more time</string>
+    <string name="map_permission_access_location">You must allow this permission, otherwise you cannot open the map.</string>
+</resources>

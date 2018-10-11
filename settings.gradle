@@ -1,0 +1,4 @@
+include ':sharedCharger', ':sharedlib', ':weblib'
+
+//include ':baseLibary'
+//project(":baseLibary").projectDir = new File('../Common/baseLibrary')
