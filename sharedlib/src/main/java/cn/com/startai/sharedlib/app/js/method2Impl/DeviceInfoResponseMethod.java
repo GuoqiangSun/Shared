@@ -3,7 +3,7 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
 /**
@@ -20,7 +20,7 @@ public class DeviceInfoResponseMethod extends BaseResponseMethod2 {
 
 
     public DeviceInfoResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_RESPONSE_QUERY_DEVICE_INFO);
+        super(JsMsgType.TYPE_RESPONSE_QUERY_DEVICE_INFO);
     }
 
     @Override

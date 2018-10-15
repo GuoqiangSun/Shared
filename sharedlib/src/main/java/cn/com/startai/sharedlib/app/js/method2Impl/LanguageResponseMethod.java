@@ -3,7 +3,7 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
 /**
@@ -18,7 +18,7 @@ public class LanguageResponseMethod extends BaseResponseMethod2 {
     }
 
     public LanguageResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_RESPONSE_SYSTEM_LANGUAGE);
+        super(JsMsgType.TYPE_RESPONSE_SYSTEM_LANGUAGE);
     }
 
     @Override

@@ -5,11 +5,12 @@ import android.os.Looper;
 import org.json.JSONException;
 
 import cn.com.shared.weblib.js.XWalkCommonJsRequest;
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.DeviceInfoJsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.GetIdentityCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.LanguageSetRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.MobileLoginByIDCodeRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
@@ -76,6 +77,8 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
         void onJSModifyUserName(ModifyUserNameRequestBean mModifyNameBean);
 
         void onJSModifyUserPwd(ModifyUserPwdRequestBean mModifyPwdBean);
+
+        void onJSModifyNickName(ModifyNickNameRequestBean mModifyNicknameBean);
     }
 
     private final IJsRequestInterface mCallBack;
@@ -91,137 +94,142 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
     protected void onJsRequest(BaseCommonJsRequestBean mData) {
 
         switch (mData.getMsgType()) {
-            case SharedCommonJsUtils.TYPE_REQUEST_BACK:
+            case JsMsgType.TYPE_REQUEST_BACK:
 
                 mCallBack.onJsPressBack();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_IS_LOGIN:
+            case JsMsgType.TYPE_REQUEST_IS_LOGIN:
 
                 mCallBack.onJsIsLogin();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_WX_LOGIN:
+            case JsMsgType.TYPE_REQUEST_WX_LOGIN:
 
                 mCallBack.onJsWXLogin(mData);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_LOGIN_OUT:
+            case JsMsgType.TYPE_REQUEST_LOGIN_OUT:
 
                 mCallBack.onJsLoginOut();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_JS_ERROR:
+            case JsMsgType.TYPE_REQUEST_JS_ERROR:
 
                 mCallBack.onJsCrashError(mData);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_SCAN_OR:
+            case JsMsgType.TYPE_REQUEST_SCAN_OR:
 
                 mCallBack.onJsRequestScanQR();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_QUERY_DEVICE_INFO:
+            case JsMsgType.TYPE_REQUEST_QUERY_DEVICE_INFO:
 
                 DeviceInfoJsRequestBean mQueryBean = new DeviceInfoJsRequestBean(mData);
                 mCallBack.onJsRequestDeviceInfo(mQueryBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_BORROW_DEVICE:
+            case JsMsgType.TYPE_REQUEST_BORROW_DEVICE:
 
                 DeviceInfoJsRequestBean mBorrowBean = new DeviceInfoJsRequestBean(mData);
                 mCallBack.onJsBorrowDevice(mBorrowBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_GIVEBACK_DEVICE:
+            case JsMsgType.TYPE_REQUEST_GIVEBACK_DEVICE:
 
                 DeviceInfoJsRequestBean mGiveBackBean = new DeviceInfoJsRequestBean(mData);
                 mCallBack.onJsGiveBackDevice(mGiveBackBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_GET_IDENTITY_CODE:
+            case JsMsgType.TYPE_REQUEST_GET_IDENTITY_CODE:
 
                 GetIdentityCodeRequestBean mGetIDCodeBean = new GetIdentityCodeRequestBean(mData);
                 mCallBack.onJsGetIdentityCode(mGetIDCodeBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_MOBILE_LOGIN_BY_IDCODE:
+            case JsMsgType.TYPE_REQUEST_MOBILE_LOGIN_BY_IDCODE:
 
                 MobileLoginByIDCodeRequestBean mMobileLoginByIDBean = new MobileLoginByIDCodeRequestBean(mData);
                 mCallBack.onJsMobileLoginByIdentityCode(mMobileLoginByIDBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_QUERY_SYSTEM_LANGUAGE:
+            case JsMsgType.TYPE_REQUEST_QUERY_SYSTEM_LANGUAGE:
 
                 mCallBack.onJSQuerySystemLanguage();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_SET_SYSTEM_LANGUAGE:
+            case JsMsgType.TYPE_REQUEST_SET_SYSTEM_LANGUAGE:
 
                 LanguageSetRequestBean mLanguageSetRequestBean = new LanguageSetRequestBean(mData);
                 mCallBack.onJSSetSystemLanguage(mLanguageSetRequestBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_IS_NEWVERSION:
+            case JsMsgType.TYPE_REQUEST_IS_NEWVERSION:
 
                 mCallBack.onJSCheckAppIsNew();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_APP_UPGRADE:
+            case JsMsgType.TYPE_REQUEST_APP_UPGRADE:
 
                 UpgradeAppRequestBean mUpgradeAppRequestBean = new UpgradeAppRequestBean(mData);
                 mCallBack.onJSRequestUpgradeApp(mUpgradeAppRequestBean);
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_CANCEL_APP_UPGRADE:
+            case JsMsgType.TYPE_REQUEST_CANCEL_APP_UPGRADE:
 
                 UpgradeAppRequestBean mCancelUpgradeAppRequestBean = new UpgradeAppRequestBean(mData);
                 mCallBack.onJSCancelUpgradeApp(mCancelUpgradeAppRequestBean);
 
                 break;
-            case SharedCommonJsUtils.TYPE_REQUEST_APP_VERSION:
+            case JsMsgType.TYPE_REQUEST_APP_VERSION:
 
                 mCallBack.onJSRequestAppVersion();
 
                 break;
 
-            case SharedCommonJsUtils.TYPE_REQUEST_USER_INFO:
+            case JsMsgType.TYPE_REQUEST_USER_INFO:
 
                 mCallBack.onJSRequestUserInfo();
 
                 break;
-            case SharedCommonJsUtils.TYPE_REQUEST_TAKE_PHOTO:
+            case JsMsgType.TYPE_REQUEST_TAKE_PHOTO:
 
                 mCallBack.onJSRequestTakePhoto();
 
                 break;
-            case SharedCommonJsUtils.TYPE_REQUEST_LOCAL_PHOTO:
+            case JsMsgType.TYPE_REQUEST_LOCAL_PHOTO:
 
                 mCallBack.onJSRequestLocalPhoto();
 
                 break;
-            case SharedCommonJsUtils.TYPE_REQUEST_MODIFY_USERNAME:
+            case JsMsgType.TYPE_REQUEST_MODIFY_USERNAME:
 
                 ModifyUserNameRequestBean mModifyNameBean = new ModifyUserNameRequestBean(mData);
                 mCallBack.onJSModifyUserName(mModifyNameBean);
 
                 break;
-            case SharedCommonJsUtils.TYPE_REQUEST_MODIFY_USERPWD:
+            case JsMsgType.TYPE_REQUEST_MODIFY_NICKNAME:
+                ModifyNickNameRequestBean mModifyNicknameBean = new ModifyNickNameRequestBean(mData);
+                mCallBack.onJSModifyNickName(mModifyNicknameBean);
+
+                break;
+            case JsMsgType.TYPE_REQUEST_MODIFY_USERPWD:
 
                 ModifyUserPwdRequestBean mModifyPwdBean = new ModifyUserPwdRequestBean(mData);
                 mCallBack.onJSModifyUserPwd(mModifyPwdBean);

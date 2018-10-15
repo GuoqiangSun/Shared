@@ -6,13 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.File;
@@ -29,6 +24,7 @@ import cn.com.startai.sharedlib.app.js.Utils.Language;
 import cn.com.startai.sharedlib.app.js.method2Impl.LanguageResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
+import cn.com.startai.sharedlib.app.view.utils.StatusBarUtil;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.util.PermissionRequest;
 import cn.com.swain169.log.Tlog;
@@ -36,45 +32,12 @@ import cn.com.swain169.log.Tlog;
 public class SharedMainActivity extends WebHomeActivity
         implements PermissionRequest.OnPermissionResult, IMutualCallBack {
 
-
-    private void showStatusBar() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-
-
-            window.clearFlags(
-//                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
-//                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION |
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN//显示状态栏
-            );
-
-            window.getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION // 隐藏导航图标
-            );
-
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            //api21新增接口
-            window.setStatusBarColor(Color.TRANSPARENT);
-//            window.setNavigationBarColor(Color.TRANSPARENT);
-        } else {
-            Window window = getWindow();
-            window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
-                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-        }
-
-    }
-
-
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        showStatusBar();
         Tlog.v("HomeActivity  onWindowFocusChanged() ");
+//        StatusBarUtil.setStatusBarLightMode(getWindow());
+        StatusBarUtil.fullscreen(getWindow());
     }
 
     private final class LocaleChangeReceiver extends BroadcastReceiver {

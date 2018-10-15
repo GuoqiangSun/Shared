@@ -7,7 +7,7 @@ import cn.com.swain.baselib.jsInterface.method.BaseCommonJsUtils;
  * date : 2018/8/27 0027
  * desc :
  */
-public class SharedCommonJsUtils extends BaseCommonJsUtils {
+public class JsMsgType extends BaseCommonJsUtils {
 
 
     /**
@@ -194,6 +194,12 @@ public class SharedCommonJsUtils extends BaseCommonJsUtils {
      * 修改用户名请求
      */
     public static final String TYPE_REQUEST_MODIFY_USERNAME = "0x5156";
+
+    /**
+     * 修改昵称请求
+     */
+    public static final String TYPE_REQUEST_MODIFY_NICKNAME = "0x5157";
+
     /**
      * 修改用户信息返回
      */

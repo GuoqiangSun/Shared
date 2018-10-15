@@ -4,7 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 
 /**
  * author: Guoqiang_Sun
@@ -18,7 +18,7 @@ public class MobileLoginByIDCodeResponseMethod extends BaseResponseMethod2 {
     }
 
     public MobileLoginByIDCodeResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_RESPONSE_MOBILE_LOGIN_BY_IDCODE);
+        super(JsMsgType.TYPE_RESPONSE_MOBILE_LOGIN_BY_IDCODE);
     }
 
     @Override

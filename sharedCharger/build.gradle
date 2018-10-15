@@ -10,8 +10,8 @@ android {
         applicationId "cn.com.startai.sharedcharger"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 10028
-        versionName "1.0.028"
+        versionCode 10029
+        versionName "1.0.029"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 

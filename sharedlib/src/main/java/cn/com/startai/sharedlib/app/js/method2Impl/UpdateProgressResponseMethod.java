@@ -4,7 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import cn.com.startai.fssdk.db.entity.DownloadBean;
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
 /**
@@ -19,7 +19,7 @@ public class UpdateProgressResponseMethod extends BaseResponseMethod2 {
     }
 
     public UpdateProgressResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_RESPONSE_APP_UPGRADE);
+        super(JsMsgType.TYPE_RESPONSE_APP_UPGRADE);
     }
 
 

@@ -41,4 +41,21 @@ public class JSErrorCode {
      */
     public static final String ERROR_CODE_WX_LOGIN_USER_REJECTION = "0x830396";
 
+    /**
+     * 更新头像取消
+     */
+    public static final String UPDATE_HEAD_PIC_CANCEL = "0x8025A0";
+    /**
+     * 更新头像失败
+     */
+    public static final String UPDATE_HEAD_PIC_ERROR = "0x802599";
+    /**
+     * 更新头像失败,没有文件存储权限
+     */
+    public static final String UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION = "0x802598";
+    /**
+     * 更新头像失败,没有相机权限
+     */
+    public static final String UPDATE_HEAD_PIC_ERROR_NO_CAMERA_PERMISSION = "0x802597";
+
 }

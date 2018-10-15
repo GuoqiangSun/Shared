@@ -3,7 +3,7 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
 /**
@@ -18,7 +18,7 @@ public class ModifyHeadpicSendResponseMethod extends BaseResponseMethod2 {
     }
 
     public ModifyHeadpicSendResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_REQUEST_SEND_MODIFY_HEADPIC_DATA);
+        super(JsMsgType.TYPE_REQUEST_SEND_MODIFY_HEADPIC_DATA);
     }
 
     @Override

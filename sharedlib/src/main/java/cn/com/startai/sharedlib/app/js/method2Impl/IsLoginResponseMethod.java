@@ -3,7 +3,7 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
 /**
@@ -18,7 +18,7 @@ public class IsLoginResponseMethod extends BaseResponseMethod2 {
     }
 
     public IsLoginResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_RESPONSE_IS_LOGIN);
+        super(JsMsgType.TYPE_RESPONSE_IS_LOGIN);
     }
 
     @Override

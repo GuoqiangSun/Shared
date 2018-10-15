@@ -15,7 +15,7 @@ import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.util.SSL;
 import cn.com.swain169.log.TFlog;
 import cn.com.swain169.log.Tlog;
-import cn.com.swain169.log.logRecord.LogRecordManager;
+import cn.com.swain169.log.logRecord.impl.LogRecordManager;
 
 /**
  * author: Guoqiang_Sun
@@ -29,10 +29,7 @@ public class Debuger implements IApp, IService {
 
     @Override
     public void onSCreate() {
-        LogRecordManager logRecordManager = getLogRecordManager();
-        if (logRecordManager != null) {
-            logRecordManager.checkIsRecord();
-        }
+        TFlog.startRecord();
     }
 
     @Override
@@ -47,26 +44,19 @@ public class Debuger implements IApp, IService {
 
     @Override
     public void onSDestroy() {
-        LogRecordManager logRecordManager = getLogRecordManager();
-        if (logRecordManager != null) {
-            logRecordManager.syncRecordData();
-            logRecordManager.stopRecord();
-        }
+        TFlog.stopRecord();
     }
 
     @Override
     public void onSFinish() {
-        LogRecordManager logRecordManager = getLogRecordManager();
-        if (logRecordManager != null) {
-            logRecordManager.syncRecordData();
-        }
+        TFlog.syncRecordData();
     }
 
     private static final class ClassHolder {
         private static final Debuger DEBUGER = new Debuger();
     }
 
-    public static final Debuger getInstance() {
+    public static Debuger getInstance() {
         return ClassHolder.DEBUGER;
     }
 
@@ -100,12 +90,6 @@ public class Debuger implements IApp, IService {
      */
     public static boolean isLoadLocalH5 = false;
 
-    private LogRecordManager mLogRecord;
-
-    private LogRecordManager getLogRecordManager() {
-        return mLogRecord;
-    }
-
 
     /**
      * 权限申请后再判断录制文件是否创建
@@ -113,7 +97,7 @@ public class Debuger implements IApp, IService {
      * @param activity
      */
     public void reCheckLogRecord(Activity activity) {
-        if (mLogRecord == null && isRecordLogDebug) {
+        if (!TFlog.hasILogRecordImpl() && isRecordLogDebug) {
 
             boolean has = (ContextCompat.checkSelfPermission(activity,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
@@ -185,10 +169,10 @@ public class Debuger implements IApp, IService {
 
         if (logPath.exists()) {
             final String prefix = "00";
-            if (mLogRecord == null) {
-                mLogRecord = new LogRecordManager(logPath, prefix, 1024 * 1024 * 6);
-                mLogRecord.init();
-                TFlog.regIRecordMsgFile(mLogRecord);
+            if (!TFlog.hasILogRecordImpl()) {
+                LogRecordManager mLogRecord = new LogRecordManager(logPath, prefix, 1024 * 1024 * 6);
+                Tlog.v("TFlog init LogRecordManager");
+                TFlog.set(mLogRecord);
             }
         } else {
             Tlog.e(" recordLog logPath not exit");

@@ -4,7 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
-import cn.com.startai.sharedlib.app.js.Utils.SharedCommonJsUtils;
+import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 
 /**
  * author: Guoqiang_Sun
@@ -19,7 +19,7 @@ public class GiveBackDeviceResponseMethod extends BaseResponseMethod2 {
 
 
     public GiveBackDeviceResponseMethod() {
-        super(SharedCommonJsUtils.TYPE_RESPONSE_GIVEBACK_DEVICE);
+        super(JsMsgType.TYPE_RESPONSE_GIVEBACK_DEVICE);
     }
 
     @Override
