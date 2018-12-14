@@ -24,21 +24,21 @@ import cn.com.startai.sharedlib.app.js.Utils.Language;
 import cn.com.startai.sharedlib.app.js.method2Impl.LanguageResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
-import cn.com.startai.sharedlib.app.view.utils.StatusBarUtil;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.util.PermissionRequest;
+import cn.com.swain.baselib.util.StatusBarUtil;
 import cn.com.swain169.log.Tlog;
 
 public class SharedMainActivity extends WebHomeActivity
-        implements PermissionRequest.OnPermissionResult, IMutualCallBack {
+        implements IMutualCallBack {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         Tlog.v("HomeActivity  onWindowFocusChanged() ");
-//        StatusBarUtil.setStatusBarLightMode(getWindow());
-        StatusBarUtil.fullscreen(getWindow());
+        StatusBarUtil.fullscreenShowBarFontBlack(getWindow());
     }
+
 
     private final class LocaleChangeReceiver extends BroadcastReceiver {
         @Override
@@ -49,7 +49,7 @@ public class SharedMainActivity extends WebHomeActivity
                 LanguageResponseMethod languageResponseMethod = LanguageResponseMethod.getLanguageResponseMethod();
                 languageResponseMethod.setResult(true);
                 languageResponseMethod.setLan(type);
-                loadJs(languageResponseMethod.toMethod());
+                callJs(languageResponseMethod.toMethod());
             }
         }
     }
@@ -63,8 +63,9 @@ public class SharedMainActivity extends WebHomeActivity
         LanguageResponseMethod languageResponseMethod = LanguageResponseMethod.getLanguageResponseMethod();
         languageResponseMethod.setResult(true);
         languageResponseMethod.setLan(type);
-        loadJs(languageResponseMethod.toMethod());
+        callJs(languageResponseMethod.toMethod());
     }
+
 
     private PermissionRequest mPermissionRequest;
     private LocaleChangeReceiver mLocaleChangeReceiver;
@@ -78,11 +79,19 @@ public class SharedMainActivity extends WebHomeActivity
         Controller.getInstance().onSCreate();
 
         super.onCreate(savedInstanceState);
+        Tlog.v("WebHomeActivity  onCreate() ");
 
-        Tlog.v("WebHomeActivity  requestPermission() ");
-        mPermissionRequest = new PermissionRequest(this,
-                this);
-        mPermissionRequest.requestAllPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+
+        mPermissionRequest = new PermissionRequest(this);
+        mPermissionRequest.requestPermissions(new PermissionRequest.OnAllPermissionFinish() {
+                                                  @Override
+                                                  public void onAllPermissionRequestFinish() {
+                                                      Tlog.v("WebHomeActivity onPermissionRequestFinish() ");
+
+                                                      FileManager.getInstance().recreate(getApplication());
+                                                      Debuger.getInstance().reCheckLogRecord(SharedMainActivity.this);
+                                                  }
+                                              }, Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_COARSE_LOCATION);
 
         IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
@@ -129,6 +138,7 @@ public class SharedMainActivity extends WebHomeActivity
     protected void onDestroy() {
         if (mPermissionRequest != null) {
             mPermissionRequest.release();
+            mPermissionRequest = null;
         }
 
         if (mLocaleChangeReceiver != null) {
@@ -150,11 +160,6 @@ public class SharedMainActivity extends WebHomeActivity
 
         destroyMyself();
 
-    }
-
-    @Override
-    public void callJs(String method) {
-        loadJs(method);
     }
 
     @Override
@@ -212,16 +217,4 @@ public class SharedMainActivity extends WebHomeActivity
     }
 
 
-    @Override
-    public void onAllPermissionRequestFinish() {
-        Tlog.v("WebHomeActivity onPermissionRequestFinish() ");
-
-        FileManager.getInstance().recreate(getApplication());
-        Debuger.getInstance().reCheckLogRecord(this);
-    }
-
-    @Override
-    public void onPermissionRequestResult(String permission, boolean granted) {
-
-    }
 }

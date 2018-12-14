@@ -1,8 +1,14 @@
 package cn.com.startai.sharedlib.app;
 
+import android.Manifest;
 import android.app.Application;
 
+import com.blankj.utilcode.util.PermissionUtils;
+
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import cn.com.swain.baselib.file.FileTemplate;
 import cn.com.swain169.log.Tlog;
@@ -47,6 +53,29 @@ public class FileManager extends FileTemplate {
     protected File initMyProjectPath() {
         return new File(getAppRootPath(), MY_PROJECT_PATH_NAME);
     }
+
+
+    /**
+     * 文件保存路径
+     */
+    public static File getPhotoFile() {
+        // 判断存储卡是否可以用，可用进行存储
+
+        if (!PermissionUtils.isGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            return null;
+        }
+
+        SimpleDateFormat timeStampFormat = new SimpleDateFormat(
+                "yyyy_MM_dd_HH_mm_ss", Locale.getDefault());
+        String filename = timeStampFormat.format(new Date());
+        File cachePath = FileManager.getInstance().getCachePath();
+        boolean mkdirs = FileManager.getInstance().mkdirs(cachePath);
+        if (!mkdirs) {
+            return null;
+        }
+        return new File(cachePath, filename + ".jpg");
+    }
+
 
 
 }

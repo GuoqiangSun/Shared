@@ -26,7 +26,7 @@ public class LooperManager implements IApp {
         private static final LooperManager LM = new LooperManager();
     }
 
-    public static final LooperManager getInstance() {
+    public static LooperManager getInstance() {
         return ClassHolder.LM;
     }
 

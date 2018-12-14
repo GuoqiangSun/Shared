@@ -1,5 +1,6 @@
 package cn.com.shared.weblib.activity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,7 +18,9 @@ import cn.com.shared.weblib.R;
 import cn.com.shared.weblib.fragment.BaseFragment;
 import cn.com.shared.weblib.fragment.GuideFragment;
 import cn.com.shared.weblib.fragment.WebFragment;
+import cn.com.shared.weblib.js.ICallJS;
 import cn.com.swain.baselib.Queue.SyncLimitQueue;
+import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.jsInterface.method.PressBackResponseMethod;
 import cn.com.swain169.log.Tlog;
 
@@ -26,7 +29,8 @@ import cn.com.swain169.log.Tlog;
  * date : 2018/3/28 0028
  * desc :
  */
-public abstract class WebHomeActivity extends AppCompatActivity implements WebFragment.IWebFragmentCallBack {
+public abstract class WebHomeActivity extends AppCompatActivity
+        implements WebFragment.IWebFragmentCallBack, ICallJS {
 
     private UiHandler mUiHandler;
 
@@ -43,6 +47,7 @@ public abstract class WebHomeActivity extends AppCompatActivity implements WebFr
     private static final int ID_GUIDE = 0x00;
     private static final int ID_WEB = 0x01;
     private long createTs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,7 +199,8 @@ public abstract class WebHomeActivity extends AppCompatActivity implements WebFr
 
     private final Queue<String> mMethodCache = new SyncLimitQueue<>(12);
 
-    public void loadJs(String method) {
+    @Override
+    public void callJs(String method) {
 
         if (mWebShowed) {
             if (mUiHandler != null) {
@@ -216,7 +222,7 @@ public abstract class WebHomeActivity extends AppCompatActivity implements WebFr
 
         if (status) {
             String method = mBackMethod.toMethod();
-            loadJs(method);
+            callJs(method);
         }
 
     }
@@ -309,7 +315,9 @@ public abstract class WebHomeActivity extends AppCompatActivity implements WebFr
                 mCurFrame = ID_WEB;
                 Tlog.e("show mWebFragment ");
 
-                mUiHandler.sendEmptyMessage(MSG_WHAT_LOADJS_CACHE_METHOD);
+                if (mUiHandler != null) {
+                    mUiHandler.sendEmptyMessage(MSG_WHAT_LOADJS_CACHE_METHOD);
+                }
 
             } else {
                 Tlog.e("WebView loaded ; pause:" + mActPause + " show:" + mWebShowed + " " + mFragments.size());
@@ -317,22 +325,7 @@ public abstract class WebHomeActivity extends AppCompatActivity implements WebFr
 
         } else if (msg.what == MSG_WHAT_LOADJS_CACHE_METHOD) {
 
-            BaseFragment baseFragment = mFragments.get(ID_WEB);
-            WebFragment mWebFragment = null;
-            if (baseFragment != null) {
-                mWebFragment = (WebFragment) baseFragment;
-            }
-            if (mMethodCache.size() > 0) {
-                String method;
-                while ((method = mMethodCache.poll()) != null) {
-                    Tlog.e(" load cache : " + method);
-                    if (mWebFragment != null) {
-                        mWebFragment.loadJs(method);
-                    } else {
-                        Tlog.e(" loadJs mWebFragment=null");
-                    }
-                }
-            }
+            new LoadCacheJsTask(WebHomeActivity.this).execute();
 
         } else if (msg.what == MSG_WHAT_FINISH) {
 
@@ -343,6 +336,38 @@ public abstract class WebHomeActivity extends AppCompatActivity implements WebFr
         }
 
     }
+
+
+    private static class LoadCacheJsTask extends AsyncTask<Void, Void, Void> {
+
+        private WeakReference<WebHomeActivity> wr;
+
+        private LoadCacheJsTask(WebHomeActivity mHomeActivity) {
+            wr = new WeakReference<>(mHomeActivity);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            WebHomeActivity homeActivity = wr.get();
+            if (homeActivity == null) {
+                Tlog.e(AbsJsInterface.TAG, " LoadCacheJsTask homeActivity=null");
+                return null;
+            }
+
+            Queue<String> mMethodCache = homeActivity.mMethodCache;
+
+            if (mMethodCache.size() > 0) {
+                String method = null;
+                while ((method = mMethodCache.poll()) != null) {
+                    Tlog.e(AbsJsInterface.TAG, " poll cache method: " + method);
+                    homeActivity.callJs(method);
+                }
+            }
+            return null;
+        }
+    }
+
 
     private static class UiHandler extends Handler {
 

@@ -21,17 +21,6 @@
 
     <application>
 
-        <provider
-            android:name=".app.view.photoProvider"
-            android:authorities="${applicationId}.photo.provider"
-            android:exported="false"
-            android:grantUriPermissions="true"
-            android:multiprocess="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/photo_provider" />
-        </provider>
-
         <activity
             android:name="cn.com.startai.sharedcharger.wxapi.WXEntryActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

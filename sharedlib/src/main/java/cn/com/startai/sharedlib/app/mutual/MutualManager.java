@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import com.tencent.mm.opensdk.modelbase.BaseResp;
@@ -16,6 +17,7 @@ import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 
 import cn.com.startai.chargersdk.AOnChargerMessageArriveListener;
 import cn.com.startai.chargersdk.ChargerBusiHandler;
@@ -50,12 +52,12 @@ import cn.com.startai.sharedcharger.wxapi.WXLoginHelper;
 import cn.com.startai.sharedlib.BuildConfig;
 import cn.com.startai.sharedlib.R;
 import cn.com.startai.sharedlib.app.Debuger;
+import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.LooperManager;
 import cn.com.startai.sharedlib.app.info.ChargerDeveloperInfo;
 import cn.com.startai.sharedlib.app.js.CommonJsInterfaceTask;
 import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
-import cn.com.startai.sharedlib.app.js.Utils.LocalData;
 import cn.com.startai.sharedlib.app.js.method2Impl.BorrowDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DeviceInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetAppVersionResponseMethod;
@@ -81,13 +83,13 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
-import cn.com.startai.sharedlib.app.mutual.utils.PhotoUtils;
 import cn.com.startai.sharedlib.app.view.SharedApplication;
 import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod;
 import cn.com.swain.baselib.util.AppUtils;
+import cn.com.swain.baselib.util.PhotoUtils;
 import cn.com.swain169.log.Tlog;
 
 /**
@@ -418,7 +420,8 @@ public class MutualManager implements IService {
             @Override
             public void onJSQuerySystemLanguage() {
                 String type = Language.changeSystemLangToH5Lang(app);
-                LanguageResponseMethod languageResponseMethod = LanguageResponseMethod.getLanguageResponseMethod();
+                LanguageResponseMethod languageResponseMethod =
+                        LanguageResponseMethod.getLanguageResponseMethod();
                 languageResponseMethod.setResult(true);
                 languageResponseMethod.setLan(type);
                 callJs(languageResponseMethod);
@@ -427,12 +430,12 @@ public class MutualManager implements IService {
             @Override
             public void onJSSetSystemLanguage(LanguageSetRequestBean mLanguageSetRequestBean) {
 
-                LocalData localData = LocalData.getLocalData(app);
-                localData.setLanguage(mLanguageSetRequestBean.getLan());
+                Language.saveLanguage(app, mLanguageSetRequestBean.getLan());
                 Language.changeLanguage(app);
 
                 String type = Language.changeSystemLangToH5Lang(app);
-                LanguageResponseMethod languageResponseMethod = LanguageResponseMethod.getLanguageResponseMethod();
+                LanguageResponseMethod languageResponseMethod =
+                        LanguageResponseMethod.getLanguageResponseMethod();
                 languageResponseMethod.setResult(true);
                 languageResponseMethod.setLan(type);
                 callJs(languageResponseMethod);
@@ -451,7 +454,8 @@ public class MutualManager implements IService {
                         Tlog.e(TAG, "mGetVersionLsn msg send fail "
                                 + startaiError.getErrorCode());
                     }
-                    IsLeastVersionResponseMethod isLeastVersionResponseMethod = IsLeastVersionResponseMethod.getIsLeastVersionResponseMethod();
+                    IsLeastVersionResponseMethod isLeastVersionResponseMethod =
+                            IsLeastVersionResponseMethod.getIsLeastVersionResponseMethod();
                     isLeastVersionResponseMethod.setResult(false);
                     isLeastVersionResponseMethod.setNeedUpgrade(false);
                     isLeastVersionResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
@@ -482,7 +486,8 @@ public class MutualManager implements IService {
                     if (Debuger.isLogDebug) {
                         Tlog.v(TAG, "FSDownloadCallback  onStart() " + downloadBean.toString());
                     }
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
                     updateProgressResponseMethod.setUpdateProgress(downloadBean);
                     callJs(updateProgressResponseMethod);
@@ -494,7 +499,8 @@ public class MutualManager implements IService {
                         Tlog.v(TAG, "FSDownloadCallback  onSuccess() " + String.valueOf(downloadBean));
                     }
 
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
                     updateProgressResponseMethod.setUpdateProgress(downloadBean);
                     callJs(updateProgressResponseMethod);
@@ -508,7 +514,8 @@ public class MutualManager implements IService {
                     if (Debuger.isLogDebug) {
                         Tlog.e(TAG, "FSDownloadCallback  onFailure() " + i + String.valueOf(downloadBean));
                     }
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(false);
                     updateProgressResponseMethod.setErrorCode(String.valueOf(i));
                     updateProgressResponseMethod.setUpdateProgress(downloadBean);
@@ -520,7 +527,8 @@ public class MutualManager implements IService {
                     if (Debuger.isLogDebug) {
                         Tlog.v(TAG, "FSDownloadCallback  onProgress() " + String.valueOf(downloadBean));
                     }
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
                     updateProgressResponseMethod.setUpdateProgress(downloadBean);
                     callJs(updateProgressResponseMethod);
@@ -531,7 +539,8 @@ public class MutualManager implements IService {
                     if (Debuger.isLogDebug) {
                         Tlog.v(TAG, "FSDownloadCallback  onWaiting() " + String.valueOf(downloadBean));
                     }
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
                     updateProgressResponseMethod.setUpdateProgress(downloadBean);
                     callJs(updateProgressResponseMethod);
@@ -542,7 +551,8 @@ public class MutualManager implements IService {
                     if (Debuger.isLogDebug) {
                         Tlog.v(TAG, "FSDownloadCallback  onPause() " + String.valueOf(downloadBean));
                     }
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
                     updateProgressResponseMethod.setUpdateProgress(downloadBean);
                     callJs(updateProgressResponseMethod);
@@ -576,7 +586,8 @@ public class MutualManager implements IService {
                 if (downloadBeanByUrl != null && downloadBeanByUrl.getStatus() == 2) {
                     // 已经下载成功 ，按了取消
                     Tlog.e(TAG, " user cancelUpdate but already download success ");
-                    UpdateProgressResponseMethod updateProgressResponseMethod = UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
+                    UpdateProgressResponseMethod updateProgressResponseMethod =
+                            UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
                     updateProgressResponseMethod.setUpdateProgress(downloadBeanByUrl);
                     callJs(updateProgressResponseMethod);
@@ -591,7 +602,8 @@ public class MutualManager implements IService {
 
             @Override
             public void onJSRequestAppVersion() {
-                GetAppVersionResponseMethod appVersionResponseMethod = GetAppVersionResponseMethod.getAppVersionResponseMethod();
+                GetAppVersionResponseMethod appVersionResponseMethod =
+                        GetAppVersionResponseMethod.getAppVersionResponseMethod();
                 appVersionResponseMethod.setResult(true);
                 appVersionResponseMethod.setVersion(com.blankj.utilcode.util.AppUtils.getAppVersionName());
                 callJs(appVersionResponseMethod);
@@ -611,7 +623,8 @@ public class MutualManager implements IService {
                         Tlog.e(TAG, " mGetUserInfoLsn msg send fail " + startaiError.getErrorCode());
                     }
 
-                    UserInfoResponseMethod userInfoResponseMethod = UserInfoResponseMethod.getUserInfoResponseMethod();
+                    UserInfoResponseMethod userInfoResponseMethod =
+                            UserInfoResponseMethod.getUserInfoResponseMethod();
                     userInfoResponseMethod.setResult(false);
                     userInfoResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                     callJs(userInfoResponseMethod);
@@ -633,12 +646,13 @@ public class MutualManager implements IService {
             @Override
             public void onJSRequestTakePhoto() {
 
-                final File savePhotoFile = PhotoUtils.getPhotoFile();
+                final File savePhotoFile = FileManager.getPhotoFile();
 
                 Tlog.d(TAG, "takePhoto() " + (savePhotoFile != null ? savePhotoFile.getAbsolutePath() : " null "));
 
                 if (savePhotoFile == null) {
-                    ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod = ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
+                    ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod =
+                            ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
                     modifyHeadpicSendResponseMethod.setResult(false);
                     modifyHeadpicSendResponseMethod.setIsSend(false);
                     modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
@@ -657,14 +671,14 @@ public class MutualManager implements IService {
                 }, new PermissionHelper.OnPermissionDeniedListener() {
                     @Override
                     public void onPermissionDenied() {
-                        ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod = ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
+                        ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod =
+                                ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
                         modifyHeadpicSendResponseMethod.setResult(false);
                         modifyHeadpicSendResponseMethod.setIsSend(false);
-                        modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
+                        modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_CAMERA_PERMISSION);
                         callJs(modifyHeadpicSendResponseMethod);
                     }
                 });
-
 
 
             }
@@ -673,7 +687,13 @@ public class MutualManager implements IService {
             @Override
             public void onJSRequestLocalPhoto() {
 
-                Intent intent = PhotoUtils.requestLocalPhoto();
+//                Intent intent = PhotoUtils.requestLocalPhoto();
+
+                Intent intent = new Intent(Intent.ACTION_PICK, null);
+                intent.setDataAndType(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        "image/*");
+
                 mCallBack.jsStartActivityForResult(intent, LOCAL_PHOTO_CODE);
 
             }
@@ -694,7 +714,8 @@ public class MutualManager implements IService {
 
                     Tlog.e(TAG, "updateUserName() UserUpdateInfo surname invalid " + mModifyNameBean.getType());
 
-                    ModifyUserInfoResponseMethod modifyUserInfoResponseMethod = ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
+                    ModifyUserInfoResponseMethod modifyUserInfoResponseMethod =
+                            ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
                     modifyUserInfoResponseMethod.setResult(false);
                     modifyUserInfoResponseMethod.setErrorCode("000000");
                     callJs(modifyUserInfoResponseMethod);
@@ -715,7 +736,8 @@ public class MutualManager implements IService {
                             Tlog.e(TAG, " updateUserName msg send fail " + String.valueOf(startaiError.getErrorCode()));
                         }
 
-                        ModifyUserInfoResponseMethod modifyUserInfoResponseMethod = ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
+                        ModifyUserInfoResponseMethod modifyUserInfoResponseMethod =
+                                ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
                         modifyUserInfoResponseMethod.setResult(false);
                         modifyUserInfoResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                         callJs(modifyUserInfoResponseMethod);
@@ -733,28 +755,30 @@ public class MutualManager implements IService {
             @Override
             public void onJSModifyUserPwd(ModifyUserPwdRequestBean mModifyPwdBean) {
                 Tlog.v(TAG, "updateUserPwd() old:" + mModifyPwdBean.getOldPwd() + " new:" + mModifyPwdBean.getNewPwd());
-                StartAI.getInstance().getBaseBusiManager().updateUserPwd(mModifyPwdBean.getOldPwd(), mModifyPwdBean.getNewPwd(), new IOnCallListener() {
-                    @Override
-                    public void onSuccess(MqttPublishRequest request) {
-                        Tlog.v(TAG, " updateUserPwd msg send success ");
-                    }
+                StartAI.getInstance().getBaseBusiManager()
+                        .updateUserPwd(mModifyPwdBean.getOldPwd(), mModifyPwdBean.getNewPwd(), new IOnCallListener() {
+                            @Override
+                            public void onSuccess(MqttPublishRequest request) {
+                                Tlog.v(TAG, " updateUserPwd msg send success ");
+                            }
 
-                    @Override
-                    public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
-                        if (Debuger.isLogDebug) {
-                            Tlog.e(TAG, " updateUserPwd msg send fail " + String.valueOf(startaiError.getErrorCode()));
-                        }
-                        ModifyUserPwdResponseMethod modifyUserPwdResponseMethod = ModifyUserPwdResponseMethod.getModifyUserPwdResponseMethod();
-                        modifyUserPwdResponseMethod.setIsSuccessfully(false);
-                        modifyUserPwdResponseMethod.setResult(false);
-                        modifyUserPwdResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
-                    }
+                            @Override
+                            public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                                if (Debuger.isLogDebug) {
+                                    Tlog.e(TAG, " updateUserPwd msg send fail " + String.valueOf(startaiError.getErrorCode()));
+                                }
+                                ModifyUserPwdResponseMethod modifyUserPwdResponseMethod =
+                                        ModifyUserPwdResponseMethod.getModifyUserPwdResponseMethod();
+                                modifyUserPwdResponseMethod.setIsSuccessfully(false);
+                                modifyUserPwdResponseMethod.setResult(false);
+                                modifyUserPwdResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                            }
 
-                    @Override
-                    public boolean needUISafety() {
-                        return false;
-                    }
-                });
+                            @Override
+                            public boolean needUISafety() {
+                                return false;
+                            }
+                        });
             }
 
             @Override
@@ -774,7 +798,8 @@ public class MutualManager implements IService {
                             Tlog.e(TAG, " updateNickName msg send fail " + String.valueOf(startaiError.getErrorCode()));
                         }
 
-                        ModifyUserInfoResponseMethod modifyUserInfoResponseMethod = ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
+                        ModifyUserInfoResponseMethod modifyUserInfoResponseMethod =
+                                ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
                         modifyUserInfoResponseMethod.setResult(false);
                         modifyUserInfoResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                         callJs(modifyUserInfoResponseMethod);
@@ -1004,7 +1029,8 @@ public class MutualManager implements IService {
                     Tlog.d(TAG, " onGetLatestVersionResult :" + String.valueOf(resp));
                 }
 
-                IsLeastVersionResponseMethod isLeastVersionResponseMethod = IsLeastVersionResponseMethod.getIsLeastVersionResponseMethod();
+                IsLeastVersionResponseMethod isLeastVersionResponseMethod =
+                        IsLeastVersionResponseMethod.getIsLeastVersionResponseMethod();
                 isLeastVersionResponseMethod.setResult(resp.getResult() == 1);
                 isLeastVersionResponseMethod.setErrorCode(resp.getContent().getErrcode());
 
@@ -1015,9 +1041,10 @@ public class MutualManager implements IService {
                         PackageInfo packageInfo = applicationContext.getPackageManager()
                                 .getPackageInfo(applicationContext.getPackageName(), 0);
 
-                        Tlog.v(TAG, " myVersionCode:" + packageInfo.versionCode + " sVersionCode:" + resp.getContent().getVersionCode());
+                        Tlog.v(TAG, " myVersionCode:" + packageInfo.getLongVersionCode()
+                                + " sVersionCode:" + resp.getContent().getVersionCode());
 
-                        isLatestVersion = packageInfo.versionCode < resp.getContent().getVersionCode();
+                        isLatestVersion = packageInfo.getLongVersionCode() < resp.getContent().getVersionCode();
 
                     } catch (PackageManager.NameNotFoundException e) {
                         e.printStackTrace();
@@ -1074,7 +1101,8 @@ public class MutualManager implements IService {
                 }
 
 
-                ModifyUserInfoResponseMethod userInfoResponseMethod = ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
+                ModifyUserInfoResponseMethod userInfoResponseMethod =
+                        ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
                 userInfoResponseMethod.setResult(resp.getResult() == 1);
                 userInfoResponseMethod.setErrorCode(resp.getContent().getErrcode());
 
@@ -1102,7 +1130,8 @@ public class MutualManager implements IService {
                     Tlog.v(TAG, " onUpdateUserPwdResult:" + String.valueOf(resp));
                 }
 
-                ModifyUserPwdResponseMethod modifyUserPwdResponseMethod = ModifyUserPwdResponseMethod.getModifyUserPwdResponseMethod();
+                ModifyUserPwdResponseMethod modifyUserPwdResponseMethod =
+                        ModifyUserPwdResponseMethod.getModifyUserPwdResponseMethod();
                 modifyUserPwdResponseMethod.setResult(resp.getResult() == 1);
                 modifyUserPwdResponseMethod.setErrorCode(resp.getContent().getErrcode());
                 modifyUserPwdResponseMethod.setIsSuccessfully(resp.getResult() == 1);
@@ -1215,7 +1244,8 @@ public class MutualManager implements IService {
 
         if (resultCode == Activity.RESULT_CANCELED) {
 
-            ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod = ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
+            ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
             modifyHeadpicSendResponseMethod.setResult(false);
             modifyHeadpicSendResponseMethod.setIsSend(false);
             modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_CANCEL);
@@ -1224,7 +1254,8 @@ public class MutualManager implements IService {
             return;
         } else if (resultCode == Activity.RESULT_FIRST_USER) {
 
-            ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod = ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
+            ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
             modifyHeadpicSendResponseMethod.setResult(false);
             modifyHeadpicSendResponseMethod.setIsSend(false);
             modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR);
@@ -1236,12 +1267,11 @@ public class MutualManager implements IService {
         if (requestCode == LOCAL_PHOTO_CODE) {
 
             Uri imageUri = data.getData();
-
-            Tlog.d(TAG, " onActivityResult LOCAL_PHOTO_CODE success ");
+            Tlog.d(TAG, " onActivityResult LOCAL_PHOTO_CODE success " + String.valueOf(imageUri));
             localPhotoFile = crop(imageUri, CROP_LOCAL_PHOTO);
 
         } else if (requestCode == TAKE_PHOTO_CODE) {
-            Tlog.d(TAG, " onActivityResult TAKE_PHOTO_CODE success ");
+            Tlog.d(TAG, " onActivityResult TAKE_PHOTO_CODE success " + String.valueOf(takePhotoUri));
             takePhotoFile = crop(takePhotoUri, CROP_TAKE_PHOTO);
 
         } else if (requestCode == CROP_TAKE_PHOTO) {
@@ -1280,12 +1310,13 @@ public class MutualManager implements IService {
     // 裁剪
     private File crop(Uri imageUri, int code) {
 
-        File path = PhotoUtils.getPhotoFile();
+        File path = FileManager.getPhotoFile();
 
         if (path == null) {
             Tlog.e(TAG, " crop->" + (imageUri != null ? imageUri.getPath() : " null") + "; path == null");
 
-            ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod = ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
+            ModifyHeadpicSendResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicSendResponseMethod.getModifyHeadpicSendResponseMethod();
             modifyHeadpicSendResponseMethod.setResult(false);
             modifyHeadpicSendResponseMethod.setIsSend(false);
             modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
@@ -1310,7 +1341,12 @@ public class MutualManager implements IService {
 
         if (path != null && path.exists()) {
             filePath = path.getAbsolutePath();
-            PhotoUtils.compressImage(filePath);
+            try {
+                PhotoUtils.compressImage(filePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+                filePath = "";
+            }
         }
 
         Tlog.d(TAG, " onActivityResult CROP_PHOTO_SUCCESS:" + filePath);

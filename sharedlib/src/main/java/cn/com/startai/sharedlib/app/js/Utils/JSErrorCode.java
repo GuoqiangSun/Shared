@@ -8,6 +8,12 @@ package cn.com.startai.sharedlib.app.js.Utils;
 public class JSErrorCode {
 
     /**
+     * 配网失败,链接WiFi 5G频段
+     */
+    public static final String ERROR_CODE_CONFIG_WIFI5G = "0xAA0200";
+
+
+    /**
      * 二维码错误 未知
      */
     public static final String ERROR_CODE_SCAN_UNKNOWN = "0xAA0100";
