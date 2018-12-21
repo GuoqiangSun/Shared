@@ -1,6 +1,7 @@
 package cn.com.startai.sharedlib.app.view;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -170,6 +171,11 @@ public class SharedMainActivity extends WebHomeActivity
     @Override
     public void jsStartActivityForResult(Intent intent, int requestCode) {
         startActivityForResult(intent, requestCode);
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
     }
 
     @Override

@@ -79,6 +79,8 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
         void onJSModifyUserPwd(ModifyUserPwdRequestBean mModifyPwdBean);
 
         void onJSModifyNickName(ModifyNickNameRequestBean mModifyNicknameBean);
+
+        void onJsAliLogin(BaseCommonJsRequestBean mData);
     }
 
     private final IJsRequestInterface mCallBack;
@@ -109,6 +111,12 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
             case JsMsgType.TYPE_REQUEST_WX_LOGIN:
 
                 mCallBack.onJsWXLogin(mData);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_ALI_LOGIN:
+
+                mCallBack.onJsAliLogin(mData);
 
                 break;
 

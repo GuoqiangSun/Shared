@@ -1,5 +1,6 @@
 package cn.com.startai.sharedlib.app.mutual;
 
+import android.app.Activity;
 import android.content.Intent;
 
 /**
@@ -16,4 +17,6 @@ public interface IMutualCallBack {
     void scanQR(int code);
 
     void jsStartActivityForResult(Intent intent, int takePhotoCode);
+
+    Activity getActivity();
 }

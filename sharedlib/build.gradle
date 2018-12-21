@@ -30,6 +30,7 @@ allprojects {
         flatDir {
             dirs 'libs'
         }
+        jcenter()
     }
 }
 
@@ -49,25 +50,31 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
+
+    //支付宝 sdk
+    api(name: 'alipaySdk-15.5.9-20181123210601', ext: 'aar')
+
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:+'
-    //startai mqtt  sdk包
-    implementation 'cn.com.startai:mqsdk:3.1.25'
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
-    //startai mqtt charger sdk 包
-    implementation 'cn.com.startai:chargersdk:1.1.101'
+
     //zxing二维码识别 基础包
     implementation 'com.google.zxing:core:3.3.0'
     //二维码扫描 ui 库
     implementation 'com.mylhyl:zxingscanner:2.1.0'
     //startai 二维码扫描 sdk
-    //    compile(name: 'startai-zxing-scanner-1.0.1', ext: 'aar')
     implementation 'cn.com.startai:scansdk:1.1.4'
     //android 工具库
     implementation 'com.blankj:utilcode:1.19.3'
     // 下载
     implementation 'org.xutils:xutils:3.5.0'
     implementation 'cn.com.startai:fastdfssdk:1.0.2'
+
+    //startai mqtt  sdk包
+    implementation 'cn.com.startai:mqsdk:3.1.31'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
+    //startai mqtt charger sdk 包
+    implementation 'cn.com.startai:chargersdk:1.1.106'
+
 
     api project(':weblib')
 }

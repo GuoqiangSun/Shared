@@ -3,7 +3,7 @@
     package="cn.com.startai.sharedcharger">
 
     <application
-        android:name=".ChargerApplication"
+        android:name=".RuiooChargerApplication"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/shared_charger"
@@ -34,8 +34,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
-
-
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

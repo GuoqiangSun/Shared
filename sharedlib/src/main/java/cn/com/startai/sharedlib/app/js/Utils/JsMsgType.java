@@ -57,6 +57,18 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_MOBILE_LOGIN_BY_IDCODE = "0x5108";
 
+
+    /**
+     * 阿里登录请求
+     */
+    public static final String TYPE_REQUEST_ALI_LOGIN = "0x5109";
+
+    /**
+     * 阿里登录返回
+     */
+    public static final String TYPE_RESPONSE_ALI_LOGIN = "0x5110";
+
+
     /**
      * 用户登出请求
      */

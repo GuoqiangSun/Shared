@@ -8,9 +8,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Looper;
-import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.alipay.sdk.app.AuthTask;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 
@@ -18,6 +19,7 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import cn.com.startai.chargersdk.AOnChargerMessageArriveListener;
 import cn.com.startai.chargersdk.ChargerBusiHandler;
@@ -28,6 +30,11 @@ import cn.com.startai.chargersdk.entity.C_0x8302;
 import cn.com.startai.chargersdk.entity.C_0x8304;
 import cn.com.startai.chargersdk.entity.C_0x8305;
 import cn.com.startai.chargersdk.entity.C_0x8306;
+import cn.com.startai.chargersdk.entity.C_0x8307;
+import cn.com.startai.chargersdk.entity.C_0x8308;
+import cn.com.startai.chargersdk.entity.C_0x8309;
+import cn.com.startai.chargersdk.entity.C_0x8310;
+import cn.com.startai.chargersdk.entity.C_0x8311;
 import cn.com.startai.fssdk.FSDownloadCallback;
 import cn.com.startai.fssdk.FSUploadCallback;
 import cn.com.startai.fssdk.StartaiDownloaderManager;
@@ -35,6 +42,7 @@ import cn.com.startai.fssdk.StartaiUploaderManager;
 import cn.com.startai.fssdk.db.entity.DownloadBean;
 import cn.com.startai.fssdk.db.entity.UploadBean;
 import cn.com.startai.mqttsdk.StartAI;
+import cn.com.startai.mqttsdk.base.BaseMessage;
 import cn.com.startai.mqttsdk.base.StartaiError;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8016;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8018;
@@ -42,6 +50,8 @@ import cn.com.startai.mqttsdk.busi.entity.C_0x8020;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8021;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8025;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
+import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.event.ICommonStateListener;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.localbusi.UserBusi;
@@ -54,10 +64,11 @@ import cn.com.startai.sharedlib.R;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.LooperManager;
-import cn.com.startai.sharedlib.app.info.ChargerDeveloperInfo;
+import cn.com.startai.sharedlib.app.info.RuiooChargerDeveloperInfo;
 import cn.com.startai.sharedlib.app.js.CommonJsInterfaceTask;
 import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
+import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BorrowDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DeviceInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetAppVersionResponseMethod;
@@ -83,6 +94,8 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
+import cn.com.startai.sharedlib.app.mutual.utils.AuthResult;
+import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
 import cn.com.startai.sharedlib.app.view.SharedApplication;
 import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
@@ -110,15 +123,26 @@ public class MutualManager implements IService {
     private final Application app;
     private final IMutualCallBack mCallBack;
 
+
     public MutualManager(Application app, IMutualCallBack mCallBack) {
         this.app = app;
         this.mCallBack = mCallBack;
+    }
+
+    private String userID;
+
+    private void setUserID(String userID) {
+        this.userID = userID;
     }
 
     private String getUserID() {
 //        if (Debuger.isDebug) {
 //            return "3a5f4bafe52943e286c7ee7240d52a42";
 //        }
+        return userID;
+    }
+
+    private String getUserIDFromMq() {
         UserBusi userBusi = new UserBusi();
         C_0x8018.Resp.ContentBean currUser = userBusi.getCurrUser();
         if (currUser != null) {
@@ -176,14 +200,16 @@ public class MutualManager implements IService {
             public void onJsBaseRequest(BaseCommonJsRequestBean mData) {
 
                 if (Debuger.isLogDebug) {
-                    Tlog.v(TAG, " onJsBaseRequest " + mData.toString());
+                    Tlog.v(TAG, " onJsBaseRequest " + String.valueOf(mData));
                 }
 
             }
 
             @Override
             public void onJsCrashError(BaseCommonJsRequestBean mData) {
-                ((SharedApplication) app).onJsCrashError(mData.getRootJsonStr());
+                if (app != null) {
+                    ((SharedApplication) app).onJsCrashError(mData.getRootJsonStr());
+                }
             }
 
             @Override
@@ -193,12 +219,16 @@ public class MutualManager implements IService {
 
             @Override
             public void onJsPressBackFinish() {
-                mCallBack.jFinish();
+                if (mCallBack != null) {
+                    mCallBack.jFinish();
+                }
             }
 
             @Override
             public void onJsPressBackFinishBefore() {
-                Toast.makeText(app, R.string.goBack_again, Toast.LENGTH_SHORT).show();
+                if (app != null) {
+                    Toast.makeText(app, R.string.goBack_again, Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -212,12 +242,13 @@ public class MutualManager implements IService {
 
             @Override
             public void onJsIsLogin() {
-
-                Tlog.v(TAG, " loginUserID:" + getUserID());
+                String userIDFromMq = getUserIDFromMq();
+                setUserID(userIDFromMq);
+                Tlog.v(TAG, "onJsIsLogin getUserIDFromMq:" + userIDFromMq);
                 IsLoginResponseMethod mIsLoginResponseMethod =
                         IsLoginResponseMethod.getIsLoginResponseMethod();
                 mIsLoginResponseMethod.setResult(true);
-                mIsLoginResponseMethod.setIsLogin(getUserID() != null);
+                mIsLoginResponseMethod.setIsLogin(userIDFromMq != null);
                 callJs(mIsLoginResponseMethod);
 
             }
@@ -247,21 +278,57 @@ public class MutualManager implements IService {
             }
 
             @Override
+            public void onJsAliLogin(BaseCommonJsRequestBean mData) {
+
+                ChargerBusiManager.getInstance().getAlipayAuthInfo(new IOnCallListener() {
+                    @Override
+                    public void onSuccess(MqttPublishRequest request) {
+                        if (Debuger.isLogDebug) {
+                            Tlog.e(TAG, "getAlipayAuthInfo msg send success ");
+                        }
+                    }
+
+                    @Override
+                    public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+
+                        if (Debuger.isLogDebug) {
+                            Tlog.e(TAG, "getAlipayAuthInfo msg send fail " + String.valueOf(startaiError));
+                        }
+
+                        AliLoginResponseMethod mAliResponseMethod =
+                                AliLoginResponseMethod.getAliLoginResponseMethod();
+                        mAliResponseMethod.setResult(false);
+                        mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                        callJs(mAliResponseMethod);
+
+                    }
+
+                    @Override
+                    public boolean needUISafety() {
+                        return false;
+                    }
+                });
+            }
+
+            @Override
             public void onJsLoginOut() {
                 ChargerBusiManager.getInstance().logout();
             }
 
             @Override
             public void onJsRequestScanQR() {
-
-                mCallBack.scanQR(REQUEST_SCAN_QR_RESULT);
+                if (mCallBack != null) {
+                    mCallBack.scanQR(REQUEST_SCAN_QR_RESULT);
+                }
 
             }
 
             private final IOnCallListener mGetChargerInfoLsn = new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.i(TAG, "getChargerInfo msg send success");
+                    if (Debuger.isLogDebug) {
+                        Tlog.i(TAG, "getChargerInfo msg send success");
+                    }
                 }
 
                 @Override
@@ -294,7 +361,9 @@ public class MutualManager implements IService {
             private final IOnCallListener mBorrowLsn = new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.v(TAG, " borrow msg send success");
+                    if (Debuger.isLogDebug) {
+                        Tlog.v(TAG, " borrow msg send success");
+                    }
                 }
 
                 @Override
@@ -326,12 +395,16 @@ public class MutualManager implements IService {
             private final IOnCallListener mGiveBackDeviceLsn = new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.v(TAG, " giveBack msg send success");
+                    if (Debuger.isLogDebug) {
+                        Tlog.v(TAG, " giveBack msg send success");
+                    }
                 }
 
                 @Override
                 public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
-                    Tlog.e(TAG, " giveBack msg send fail " + String.valueOf(startaiError));
+                    if (Debuger.isLogDebug) {
+                        Tlog.e(TAG, " giveBack msg send fail " + String.valueOf(startaiError));
+                    }
                     GiveBackDeviceResponseMethod giveBackDeviceResponseMethod =
                             GiveBackDeviceResponseMethod.getGiveBackDeviceResponseMethod();
                     giveBackDeviceResponseMethod.setResult(false);
@@ -353,7 +426,9 @@ public class MutualManager implements IService {
             private final IOnCallListener mGetIdentityCodeLsn = new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest request) {
-                    Tlog.v(TAG, " get identity code msg send success");
+                    if (Debuger.isLogDebug) {
+                        Tlog.v(TAG, " get identity code msg send success");
+                    }
                 }
 
                 @Override
@@ -386,7 +461,9 @@ public class MutualManager implements IService {
             private final IOnCallListener mMobileLoginByIDLsn = new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest request) {
-                    Tlog.v(TAG, " login msg send success");
+                    if (Debuger.isLogDebug) {
+                        Tlog.v(TAG, " login msg send success");
+                    }
                 }
 
                 @Override
@@ -445,7 +522,9 @@ public class MutualManager implements IService {
             private final IOnCallListener mGetVersionLsn = new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.v(TAG, "mGetVersionLsn msg send success ");
+                    if (Debuger.isLogDebug) {
+                        Tlog.v(TAG, "mGetVersionLsn msg send success ");
+                    }
                 }
 
                 @Override
@@ -562,8 +641,9 @@ public class MutualManager implements IService {
 
             @Override
             public void onJSRequestUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean) {
-
-                Tlog.v(TAG, " onJSRequestUpgradeApp: downloadUrl:" + mUpgradeAppRequestBean.getPath());
+                if (Debuger.isLogDebug) {
+                    Tlog.v(TAG, " onJSRequestUpgradeApp: downloadUrl:" + mUpgradeAppRequestBean.getPath());
+                }
 
                 //示例代码
                 DownloadBean downloadBean = new DownloadBean.Builder()
@@ -577,15 +657,18 @@ public class MutualManager implements IService {
 
             @Override
             public void onJSCancelUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean) {
-
-                Tlog.v(TAG, " onJSRequestUpgradeApp:  downloadUrl:" + mUpgradeAppRequestBean.getPath());
+                if (Debuger.isLogDebug) {
+                    Tlog.v(TAG, " onJSRequestUpgradeApp:  downloadUrl:" + mUpgradeAppRequestBean.getPath());
+                }
 
                 DownloadBean downloadBeanByUrl = StartaiDownloaderManager.getInstance().getFDBManager()
                         .getDownloadBeanByUrl(mUpgradeAppRequestBean.getPath());
 
                 if (downloadBeanByUrl != null && downloadBeanByUrl.getStatus() == 2) {
                     // 已经下载成功 ，按了取消
-                    Tlog.e(TAG, " user cancelUpdate but already download success ");
+                    if (Debuger.isLogDebug) {
+                        Tlog.e(TAG, " user cancelUpdate but already download success ");
+                    }
                     UpdateProgressResponseMethod updateProgressResponseMethod =
                             UpdateProgressResponseMethod.getUpdateProgressResponseMethod();
                     updateProgressResponseMethod.setResult(true);
@@ -614,7 +697,9 @@ public class MutualManager implements IService {
 
                 @Override
                 public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.v(TAG, " getUserInfo msg send success ");
+                    if (Debuger.isLogDebug) {
+                        Tlog.v(TAG, " getUserInfo msg send success ");
+                    }
                 }
 
                 @Override
@@ -666,7 +751,9 @@ public class MutualManager implements IService {
                         Uri imageUri = PhotoUtils.getTakePhotoURI(app, savePhotoFile);
                         Intent intent = PhotoUtils.requestTakePhoto(imageUri);
                         takePhotoUri = imageUri;
-                        mCallBack.jsStartActivityForResult(intent, TAKE_PHOTO_CODE);
+                        if (mCallBack != null) {
+                            mCallBack.jsStartActivityForResult(intent, TAKE_PHOTO_CODE);
+                        }
                     }
                 }, new PermissionHelper.OnPermissionDeniedListener() {
                     @Override
@@ -686,15 +773,10 @@ public class MutualManager implements IService {
 
             @Override
             public void onJSRequestLocalPhoto() {
-
-//                Intent intent = PhotoUtils.requestLocalPhoto();
-
-                Intent intent = new Intent(Intent.ACTION_PICK, null);
-                intent.setDataAndType(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        "image/*");
-
-                mCallBack.jsStartActivityForResult(intent, LOCAL_PHOTO_CODE);
+                if (mCallBack != null) {
+                    Intent intent = PhotoUtils.requestLocalPhoto();
+                    mCallBack.jsStartActivityForResult(intent, LOCAL_PHOTO_CODE);
+                }
 
             }
 
@@ -819,7 +901,7 @@ public class MutualManager implements IService {
 
     private void initMqtt() {
 
-        MqttInitParam initParam = new ChargerDeveloperInfo();
+        MqttInitParam initParam = new RuiooChargerDeveloperInfo();
 
         StartAI.getInstance().initialization(app, initParam);
         StartAI.getInstance().getPersisitnet().setBusiHandler(new ChargerBusiHandler());
@@ -867,6 +949,102 @@ public class MutualManager implements IService {
             public boolean needUISafety() {
                 return false;
             }
+
+            @Override
+            public void onGetAlipayAuthInfoResult(C_0x8033.Resp resp) {
+                super.onGetAlipayAuthInfoResult(resp);
+
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onGetAlipayPrivateKeyResult :" + String.valueOf(resp));
+                }
+
+                if (resp.getResult() == BaseMessage.RESULT_SUCCESS) {
+
+                    Tlog.d(TAG, "支付宝密钥获取成功，准备登录 ");
+
+                    String AUTH_INFO = resp.getContent().getAliPayAuthInfo();
+                    aliLogin(AUTH_INFO);
+
+                } else {
+                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+                    mAliResponseMethod.releaseCache();
+                    mAliResponseMethod.setResult(false);
+                    mAliResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
+                    callJs(mAliResponseMethod);
+                }
+
+            }
+
+
+            @Override
+            public void onLoginResult(C_0x8018.Resp resp) {
+                super.onLoginResult(resp);
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onLoginResult :" + String.valueOf(resp));
+                }
+                C_0x8018.Resp.ContentBean loginInfo = resp.getContent();
+
+                switch (loginInfo.getType()) {
+                    case 1: // email
+
+                        break;
+                    case 2://mobile + code
+                    case 3://mobile + pwd
+                    case 5:// mobile + code + pwd
+
+                        MobileLoginByIDCodeResponseMethod mobileLoginByIDCodeResponseMethod =
+                                MobileLoginByIDCodeResponseMethod.getMobileLoginByIDCodeResponseMethod();
+                        mobileLoginByIDCodeResponseMethod.setResult(resp.getResult() == 1);
+                        mobileLoginByIDCodeResponseMethod.setIsLogin(resp.getResult() == 1);
+                        mobileLoginByIDCodeResponseMethod.setErrorCode(loginInfo.getErrcode());
+                        callJs(mobileLoginByIDCodeResponseMethod);
+                        break;
+                    case 4:// user + pwd
+                        break;
+
+                    case 10: // wx
+
+                        WxLoginResponseMethod mWxResponseMethod =
+                                WxLoginResponseMethod.getWxLoginResponseMethod();
+                        mWxResponseMethod.setResult(resp.getResult() == 1);
+                        mWxResponseMethod.setErrorCode(loginInfo.getErrcode());
+                        mWxResponseMethod.setName(loginInfo.getuName());
+                        callJs(mWxResponseMethod);
+
+                        break;
+                    case Type.Login.THIRD_ALIPAY:
+
+                        AliLoginResponseMethod mAliResponseMethod =
+                                AliLoginResponseMethod.getAliLoginResponseMethod();
+                        mAliResponseMethod.setResult(resp.getResult() == 1);
+                        mAliResponseMethod.setErrorCode(loginInfo.getErrcode());
+                        mAliResponseMethod.setName(loginInfo.getuName());
+                        callJs(mAliResponseMethod);
+
+                        break;
+                }
+
+                String userIDFromMq = getUserIDFromMq();
+                Tlog.d(TAG, " userIDFromMq:" + userIDFromMq);
+                setUserID(userIDFromMq);
+            }
+
+            @Override
+            public void onLogoutResult(int result, String errorCode, String errorMsg) {
+                super.onLogoutResult(result, errorCode, errorMsg);
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onLogoutResult result:" + result + " " + errorCode + ":" + errorMsg);
+                }
+                LoginOutResponseMethod loginOutResponseMethod =
+                        LoginOutResponseMethod.getLoginOutResponseMethod();
+                loginOutResponseMethod.setResult(result == 1);
+                loginOutResponseMethod.setIsLoginOut(result == 1);
+                loginOutResponseMethod.setErrorCode(errorCode);
+                callJs(loginOutResponseMethod);
+
+                setUserID(getUserIDFromMq());
+            }
+
 
             @Override
             public void onBorrowResult(C_0x8301.Resp resp) {
@@ -918,61 +1096,7 @@ public class MutualManager implements IService {
 
             }
 
-
-            @Override
-            public void onLoginResult(C_0x8018.Resp resp) {
-                super.onLoginResult(resp);
-                if (Debuger.isLogDebug) {
-                    Tlog.d(TAG, " onLoginResult :" + String.valueOf(resp));
-                }
-                C_0x8018.Resp.ContentBean loginInfo = resp.getContent();
-
-                switch (loginInfo.getType()) {
-                    case 1: // email
-
-                        break;
-                    case 2://mobile + code
-                    case 3://mobile + pwd
-                    case 5:// mobile + code + pwd
-
-                        MobileLoginByIDCodeResponseMethod mobileLoginByIDCodeResponseMethod =
-                                MobileLoginByIDCodeResponseMethod.getMobileLoginByIDCodeResponseMethod();
-                        mobileLoginByIDCodeResponseMethod.setResult(resp.getResult() == 1);
-                        mobileLoginByIDCodeResponseMethod.setIsLogin(resp.getResult() == 1);
-                        mobileLoginByIDCodeResponseMethod.setErrorCode(loginInfo.getErrcode());
-                        callJs(mobileLoginByIDCodeResponseMethod);
-                        break;
-                    case 4:// user + pwd
-                        break;
-
-                    case 10:
-
-                        WxLoginResponseMethod mWxResponseMethod =
-                                WxLoginResponseMethod.getWxLoginResponseMethod();
-                        mWxResponseMethod.releaseCache();
-                        mWxResponseMethod.setResult(resp.getResult() == 1);
-                        mWxResponseMethod.setErrorCode(loginInfo.getErrcode());
-                        mWxResponseMethod.setName(loginInfo.getuName());
-                        callJs(mWxResponseMethod);
-
-                        break;
-                }
-            }
-
-            @Override
-            public void onLogoutResult(int result, String errorCode, String errorMsg) {
-                super.onLogoutResult(result, errorCode, errorMsg);
-                if (Debuger.isLogDebug) {
-                    Tlog.d(TAG, " onLogoutResult result:" + result + " " + errorCode + ":" + errorMsg);
-                }
-                LoginOutResponseMethod loginOutResponseMethod =
-                        LoginOutResponseMethod.getLoginOutResponseMethod();
-                loginOutResponseMethod.setResult(result == 1);
-                loginOutResponseMethod.setIsLoginOut(result == 1);
-                loginOutResponseMethod.setErrorCode(errorCode);
-                callJs(loginOutResponseMethod);
-            }
-
+            //            查询网点信息
             @Override
             public void onGetStoreInfoResult(C_0x8304.Resp resp) {
                 super.onGetStoreInfoResult(resp);
@@ -981,6 +1105,7 @@ public class MutualManager implements IService {
                 }
             }
 
+            //            查询机柜信息
             @Override
             public void onGetChargerInfoResult(C_0x8305.Resp resp) {
                 super.onGetChargerInfoResult(resp);
@@ -1005,6 +1130,60 @@ public class MutualManager implements IService {
                 if (Debuger.isLogDebug) {
                     Tlog.d(TAG, " onGetFeeRuleResult :" + String.valueOf(resp));
                 }
+            }
+
+            // 请求充值
+            @Override
+            public void onRequestRechargeResult(C_0x8307.Resp resp) {
+                super.onRequestRechargeResult(resp);
+
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onRequestRechargeResult :" + String.valueOf(resp));
+                }
+            }
+
+            //  请求查询余额
+            @Override
+            public void onGetBalanceAndDepositResult(C_0x8308.Resp resp) {
+                super.onGetBalanceAndDepositResult(resp);
+
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onGetBalanceAndDepositResult :" + String.valueOf(resp));
+                }
+
+            }
+
+            // 查询订单列表
+            @Override
+            public void onGetOrderListResult(C_0x8309.Resp resp) {
+                super.onGetOrderListResult(resp);
+
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onGetOrderListResult :" + String.valueOf(resp));
+                }
+
+            }
+
+            // 查询订单详情
+            @Override
+            public void onGetOrderDetailResult(C_0x8310.Resp resp) {
+                super.onGetOrderDetailResult(resp);
+
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onGetOrderDetailResult :" + String.valueOf(resp));
+                }
+
+            }
+
+            // 请求用余额支付订单
+            @Override
+            public void onPayForOrderWithBalanceResult(C_0x8311.Resp resp) {
+                super.onPayForOrderWithBalanceResult(resp);
+
+                if (Debuger.isLogDebug) {
+                    Tlog.d(TAG, " onPayForOrderWithBalanceResult :" + String.valueOf(resp));
+                }
+
             }
 
             @Override
@@ -1143,7 +1322,80 @@ public class MutualManager implements IService {
     }
 
     private void callJs(BaseResponseMethod mBaseResponseMethod) {
-        mCallBack.callJs(mBaseResponseMethod.toMethod());
+        if (mCallBack != null) {
+            mCallBack.callJs(mBaseResponseMethod.toMethod());
+        }
+    }
+
+    // 支付宝登陆
+    private void aliLogin(String AUTH_INFO) {
+
+        Activity activity = mCallBack != null ? mCallBack.getActivity() : null;
+        // 构造AuthTask 对象
+        AuthTask authTask = new AuthTask(activity);
+        // 调用授权接口，获取授权结果
+        Tlog.d(TAG, " aliLogin autoInfo = " + AUTH_INFO);
+        Map<String, String> result = authTask.authV2(AUTH_INFO, true);
+
+        AuthResult authResult = new AuthResult(result, true);
+
+        String resultStatus = authResult.getResultStatus();
+
+        // 判断resultStatus 为“9000”且result_code
+        // 为“200”则代表授权成功，具体状态码代表含义可参考授权接口文档
+        if (TextUtils.equals(resultStatus, "9000") && TextUtils.equals(authResult.getResultCode(), "200")) {
+            // 获取alipay_open_id，调支付时作为参数extern_token 的value
+            // 传入，则支付账户为该授权账户
+
+            ChargerBusiManager.getInstance().loginWithThirdAccount(Type.Login.THIRD_ALIPAY, authResult.getAuthCode(), new IOnCallListener() {
+                @Override
+                public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+                    Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
+                }
+
+                @Override
+                public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+                    if (Debuger.isDebug) {
+                        Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
+                    }
+
+                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+                    mAliResponseMethod.releaseCache();
+                    mAliResponseMethod.setResult(false);
+                    mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                    callJs(mAliResponseMethod);
+
+                }
+
+                @Override
+                public boolean needUISafety() {
+                    return false;
+                }
+            });
+
+
+        } else {
+            // 其他状态值则为授权失败
+//                            result_status
+//                            9000	请求处理成功
+//                            4000	系统异常
+//                            6001	用户中途取消
+//                            6002	网络连接出错
+
+//                            result_code
+//                            200	业务处理成功，会返回authCode
+//                            1005	账户已冻结，如有疑问，请联系支付宝技术支持
+//                            202	系统异常，请稍后再试或联系支付宝技术支持
+
+
+            AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+            mAliResponseMethod.releaseCache();
+            mAliResponseMethod.setResult(false);
+            mAliResponseMethod.setErrorCode(String.valueOf(resultStatus));
+            callJs(mAliResponseMethod);
+
+
+        }
     }
 
     public void onWxLoginResult(BaseResp baseResp) {
@@ -1193,13 +1445,13 @@ public class MutualManager implements IService {
         ChargerBusiManager.getInstance().loginWithThirdAccount(10, code, new IOnCallListener() {
             @Override
             public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                Tlog.i(TAG, "loginWithThirdAccount msg send success ");
+                Tlog.i(TAG, "loginWithThirdAccount wx msg send success ");
             }
 
             @Override
             public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
                 if (Debuger.isDebug) {
-                    Tlog.e(TAG, "loginWithThirdAccount msg send fail " + String.valueOf(startaiError));
+                    Tlog.e(TAG, "loginWithThirdAccount wx msg send fail " + String.valueOf(startaiError));
                 }
 
                 WxLoginResponseMethod mWxResponseMethod = WxLoginResponseMethod.getWxLoginResponseMethod();
@@ -1325,12 +1577,15 @@ public class MutualManager implements IService {
             return null;
         }
 
-        Uri outUri = Uri.fromFile(path);
-        Intent intent = PhotoUtils.cropImg(imageUri, outUri);
-        // 启动裁剪程序
-        mCallBack.jsStartActivityForResult(intent, code);
 
-        return path;
+        if (mCallBack != null) {
+            Uri outUri = Uri.fromFile(path);
+            Intent intent = PhotoUtils.cropImg(imageUri, outUri);
+            // 启动裁剪程序
+            mCallBack.jsStartActivityForResult(intent, code);
+            return path;
+        }
+        return null;
     }
 
 
@@ -1440,7 +1695,7 @@ public class MutualManager implements IService {
             String scanResult = data.getStringExtra("result");
             Tlog.i(TAG, "scanResult = " + scanResult);
 
-            String[] aar = getStoreIdAndChargerId(scanResult);
+            String[] aar = RuiooORCodeUtils.getStoreIdAndChargerId(scanResult);
             if (aar == null || aar.length < 2) {
 
                 Tlog.e(TAG, " QR parse fail");
@@ -1467,22 +1722,5 @@ public class MutualManager implements IService {
         callJs(scanORResponseMethod);
     }
 
-    private java.lang.String QR_CODE_INDEX = "http://www.ruioo.net/merchant/detail/";
-
-    /**
-     * 检查 是否是sn的二码维码
-     */
-    private String[] getStoreIdAndChargerId(String result) {
-
-        if (result.startsWith(QR_CODE_INDEX)) {
-            String[] split = result.replace(QR_CODE_INDEX, "").split("/");
-
-            if (split.length == 2) {
-                return split;
-            }
-        }
-        return null;
-
-    }
 
 }

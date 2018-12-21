@@ -7,9 +7,9 @@ import cn.com.startai.mqttsdk.mqtt.MqttInitParam;
  * date : 2018/8/27 0027
  * desc :
  */
-public class ChargerDeveloperInfo extends MqttInitParam {
+public class RuiooChargerDeveloperInfo extends MqttInitParam {
 
-    public ChargerDeveloperInfo() {
+    public RuiooChargerDeveloperInfo() {
         super.domain = "ruioo";
         super.apptype = "sharedPowerBank/controll/android";
         super.appid = "f7cc35b33c8f579fae3df9f3e5941608";

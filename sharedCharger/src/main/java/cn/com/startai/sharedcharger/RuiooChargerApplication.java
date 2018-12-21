@@ -7,7 +7,7 @@ import cn.com.startai.sharedlib.app.view.SharedApplication;
  * date : 2018/8/23 0023
  * desc :
  */
-public class ChargerApplication extends SharedApplication {
+public class RuiooChargerApplication extends SharedApplication {
 
     @Override
     public void onCreate() {
