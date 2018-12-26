@@ -10,35 +10,17 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  */
 public class ModifyUserPwdRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public ModifyUserPwdRequestBean() {
-        this(new BaseCommonJsRequestBean());
-    }
-
     public ModifyUserPwdRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setNewPwd(getStringByRootJson("newPassword"));
-
-        setOldPwd(getStringByRootJson("oldPassword"));
-    }
-
-    private String newPwd;
-
-    private void setNewPwd(String newPwd) {
-        this.newPwd = newPwd;
     }
 
     public String getNewPwd() {
-        return newPwd;
+        return getStringByRootJson("newPassword");
     }
 
-    private String oldPwd;
-
-    private void setOldPwd(String oldPwd) {
-        this.oldPwd = oldPwd;
-    }
 
     public String getOldPwd() {
-        return oldPwd;
+        return getStringByRootJson("oldPassword");
     }
 
 

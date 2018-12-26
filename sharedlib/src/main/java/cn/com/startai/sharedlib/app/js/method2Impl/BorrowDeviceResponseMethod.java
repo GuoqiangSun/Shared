@@ -3,6 +3,7 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import cn.com.startai.chargersdk.entity.C_0x8301;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
@@ -25,9 +26,7 @@ public class BorrowDeviceResponseMethod extends BaseResponseMethod2 {
     @Override
     public void releaseCache() {
         super.releaseCache();
-        imei = no = lentMerchantName = lentTime = null;
-
-
+        content = null;
     }
 
 //        "imei": "1000000089",                 // 机柜imei
@@ -35,42 +34,22 @@ public class BorrowDeviceResponseMethod extends BaseResponseMethod2 {
 //                "lentTime": "2018-01-01 09:00:00",    // 借出开始时间
 //                "lentMerchantName": "常德人家"        // 借出网点名称
 
-    private String imei;
+    private C_0x8301.Resp.ContentBean content;
 
-    public void setIMEI(String imei) {
-        this.imei = imei;
-    }
-
-
-    private String no;
-
-    public void setNO(String NO) {
-        this.no = NO;
-    }
-
-
-    private String lentTime;
-
-    public void setLentTime(String lentTime) {
-        this.lentTime = lentTime;
-    }
-
-    private String lentMerchantName;
-
-    public void setLentMerchantName(String lentMerchantName) {
-        this.lentMerchantName = lentMerchantName;
+    public void setContent(C_0x8301.Resp.ContentBean content) {
+        this.content = content;
     }
 
     @Override
     public String toMethod() {
 
         JSONObject contentObj = new JSONObject();
-        if (getResult()) {
+        if (getResult() && content != null) {
             try {
-                contentObj.put("imei", imei);
-                contentObj.put("no", no);
-                contentObj.put("lentTime", lentTime);
-                contentObj.put("lentMerchantName", lentMerchantName);
+                contentObj.put("imei", content.getImei());
+                contentObj.put("no", content.getNo());
+                contentObj.put("lentTime", content.getLentTime());
+                contentObj.put("lentMerchantName", content.getLentMerchantName());
             } catch (JSONException e) {
                 e.printStackTrace();
             }

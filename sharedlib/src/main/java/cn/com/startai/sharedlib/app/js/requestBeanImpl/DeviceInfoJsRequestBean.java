@@ -10,24 +10,12 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  */
 public class DeviceInfoJsRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public DeviceInfoJsRequestBean() {
-        this(new BaseCommonJsRequestBean());
-    }
-
     public DeviceInfoJsRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setImei(getStringByRootJson("imei"));
-    }
-
-    private String imei;
-
-    private void setImei(String imei) {
-        this.imei = imei;
     }
 
     public String getIMEI() {
-        return imei;
+        return getStringByRootJson("imei");
     }
-
 
 }

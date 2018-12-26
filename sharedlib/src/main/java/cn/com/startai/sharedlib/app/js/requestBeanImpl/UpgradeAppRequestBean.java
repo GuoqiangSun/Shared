@@ -10,23 +10,12 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  */
 public class UpgradeAppRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public UpgradeAppRequestBean() {
-        this(new BaseCommonJsRequestBean());
-    }
-
     public UpgradeAppRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setPath(getStringByRootJson("path"));
-    }
-
-    private String path;
-
-    private void setPath(String path) {
-        this.path = path;
     }
 
     public String getPath() {
-        return path;
+        return getStringByRootJson("path");
     }
 
 }

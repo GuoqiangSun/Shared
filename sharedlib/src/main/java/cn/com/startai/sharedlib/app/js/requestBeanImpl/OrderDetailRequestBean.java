@@ -8,15 +8,16 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  * date : 2018/8/29 0029
  * desc :
  */
-public class ModifyNickNameRequestBean extends BaseCommonJsRequestBeanWrapper {
+public class OrderDetailRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public ModifyNickNameRequestBean(BaseCommonJsRequestBean mBean) {
+    public OrderDetailRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
     }
 
-    public String getNickname() {
-        return getStringByRootJson("nickName");
+    public String getNo() {
+        return getStringByRootJson("no");
     }
+
 
 
 }

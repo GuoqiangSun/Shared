@@ -66,7 +66,7 @@ public class JsMsgType extends BaseCommonJsUtils {
     /**
      * 阿里登录返回
      */
-    public static final String TYPE_RESPONSE_ALI_LOGIN = "0x5110";
+    public static final String TYPE_RESPONSE_ALI_LOGIN = "0x510A";
 
 
     /**
@@ -201,7 +201,7 @@ public class JsMsgType extends BaseCommonJsUtils {
     /**
      * 修改头像数据发送返回
      */
-    public static final String TYPE_REQUEST_SEND_MODIFY_HEADPIC_DATA = "0x5155";
+    public static final String TYPE_RESPONSE_MODIFY_HEADPIC_DATA = "0x5155";
     /**
      * 修改用户名请求
      */
@@ -224,6 +224,62 @@ public class JsMsgType extends BaseCommonJsUtils {
      * 修改密码返回
      */
     public static final String TYPE_RESPONSE_MODIFY_USERPWD = "0x5161";
+
+    /********订单*******/
+
+    /**
+     * 请求订单列表
+     */
+    public static final String TYPE_REQUEST_ORDER_LIST = "0x5221";
+    /**
+     * 请求订单列表返回
+     */
+    public static final String TYPE_RESPONSE_ORDER_LIST = "0x5222";
+
+
+    /**
+     * 订单详情请求
+     */
+    public static final String TYPE_REQUEST_ORDER_DETAIL = "0x5223";
+    /**
+     * 订单详情请求返回
+     */
+    public static final String TYPE_RESPONSE_ORDER_DETAIL = "0x5224";
+
+
+    /********支付*******/
+
+    /**
+     * wx支付未付款单请求
+     */
+    public static final String TYPE_REQUEST_THIRD_PAY = "0x5231";
+
+    /**
+     * wx支付未付款单返回
+     */
+    public static final String TYPE_RESPONSE_THIRD_PAY = "0x5232";
+
+    /**
+     * 余额支付未付款单请求
+     */
+    public static final String TYPE_REQUEST_BALANCE_PAY = "0x5233";
+    /**
+     * 余额支付未付款单请求
+     */
+    public static final String TYPE_RESPONSE_BALANCE_PAY = "0x5234";
+
+    /********支付*******/
+
+    /**
+     * 查询押金及余额请求
+     */
+    public static final String TYPE_REQUEST_BALANCE_DEPOSIT = "0x5241";
+    /**
+     * 查询押金及余额返回
+     */
+    public static final String TYPE_RESPONSE_BALANCE_DEPOSIT = "0x5242";
+
+
 
 
 }

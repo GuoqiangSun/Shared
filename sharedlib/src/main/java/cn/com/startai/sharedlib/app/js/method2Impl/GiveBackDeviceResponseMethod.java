@@ -3,8 +3,9 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
+import cn.com.startai.chargersdk.entity.C_0x8302;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
+import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
 
 /**
  * author: Guoqiang_Sun
@@ -25,7 +26,7 @@ public class GiveBackDeviceResponseMethod extends BaseResponseMethod2 {
     @Override
     public void releaseCache() {
         super.releaseCache();
-        imei = no = lentMerchantName = lentTime = returnTime = returnMerchantName = fee = null;
+        content = null;
     }
 
 //    "imei": "1000000089",                 // 机柜imei
@@ -36,63 +37,30 @@ public class GiveBackDeviceResponseMethod extends BaseResponseMethod2 {
 //            "returnMerchantName":"常德人家",      // 还入网点名称
 //            "fee":"1.05"
 
-    private String imei;
+    private C_0x8302.Resp.ContentBean content;
 
-    public void setIMEI(String imei) {
-        this.imei = imei;
+    public void setContent(C_0x8302.Resp.ContentBean content) {
+        this.content = content;
     }
-
-
-    private String no;
-
-    public void setNO(String NO) {
-        this.no = NO;
-    }
-
-
-    private String lentTime;
-
-    public void setLentTime(String lentTime) {
-        this.lentTime = lentTime;
-    }
-
-    private String lentMerchantName;
-
-    public void setLentMerchantName(String lentMerchantName) {
-        this.lentMerchantName = lentMerchantName;
-    }
-
-    public void setReturnTime(String returnTime) {
-        this.returnTime = returnTime;
-    }
-
-    public void setReturnMerchantName(String returnMerchantName) {
-        this.returnMerchantName = returnMerchantName;
-    }
-
-    public void setFee(String fee) {
-        this.fee = fee;
-    }
-
-    private String returnTime;
-    private String returnMerchantName;
-    private String fee;
 
     @Override
     public String toMethod() {
 
         JSONObject contentObj = new JSONObject();
         if (getResult()) {
-            try {
-                contentObj.put("imei", imei);
-                contentObj.put("no", no);
-                contentObj.put("lentTime", lentTime);
-                contentObj.put("lentMerchantName", lentMerchantName);
-                contentObj.put("returnTime", returnTime);
-                contentObj.put("returnMerchantName", returnMerchantName);
-                contentObj.put("fee", fee);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if (content != null) {
+
+                try {
+                    contentObj.put("imei", content.getImei());
+                    contentObj.put("no", content.getNo());
+                    contentObj.put("lentTime", content.getLentTime());
+                    contentObj.put("lentMerchantName", content.getLentMerchantName());
+                    contentObj.put("returnTime", content.getReturnTime());
+                    contentObj.put("returnMerchantName", content.getReturnMerchantName());
+                    contentObj.put("fee", content.getFee());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return toMethod(contentObj);

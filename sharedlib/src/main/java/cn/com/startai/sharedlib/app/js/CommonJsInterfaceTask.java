@@ -5,7 +5,9 @@ import android.os.Looper;
 import org.json.JSONException;
 
 import cn.com.shared.weblib.js.XWalkCommonJsRequest;
+import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BalancePayRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.DeviceInfoJsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.GetIdentityCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.LanguageSetRequestBean;
@@ -13,10 +15,14 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.MobileLoginByIDCodeReques
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.OrderDetailRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.OrderListRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.swain.baselib.jsInterface.base.AbsCommonJsInterfaceProxy;
 import cn.com.swain.baselib.jsInterface.base.IBaseJsRequestInterface;
 import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
+import cn.com.swain169.log.Tlog;
 
 /**
  * author: Guoqiang_Sun
@@ -37,10 +43,9 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJsIsLogin();
 
-        void onJsWXLogin(BaseCommonJsRequestBean mBaseData);
+        void onJsWXLogin();
 
         void onJsLoginOut();
-
 
         void onJsCrashError(BaseCommonJsRequestBean mBaseData);
 
@@ -80,7 +85,18 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJSModifyNickName(ModifyNickNameRequestBean mModifyNicknameBean);
 
-        void onJsAliLogin(BaseCommonJsRequestBean mData);
+        void onJsAliLogin();
+
+        void onJSRequestOrderLst(OrderListRequestBean mOrderLstBean);
+
+        void onJSBalancePay(BalancePayRequestBean mPayBean);
+
+        void onJSThirdPay(ThirdPayRequestBean mThirdPayBean);
+
+        void onJSOrderDetail(OrderDetailRequestBean mOrderDetailBean);
+
+        void onJSRequestBalanceDeposit();
+
     }
 
     private final IJsRequestInterface mCallBack;
@@ -94,6 +110,10 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
     @Override
     protected void onJsRequest(BaseCommonJsRequestBean mData) {
+
+        if (Debuger.isLogDebug) {
+            Tlog.i(TAG, " onJsRequest:" + String.valueOf(mData));
+        }
 
         switch (mData.getMsgType()) {
             case JsMsgType.TYPE_REQUEST_BACK:
@@ -110,13 +130,13 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
             case JsMsgType.TYPE_REQUEST_WX_LOGIN:
 
-                mCallBack.onJsWXLogin(mData);
+                mCallBack.onJsWXLogin();
 
                 break;
 
             case JsMsgType.TYPE_REQUEST_ALI_LOGIN:
 
-                mCallBack.onJsAliLogin(mData);
+                mCallBack.onJsAliLogin();
 
                 break;
 
@@ -241,6 +261,40 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
                 ModifyUserPwdRequestBean mModifyPwdBean = new ModifyUserPwdRequestBean(mData);
                 mCallBack.onJSModifyUserPwd(mModifyPwdBean);
+
+            case JsMsgType.TYPE_REQUEST_ORDER_LIST:
+
+                OrderListRequestBean mOrderLstBean = new OrderListRequestBean(mData);
+                mCallBack.onJSRequestOrderLst(mOrderLstBean);
+
+                break;
+
+
+            case JsMsgType.TYPE_REQUEST_BALANCE_PAY:
+
+                BalancePayRequestBean mPayBean = new BalancePayRequestBean(mData);
+                mCallBack.onJSBalancePay(mPayBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_THIRD_PAY:
+
+                ThirdPayRequestBean mThirdPayBean = new ThirdPayRequestBean(mData);
+                mCallBack.onJSThirdPay(mThirdPayBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_ORDER_DETAIL:
+
+                OrderDetailRequestBean mOrderDetailBean = new OrderDetailRequestBean(mData);
+                mCallBack.onJSOrderDetail(mOrderDetailBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_BALANCE_DEPOSIT:
+                mCallBack.onJSRequestBalanceDeposit();
+                break;
+
 
             default:
 

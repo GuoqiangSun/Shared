@@ -3,11 +3,14 @@ package cn.com.startai.sharedlib.app.view;
 import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
@@ -17,7 +20,7 @@ import java.util.ArrayList;
 import cn.com.shared.weblib.activity.WebHomeActivity;
 import cn.com.shared.weblib.fragment.GuideFragment;
 import cn.com.startai.scansdk.ChargerScanActivity;
-import cn.com.startai.sharedcharger.wxapi.WXLoginHelper;
+import cn.com.startai.sharedcharger.wxapi.WXApiHelper;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.controller.Controller;
@@ -25,6 +28,7 @@ import cn.com.startai.sharedlib.app.js.Utils.Language;
 import cn.com.startai.sharedlib.app.js.method2Impl.LanguageResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
+import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.util.PermissionRequest;
 import cn.com.swain.baselib.util.StatusBarUtil;
@@ -67,21 +71,22 @@ public class SharedMainActivity extends WebHomeActivity
         callJs(languageResponseMethod.toMethod());
     }
 
-
     private PermissionRequest mPermissionRequest;
     private LocaleChangeReceiver mLocaleChangeReceiver;
+    private IService IService;
+    private ServiceConnection serviceConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 //        setTheme(android.R.style.Theme_Black_NoTitleBar_Fullscreen);
 
-        Controller.getInstance().init(getApplication(), this);
-        Controller.getInstance().onSCreate();
+//        setLoadModelDistributed();
+
+        setLoadModelTogether();
 
         super.onCreate(savedInstanceState);
         Tlog.v("WebHomeActivity  onCreate() ");
-
 
         mPermissionRequest = new PermissionRequest(this);
         mPermissionRequest.requestPermissions(new PermissionRequest.OnAllPermissionFinish() {
@@ -98,6 +103,37 @@ public class SharedMainActivity extends WebHomeActivity
         IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
         mLocaleChangeReceiver = new LocaleChangeReceiver();
         registerReceiver(mLocaleChangeReceiver, filter);
+
+        Controller.getInstance().init(getApplication(), this);
+
+        if (isTogetherLoadModel()) {
+            IService = Controller.getInstance();
+            IService.onSCreate();
+        } else if (isDistributedLoadModel()) {
+            Intent MutualService = new Intent(this, MutualService.class);
+            serviceConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+
+                    Tlog.d(" onServiceConnected success :" + name);
+
+                    MutualService.MBinder service1 = (MutualService.MBinder) service;
+                    IService = service1.getIService();
+                    IService.onSCreate();
+                    SharedMainActivity.this.resLoadFinish();
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    Tlog.d(" onServiceDisconnected success :" + name);
+                }
+            };
+            bindService(MutualService, serviceConnection, Context.BIND_AUTO_CREATE);
+
+        } else {
+            IService = Controller.getInstance();
+            IService.onSCreate();
+        }
 
     }
 
@@ -121,15 +157,18 @@ public class SharedMainActivity extends WebHomeActivity
     @Override
     protected void onResume() {
 
-        Controller.getInstance().onSResume();
+        if (IService != null) {
+            IService.onSResume();
+        }
 
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-
-        Controller.getInstance().onSPause();
+        if (IService != null) {
+            IService.onSPause();
+        }
 
         super.onPause();
     }
@@ -145,9 +184,15 @@ public class SharedMainActivity extends WebHomeActivity
         if (mLocaleChangeReceiver != null) {
             unregisterReceiver(mLocaleChangeReceiver);
         }
+        if (IService != null) {
+            IService.onSDestroy();
+            IService = null;
+        }
+        WXApiHelper.getInstance().releaseWxApi();
 
-        Controller.getInstance().onSDestroy();
-        WXLoginHelper.getInstance().releaseWxApi();
+        if (null != serviceConnection) {
+            unbindService(serviceConnection);
+        }
 
         super.onDestroy();
 
@@ -156,9 +201,9 @@ public class SharedMainActivity extends WebHomeActivity
 
     @Override
     public void jFinish() {
-
-        Controller.getInstance().onSFinish();
-
+        if (IService != null) {
+            IService.onSFinish();
+        }
         destroyMyself();
 
     }
@@ -196,6 +241,9 @@ public class SharedMainActivity extends WebHomeActivity
     @Override
     public ArrayList<AbsJsInterface> getJsInterfaces() {
         MutualManager mutualManager = Controller.getInstance().getMutualManager();
+
+        Tlog.d("getJsInterfaces mutualManager=null? " + (mutualManager == null));
+
         if (mutualManager != null) {
             AbsJsInterface jsInterface = mutualManager.getJsInterface();
             if (jsInterface != null) {
@@ -203,7 +251,7 @@ public class SharedMainActivity extends WebHomeActivity
                 mJsInterfaces.add(jsInterface);
                 return mJsInterfaces;
             } else {
-                Tlog.e("  jsManager.getJsInterface()==null ");
+                Tlog.e(" jsManager.getJsInterface()==null ");
             }
         }
 

@@ -25,7 +25,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 //        setTheme(android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         super.onCreate(savedInstanceState);
         Tlog.v(TAG, "WXEntryActivity.onCreate()");
-        IWXAPI wxApi = WXLoginHelper.getInstance().getWXApi(getApplication());
+        IWXAPI wxApi = WXApiHelper.getInstance().getWXApi(getApplication());
         wxApi.handleIntent(getIntent(), this);
     }
 

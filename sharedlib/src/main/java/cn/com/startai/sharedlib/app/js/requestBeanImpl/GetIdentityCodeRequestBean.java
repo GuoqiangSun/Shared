@@ -10,23 +10,12 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  */
 public class GetIdentityCodeRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public GetIdentityCodeRequestBean() {
-        this(new BaseCommonJsRequestBean());
-    }
-
     public GetIdentityCodeRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setPhone(getStringByRootJson("phone"));
-    }
-
-    private String phone;
-
-    private void setPhone(String phone) {
-        this.phone = phone;
     }
 
     public String getPhone() {
-        return phone;
+        return getStringByRootJson("phone");
     }
 
 }

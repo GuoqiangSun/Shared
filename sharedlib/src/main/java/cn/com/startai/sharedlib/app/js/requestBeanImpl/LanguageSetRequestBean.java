@@ -10,23 +10,12 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  */
 public class LanguageSetRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public LanguageSetRequestBean() {
-        this(new BaseCommonJsRequestBean());
-    }
-
     public LanguageSetRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setLan(getStringByRootJson("language"));
-    }
-
-    private String lan;
-
-    private void setLan(String lan) {
-        this.lan = lan;
     }
 
     public String getLan() {
-        return lan;
+        return getStringByRootJson("language");
     }
 
 }

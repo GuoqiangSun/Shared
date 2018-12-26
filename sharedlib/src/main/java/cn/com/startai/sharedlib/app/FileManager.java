@@ -43,7 +43,7 @@ public class FileManager extends FileTemplate {
         Tlog.i(" FileManager recreate finish ; success:" + exit);
     }
 
-    private static final String MY_PROJECT_PATH_NAME = "shared";
+    private static final String MY_PROJECT_PATH_NAME = "Ruioo";
 
     /**
      * 获取app缓存数据的目录

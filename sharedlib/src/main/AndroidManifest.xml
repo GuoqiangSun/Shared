@@ -27,5 +27,13 @@
             android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+
+        <activity
+            android:name="cn.com.startai.sharedcharger.wxapi.WXPayEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <service android:name=".app.view.MutualService" />
     </application>
 </manifest>

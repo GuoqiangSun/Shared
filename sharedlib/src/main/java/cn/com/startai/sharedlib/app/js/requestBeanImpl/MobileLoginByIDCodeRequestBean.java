@@ -10,35 +10,18 @@ import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
  */
 public class MobileLoginByIDCodeRequestBean extends BaseCommonJsRequestBeanWrapper {
 
-    public MobileLoginByIDCodeRequestBean() {
-        this(new BaseCommonJsRequestBean());
-    }
-
     public MobileLoginByIDCodeRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setPhone(getStringByRootJson("phone"));
-
-        setCode(getStringByRootJson("code"));
     }
 
-    private String phone;
-
-    private void setPhone(String phone) {
-        this.phone = phone;
-    }
 
     public String getPhone() {
-        return phone;
+        return getStringByRootJson("phone");
     }
 
-    private String code;
-
-    private void setCode(String code) {
-        this.code = code;
-    }
 
     public String getCode() {
-        return code;
+        return getStringByRootJson("code");
     }
 
 

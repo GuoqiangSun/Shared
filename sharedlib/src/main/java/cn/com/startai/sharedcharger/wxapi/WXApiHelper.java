@@ -12,16 +12,16 @@ import cn.com.swain.baselib.app.IApp.IApp;
  * date : 2018/8/23 0023
  * desc :
  */
-public class WXLoginHelper implements IApp {
+public class WXApiHelper implements IApp {
 
-    private WXLoginHelper() {
+    private WXApiHelper() {
     }
 
     private static final class ClassHolder {
-        private static final WXLoginHelper WX = new WXLoginHelper();
+        private static final WXApiHelper WX = new WXApiHelper();
     }
 
-    public static WXLoginHelper getInstance() {
+    public static WXApiHelper getInstance() {
         return ClassHolder.WX;
     }
 

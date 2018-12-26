@@ -11,14 +11,14 @@ import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
  * date : 2018/8/28 0028
  * desc :
  */
-public class ModifyHeadpicSendResponseMethod extends BaseResponseMethod2 {
+public class ModifyHeadpicResponseMethod extends BaseResponseMethod2 {
 
-    public static ModifyHeadpicSendResponseMethod getModifyHeadpicSendResponseMethod() {
-        return new ModifyHeadpicSendResponseMethod();
+    public static ModifyHeadpicResponseMethod getModifyHeadpicResponseMethod() {
+        return new ModifyHeadpicResponseMethod();
     }
 
-    public ModifyHeadpicSendResponseMethod() {
-        super(JsMsgType.TYPE_REQUEST_SEND_MODIFY_HEADPIC_DATA);
+    public ModifyHeadpicResponseMethod() {
+        super(JsMsgType.TYPE_RESPONSE_MODIFY_HEADPIC_DATA);
     }
 
     @Override

@@ -1,11 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'charger'
+            keyPassword 'startai'
+            storeFile file('D:/AS_project/key/startai-key_shared_charger')
+            storePassword 'startai'
+        }
+    }
     compileSdkVersion 28
-
     aaptOptions.cruncherEnabled = false
     aaptOptions.useNewCruncher = false
-
     defaultConfig {
         applicationId "cn.com.startai.sharedcharger"
         minSdkVersion 19
@@ -13,30 +19,31 @@ android {
         versionCode 10029
         versionName "1.0.029"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.config
     }
-
-
     lintOptions {
         checkReleaseBuilds false
         // Or, if you prefer, you can continue to check for errors in release builds,
         // but continue the build even when errors are found:
         abortOnError false
     }
-
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
-
     android.applicationVariants.all { variant ->
         variant.outputs.all {
             outputFileName = "RUIOO-${variant.versionName}-${variant.buildType.name}.apk"
         }
     }
-
+    productFlavors {
+    }
 }
 
 repositories {
@@ -46,7 +53,6 @@ repositories {
 }
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
@@ -54,10 +60,8 @@ dependencies {
     implementation 'com.android.support:animated-vector-drawable:28.0.0'
     implementation 'com.android.support:cardview-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation project(':sharedlib')
-
 }

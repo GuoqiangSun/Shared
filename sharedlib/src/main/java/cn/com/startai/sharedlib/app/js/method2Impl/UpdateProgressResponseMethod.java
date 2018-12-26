@@ -31,7 +31,6 @@ public class UpdateProgressResponseMethod extends BaseResponseMethod2 {
         this.addedSize = this.totalSize = this.updateTime = 0L;
     }
 
-
     public void setUpdateProgress(DownloadBean downloadBean) {
         this.addedSize = downloadBean.getAddedSize();
         this.extName = downloadBean.getExtName();

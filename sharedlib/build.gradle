@@ -73,8 +73,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
     //startai mqtt charger sdk 包
-    implementation 'cn.com.startai:chargersdk:1.1.106'
+    implementation 'cn.com.startai:charger:1.1.108'
 
 
     api project(':weblib')
+    implementation 'org.jetbrains:annotations-java5:15.0'
 }

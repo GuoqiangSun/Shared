@@ -4,6 +4,7 @@ import android.os.Looper;
 
 import org.xwalk.core.JavascriptInterface;
 
+import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.jsInterface.base.BaseCommonJsRequest;
 import cn.com.swain.baselib.jsInterface.base.IJSRequest;
 
@@ -25,4 +26,8 @@ public final class XWalkCommonJsRequest extends BaseCommonJsRequest {
 
     }
 
+    @Override
+    public AbsJsInterface getJsInterface() {
+        return this;
+    }
 }

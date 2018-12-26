@@ -35,16 +35,16 @@ public class ModifyUserNameRequestBean extends BaseCommonJsRequestBeanWrapper {
     }
 
     public boolean typeIsName() {
-        return getType().equalsIgnoreCase(TYPE_NAME);
+        return TYPE_NAME.equalsIgnoreCase(getType());
     }
 
     public boolean typeIsSurname() {
-        return getType().equalsIgnoreCase(TYPE_SURNAME);
+        return TYPE_SURNAME.equalsIgnoreCase(getType());
     }
 
     private String value;
 
-    private void setValue(String code) {
+    private void setValue(String value) {
         this.value = value;
     }
 

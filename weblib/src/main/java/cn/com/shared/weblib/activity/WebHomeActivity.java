@@ -34,7 +34,6 @@ public abstract class WebHomeActivity extends AppCompatActivity
 
     private UiHandler mUiHandler;
 
-    private int mCurFrame = 0;
 
     // activity onPause
     private volatile boolean mActPause = false;
@@ -42,12 +41,46 @@ public abstract class WebHomeActivity extends AppCompatActivity
     private volatile boolean mWebShowed = false;
     // webView loaded
     private volatile boolean mWebLoaded = false;
+    // webView interface load finish
+    private volatile boolean mCanCallJs = false;
+
+    private int mCurFrame = ID_GUIDE;
 
     private final ArrayList<BaseFragment> mFragments = new ArrayList<>(2);
     private static final int ID_GUIDE = 0x00;
     private static final int ID_WEB = 0x01;
     private long createTs;
 
+
+    // 第一种加载模式,guide web 一起加载
+    public static final int LOAD_MODEL_TOGETHER = 0x01;
+
+    // 第二种加载模式 采用分布加载方式,先加载guide ,再加载web
+    public static final int LOAD_MODEL_DISTRIBUTED = 0x02;
+
+    private int loadModel = LOAD_MODEL_DISTRIBUTED;
+
+    // 设置一起加载模式
+    protected void setLoadModelTogether() {
+        setLoadModel(LOAD_MODEL_TOGETHER);
+    }
+
+    protected boolean isTogetherLoadModel() {
+        return loadModel == LOAD_MODEL_TOGETHER;
+    }
+
+    // 设置分布加载模式
+    protected void setLoadModelDistributed() {
+        setLoadModel(LOAD_MODEL_DISTRIBUTED);
+    }
+
+    protected boolean isDistributedLoadModel() {
+        return loadModel == LOAD_MODEL_DISTRIBUTED;
+    }
+
+    protected void setLoadModel(int model) {
+        this.loadModel = model;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +94,50 @@ public abstract class WebHomeActivity extends AppCompatActivity
             mUiHandler = new UiHandler(this);
         }
 
-        restoreFragment(savedInstanceState);
+        if (isTogetherLoadModel()) {
+            restoreFragment(savedInstanceState);
+
+        } else if (isDistributedLoadModel()) {
+
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            addGuideFragment(fragmentTransaction, savedInstanceState);
+            if (mCurFrame == ID_GUIDE) {
+                fragmentTransaction.show(mFragments.get(ID_GUIDE));
+            }
+            fragmentTransaction.commit();
+
+
+            if (savedInstanceState != null) {
+                Fragment fragmentWeb = getFragmentByCache(savedInstanceState, String.valueOf(ID_WEB));
+                if (fragmentWeb != null) {
+                    Tlog.e(" savedInstanceState!=null, add cache web fragment ");
+
+                    mFragments.add(ID_WEB, (BaseFragment) fragmentWeb);
+                }
+            }
+
+        } else {
+            restoreFragment(savedInstanceState);
+        }
 
     }
 
+    protected void resLoadFinish() {
 
-    private synchronized void restoreFragment(Bundle savedInstanceState) {
+        if (mFragments.size() > ID_WEB && mFragments.get(ID_WEB) != null) {
+            Tlog.e(" resLoadFinish but web fragment not null ");
+            return;
+        }
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        addWebFragment(fragmentTransaction, null);
+        if (mCurFrame == ID_GUIDE) {
+            fragmentTransaction.hide(mFragments.get(ID_WEB));
+        }
+        fragmentTransaction.commit();
+    }
 
+    private void addGuideFragment(FragmentTransaction fragmentTransaction, Bundle savedInstanceState) {
         Fragment fragmentGuide = getFragmentByCache(savedInstanceState, String.valueOf(ID_GUIDE));
         if (fragmentGuide == null) {
             Tlog.w(" mFragments add new guideFragment");
@@ -81,10 +149,14 @@ public abstract class WebHomeActivity extends AppCompatActivity
                 mFragments.add(ID_GUIDE, (BaseFragment) fragmentGuide);
             }
         }
+    }
+
+    private void addWebFragment(FragmentTransaction fragmentTransaction, Bundle savedInstanceState) {
 
         Fragment fragmentWeb = getFragmentByCache(savedInstanceState, String.valueOf(ID_WEB));
         if (fragmentWeb == null) {
             Tlog.w(" mFragments add new webFragment");
+            mCanCallJs = false;
             mFragments.add(ID_WEB, new WebFragment());
             fragmentTransaction.add(R.id.frame_content, mFragments.get(ID_WEB), String.valueOf(ID_WEB));
         } else {
@@ -93,16 +165,6 @@ public abstract class WebHomeActivity extends AppCompatActivity
                 mFragments.add(ID_WEB, (BaseFragment) fragmentWeb);
             }
         }
-
-        if (mCurFrame == ID_GUIDE) {
-            fragmentTransaction.show(mFragments.get(ID_GUIDE));
-            fragmentTransaction.hide(mFragments.get(ID_WEB));
-        } else if (mCurFrame == ID_WEB) {
-            fragmentTransaction.hide(mFragments.get(ID_GUIDE));
-            fragmentTransaction.show(mFragments.get(ID_WEB));
-        }
-
-        fragmentTransaction.commit();
 
     }
 
@@ -139,13 +201,30 @@ public abstract class WebHomeActivity extends AppCompatActivity
         mActPause = true;
     }
 
-
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         Tlog.d("WebHomeActivity onRestoreInstanceState() ");
         mCurFrame = ID_WEB;
         restoreFragment(savedInstanceState);
+    }
+
+    private synchronized void restoreFragment(Bundle savedInstanceState) {
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        addGuideFragment(fragmentTransaction, savedInstanceState);
+        addWebFragment(fragmentTransaction, savedInstanceState);
+
+        if (mCurFrame == ID_GUIDE) {
+            fragmentTransaction.show(mFragments.get(ID_GUIDE));
+            fragmentTransaction.hide(mFragments.get(ID_WEB));
+        } else if (mCurFrame == ID_WEB) {
+            fragmentTransaction.hide(mFragments.get(ID_GUIDE));
+            fragmentTransaction.show(mFragments.get(ID_WEB));
+        }
+
+        fragmentTransaction.commit();
+
     }
 
     @Override
@@ -202,7 +281,7 @@ public abstract class WebHomeActivity extends AppCompatActivity
     @Override
     public void callJs(String method) {
 
-        if (mWebShowed) {
+        if (mWebShowed && mCanCallJs) {
             if (mUiHandler != null) {
                 mUiHandler.obtainMessage(MSG_WHAT_LOAD_JS, method).sendToTarget();
             }
@@ -256,6 +335,8 @@ public abstract class WebHomeActivity extends AppCompatActivity
         } else {
             delay = MAX_DELAY_SHOW_WEB - loadDuration;
         }
+
+        Tlog.d(" onWebLoadFinish delay " + delay + " show");
 
         showWeb(delay);
     }
@@ -324,7 +405,7 @@ public abstract class WebHomeActivity extends AppCompatActivity
             }
 
         } else if (msg.what == MSG_WHAT_LOADJS_CACHE_METHOD) {
-
+            mCanCallJs = true;
             new LoadCacheJsTask(WebHomeActivity.this).execute();
 
         } else if (msg.what == MSG_WHAT_FINISH) {
