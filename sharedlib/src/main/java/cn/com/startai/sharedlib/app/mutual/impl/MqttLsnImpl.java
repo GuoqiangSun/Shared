@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.alipay.sdk.app.AuthTask;
@@ -13,21 +14,23 @@ import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import cn.com.startai.chargersdk.AOnChargerMessageArriveListener;
 import cn.com.startai.chargersdk.ChargerBusiManager;
 import cn.com.startai.chargersdk.entity.C_0x8301;
-import cn.com.startai.chargersdk.entity.C_0x8302;
 import cn.com.startai.chargersdk.entity.C_0x8304;
 import cn.com.startai.chargersdk.entity.C_0x8305;
-import cn.com.startai.chargersdk.entity.C_0x8306;
 import cn.com.startai.chargersdk.entity.C_0x8307;
 import cn.com.startai.chargersdk.entity.C_0x8308;
 import cn.com.startai.chargersdk.entity.C_0x8309;
 import cn.com.startai.chargersdk.entity.C_0x8310;
 import cn.com.startai.chargersdk.entity.C_0x8311;
+import cn.com.startai.chargersdk.entity.C_0x8312;
+import cn.com.startai.chargersdk.entity.C_0x8313;
+import cn.com.startai.chargersdk.entity.C_0x8314;
+import cn.com.startai.chargersdk.entity.C_0x8316;
+import cn.com.startai.chargersdk.entity.C_0x8317;
 import cn.com.startai.mqttsdk.base.BaseMessage;
 import cn.com.startai.mqttsdk.base.StartaiError;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8016;
@@ -42,6 +45,7 @@ import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
+import cn.com.startai.sharedcharger.wxapi.Consts;
 import cn.com.startai.sharedcharger.wxapi.WXApiHelper;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
@@ -49,31 +53,39 @@ import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalanceDepositResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalancePayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BorrowDeviceResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ChargerFeeRuleResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.DepositFeeRuleResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DeviceInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetIdentityCodeResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.GiveBackBorrowDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GiveBackDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLeastVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.LoginOutResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.MobileLoginByIDCodeResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserPwdResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.NearByStoreByAreaResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.NearByStoreByMapResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.OrderDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.OrderListResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.StoreInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.TransactionDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.startai.sharedlib.app.mutual.utils.AuthResult;
+import cn.com.startai.sharedlib.app.mutual.utils.PayResult;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun
  * date: 2018/12/25 0025
  * Desc:
  */
-public class MqttLstImpl extends AOnChargerMessageArriveListener {
+public class MqttLsnImpl extends AOnChargerMessageArriveListener {
 
     private String TAG = MutualManager.TAG;
 
@@ -81,7 +93,7 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
     private final IMutualCallBack mCallBack;
     private final MutualManager mMutualManager;
 
-    public MqttLstImpl(Application app, IMutualCallBack mCallBack, MutualManager mMutualManager) {
+    public MqttLsnImpl(Application app, IMutualCallBack mCallBack, MutualManager mMutualManager) {
         this.app = app;
         this.mCallBack = mCallBack;
         this.mMutualManager = mMutualManager;
@@ -91,15 +103,15 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
         if (mCallBack != null) {
             mCallBack.callJs(mBaseResponseMethod.toMethod());
         } else {
-            Tlog.e(TAG, " MqttLstImpl callJs mCallBack=null " + mBaseResponseMethod.toMethod());
+            Tlog.e(TAG, " MqttLsnImpl callJs mCallBack=null " + mBaseResponseMethod.toMethod());
         }
     }
 
     @Override
     public void onCommand(String s, String s1) {
-        if (Debuger.isLogDebug) {
-            Tlog.d(TAG, " onCommand :" + String.valueOf(s) + "--" + String.valueOf(s1));
-        }
+//        if (Debuger.isLogDebug) {
+//            Tlog.d(TAG, " onCommand :" + String.valueOf(s) + "--" + String.valueOf(s1));
+//        }
     }
 
     @Override
@@ -115,6 +127,8 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
             Tlog.d(TAG, " onGetAlipayPrivateKeyResult :" + String.valueOf(resp));
         }
 
+        String authTargetId = resp.getContent().getAuthTargetId(); // AUTH_1543265456453123 | LOGIN_15264564564
+
         if (resp.getResult() == BaseMessage.RESULT_SUCCESS) {
 
             Tlog.d(TAG, "支付宝密钥获取成功，准备登录 ");
@@ -123,11 +137,15 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
             aliLogin(AUTH_INFO);
 
         } else {
-            AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
-            mAliResponseMethod.releaseCache();
-            mAliResponseMethod.setResult(false);
-            mAliResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
-            callJs(mAliResponseMethod);
+            if (authTargetId != null && authTargetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
+                AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+                mAliResponseMethod.releaseCache();
+                mAliResponseMethod.setResult(false);
+                mAliResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
+                callJs(mAliResponseMethod);
+            } else {
+                Tlog.e(TAG, " unknown auth ");
+            }
         }
 
     }
@@ -143,6 +161,18 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
         AuthTask authTask = new AuthTask(activity);
         Map<String, String> result = authTask.authV2(AUTH_INFO, true);
         AuthResult authResult = new AuthResult(result, true);
+
+
+        String targetId = authResult.getTargetId();
+        if (targetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
+            aliLogin(authResult);
+        } else if (targetId.startsWith(C_0x8033.AUTH_TYPE_AUTH)) {
+            // alibind
+        }
+
+    }
+
+    private void aliLogin(AuthResult authResult) {
 
         String resultStatus = authResult.getResultStatus();
         String resultCode = authResult.getResultCode();
@@ -278,42 +308,119 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
     }
 
 
+//    @Override
+//    public void onBorrowResult(C_0x8301.Resp resp) {
+//        super.onBorrowResult(resp);
+//        if (Debuger.isLogDebug) {
+//            Tlog.d(TAG, " onBorrowResult :" + String.valueOf(resp));
+//        }
+//
+//        BorrowDeviceResponseMethod borrowDeviceResponseMethod =
+//                BorrowDeviceResponseMethod.getBorrowDeviceResponseMethod();
+//        borrowDeviceResponseMethod.setResult(resp.getResult() == 1);
+//        C_0x8301.Resp.ContentBean content = resp.getContent();
+//        borrowDeviceResponseMethod.setContent(content);
+//        if (content != null) {
+//            borrowDeviceResponseMethod.setErrorCode(content.getErrcode());
+//        }
+//        callJs(borrowDeviceResponseMethod);
+//    }
+
+
+//    @Override
+//    public void onGiveBackResult(C_0x8302.Resp resp) {
+//        super.onGiveBackResult(resp);
+//        if (Debuger.isLogDebug) {
+//            Tlog.d(TAG, " onGiveBackResult :" + String.valueOf(resp));
+//        }
+//
+//        GiveBackDeviceResponseMethod giveBackDeviceResponseMethod =
+//                GiveBackDeviceResponseMethod.getGiveBackDeviceResponseMethod();
+//        giveBackDeviceResponseMethod.setResult(resp.getResult() == 1);
+//
+//        C_0x8302.Resp.ContentBean content = resp.getContent();
+//        giveBackDeviceResponseMethod.setContent(content);
+//        if (content != null) {
+//            giveBackDeviceResponseMethod.setErrorCode(content.getErrcode());
+//        }
+//        callJs(giveBackDeviceResponseMethod);
+//
+//    }
+
     @Override
-    public void onBorrowResult(C_0x8301.Resp resp) {
-        super.onBorrowResult(resp);
+    public void onBorrowOrGiveBackResult(C_0x8301.Resp resp) {
+        super.onBorrowOrGiveBackResult(resp);
+
         if (Debuger.isLogDebug) {
-            Tlog.d(TAG, " onBorrowResult :" + String.valueOf(resp));
+            Tlog.d(TAG, " onBorrowOrGiveBackResult :" + String.valueOf(resp));
         }
 
-        BorrowDeviceResponseMethod borrowDeviceResponseMethod =
-                BorrowDeviceResponseMethod.getBorrowDeviceResponseMethod();
-        borrowDeviceResponseMethod.setResult(resp.getResult() == 1);
+        GiveBackBorrowDeviceResponseMethod giveBackBorrowDeviceResponseMethod =
+                GiveBackBorrowDeviceResponseMethod.getGiveBackBorrowDeviceResponseMethod();
+        giveBackBorrowDeviceResponseMethod.setResult(resp.getResult()==1);
         C_0x8301.Resp.ContentBean content = resp.getContent();
-        borrowDeviceResponseMethod.setContent(content);
+        giveBackBorrowDeviceResponseMethod.setContent(content);
         if (content != null) {
-            borrowDeviceResponseMethod.setErrorCode(content.getErrcode());
+            giveBackBorrowDeviceResponseMethod.setErrorCode(content.getErrcode());
         }
-        callJs(borrowDeviceResponseMethod);
+        callJs(giveBackBorrowDeviceResponseMethod);
+
+
+//        if(C_0x8301.TYPE_LENT.equals(resp.getContent().getType())){
+//
+//            if (Debuger.isLogDebug) {
+//                Tlog.d(TAG, " onGiveBackResult :" + String.valueOf(resp));
+//            }
+//
+//            GiveBackDeviceResponseMethod giveBackDeviceResponseMethod =
+//                    GiveBackDeviceResponseMethod.getGiveBackDeviceResponseMethod();
+//            giveBackDeviceResponseMethod.setResult(resp.getResult() == 1);
+//
+//            giveBackDeviceResponseMethod.setContent(content);
+//            if (content != null) {
+//                giveBackDeviceResponseMethod.setErrorCode(content.getErrcode());
+//            }
+//            callJs(giveBackDeviceResponseMethod);
+//
+//
+//        }else if(C_0x8301.TYPE_RETURN.equals(resp.getContent().getType())){
+//
+//            if (Debuger.isLogDebug) {
+//                Tlog.d(TAG, " onBorrowResult :" + String.valueOf(resp));
+//            }
+//
+//            BorrowDeviceResponseMethod borrowDeviceResponseMethod =
+//                    BorrowDeviceResponseMethod.getBorrowDeviceResponseMethod();
+//            borrowDeviceResponseMethod.setResult(resp.getResult() == 1);
+//            borrowDeviceResponseMethod.setContent(content);
+//            if (content != null) {
+//                borrowDeviceResponseMethod.setErrorCode(content.getErrcode());
+//            }
+//            callJs(borrowDeviceResponseMethod);
+//        }
+
+
     }
 
+
+    //    查询用户交易明细
     @Override
-    public void onGiveBackResult(C_0x8302.Resp resp) {
-        super.onGiveBackResult(resp);
+    public void onGetTransactionDetailsResult(C_0x8314.Resp resp) {
+        super.onGetTransactionDetailsResult(resp);
+
         if (Debuger.isLogDebug) {
-            Tlog.d(TAG, " onGiveBackResult :" + String.valueOf(resp));
+            Tlog.d(TAG, " onGetTransactionDetailsResult :" + String.valueOf(resp));
         }
 
-        GiveBackDeviceResponseMethod giveBackDeviceResponseMethod =
-                GiveBackDeviceResponseMethod.getGiveBackDeviceResponseMethod();
-        giveBackDeviceResponseMethod.setResult(resp.getResult() == 1);
-
-        C_0x8302.Resp.ContentBean content = resp.getContent();
-        giveBackDeviceResponseMethod.setContent(content);
+        TransactionDetailResponseMethod transactionDetailResponseMethod =
+                TransactionDetailResponseMethod.getTransactionDetailResponseMethod();
+        transactionDetailResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8314.Resp.ContentBean content = resp.getContent();
+        transactionDetailResponseMethod.setContent(content);
         if (content != null) {
-            giveBackDeviceResponseMethod.setErrorCode(content.getErrcode());
+            transactionDetailResponseMethod.setErrorCode(content.getErrcode());
         }
-        callJs(giveBackDeviceResponseMethod);
-
+        callJs(transactionDetailResponseMethod);
     }
 
     //            查询网点信息
@@ -323,6 +430,16 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onGetStoreInfoResult :" + String.valueOf(resp));
         }
+
+        StoreInfoResponseMethod storeInfoResponseMethod = StoreInfoResponseMethod.getStoreInfoResponseMethod();
+        storeInfoResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8304.Resp.ContentBean content = resp.getContent();
+        storeInfoResponseMethod.setContent(content);
+        if(content!=null){
+            storeInfoResponseMethod.setErrorCode(content.getErrcode());
+        }
+        callJs(storeInfoResponseMethod);
+
     }
 
     //            查询机柜信息
@@ -344,13 +461,111 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
         callJs(deviceInfoResponseMethod);
     }
 
+    // v收费标准
     @Override
-    public void onGetFeeRuleResult(C_0x8306.Resp resp) {
-        super.onGetFeeRuleResult(resp);
+    public void onGetChargerFeeResult(C_0x8316.Resp resp) {
+        super.onGetChargerFeeResult(resp);
+
         if (Debuger.isLogDebug) {
-            Tlog.d(TAG, " onGetFeeRuleResult :" + String.valueOf(resp));
+            Tlog.d(TAG, " onGetChargerFeeResult :" + String.valueOf(resp));
         }
+
+        ChargerFeeRuleResponseMethod feeRuleResponseMethod = ChargerFeeRuleResponseMethod.getFeeRuleResponseMethod();
+        feeRuleResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8316.Resp.ContentBean content = resp.getContent();
+        feeRuleResponseMethod.setContent(content);
+        if (content != null) {
+            feeRuleResponseMethod.setErrorCode(content.getErrcode());
+        }
+        callJs(feeRuleResponseMethod);
+
     }
+
+    // 押金
+    @Override
+    public void onGetDepositFeeRuleResult(C_0x8317.Resp resp) {
+        super.onGetDepositFeeRuleResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetDepositFeeRuleResult :" + String.valueOf(resp));
+        }
+
+        DepositFeeRuleResponseMethod feeRuleResponseMethod = DepositFeeRuleResponseMethod.getDepositFeeRuleResponseMethod();
+        feeRuleResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8317.Resp.ContentBean content = resp.getContent();
+        feeRuleResponseMethod.setContent(content);
+        if (content != null) {
+            feeRuleResponseMethod.setErrorCode(content.getErrcode());
+        }
+        callJs(feeRuleResponseMethod);
+    }
+
+    //    获取指定坐标附近店铺信息（简略版，适合地图显示时调用）
+    @Override
+    public void onGetNearbyStoresResult(C_0x8312.Resp resp) {
+        super.onGetNearbyStoresResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetNearbyStoresResult :" + String.valueOf(resp));
+        }
+
+        NearByStoreByMapResponseMethod nearByStoreByMapResponseMethod =
+                NearByStoreByMapResponseMethod.getNearByStoreByMapResponseMethod();
+        nearByStoreByMapResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8312.Resp.ContentBean content = resp.getContent();
+        nearByStoreByMapResponseMethod.setContent(content);
+        if (content != null) {
+            nearByStoreByMapResponseMethod.setErrorCode(content.getErrcode());
+        }
+        callJs(nearByStoreByMapResponseMethod);
+
+    }
+
+    @Override
+    public void onGetNearbyStoreByAreaResult(C_0x8313.Resp resp) {
+        super.onGetNearbyStoreByAreaResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetNearbyStoreByAreaResult :" + String.valueOf(resp));
+        }
+
+        NearByStoreByAreaResponseMethod nearByStoreByAreaResponseMethod =
+                NearByStoreByAreaResponseMethod.getNearByStoreByAreaResponseMethod();
+        nearByStoreByAreaResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8313.Resp.ContentBean content = resp.getContent();
+        nearByStoreByAreaResponseMethod.setContent(content);
+        if (content != null) {
+            nearByStoreByAreaResponseMethod.setErrorCode(content.getErrcode());
+        }
+        callJs(nearByStoreByAreaResponseMethod);
+
+    }
+
+    private final IOnCallListener mThirdPayBalanceLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "mRechargeLsn msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "mRechargeLsn msg send fail " + String.valueOf(startaiError));
+            }
+            ThirdPayResponseMethod rechargerResponseMethod =
+                    ThirdPayResponseMethod.getThirdPayResponseMethod();
+            rechargerResponseMethod.setResult(false);
+            rechargerResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(rechargerResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
 
     // 请求充值
     @Override
@@ -360,6 +575,23 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onRequestRechargeResult :" + String.valueOf(resp));
         }
+
+        C_0x8307.Resp.ContentBean content;
+        if (resp.getResult() == 1 && (content = resp.getContent()) != null) {
+
+            ChargerBusiManager.getInstance().thirdPaymentUnifiedOrder(content.toThirdPayRequestBean(), mThirdPayBalanceLsn);
+
+        } else {
+
+            ThirdPayResponseMethod rechargerResponseMethod =
+                    ThirdPayResponseMethod.getThirdPayResponseMethod();
+            rechargerResponseMethod.setResult(false);
+            rechargerResponseMethod.setErrorCode(resp.getContent().getErrcode());
+            callJs(rechargerResponseMethod);
+
+        }
+
+
     }
 
     //  请求查询余额
@@ -458,6 +690,7 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
 
     }
 
+
     private final IOnCallListener mThirdPayLsn = new IOnCallListener() {
         @Override
         public void onSuccess(MqttPublishRequest request) {
@@ -486,8 +719,6 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
         }
     };
 
-    private final Map<String, String> payNoPrepayidMap = new HashMap<>();
-
     // 第三方支付订单
     @Override
     public void onThirdPaymentUnifiedOrderResult(C_0x8028.Resp resp) {
@@ -501,10 +732,9 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
 
             if (resp.getContent().getPlatform() == Type.ThirdPayment.PLATFOME_WECHAT) {
 
-                C_0x8028.Resp.ContentBean content = resp.getContent();
-                payNoPrepayidMap.put(content.getWX_Prepayid(), content.getOrder_num());
 
                 PayReq payReq = miofResponseToWechatPayReq(resp.getContent());
+                payReq.extData = resp.getContent().getOrder_num();
                 WXApiHelper.getInstance().getWXApi(app).sendReq(payReq);
 
             } else if (resp.getContent().getPlatform() == Type.ThirdPayment.PLATFOME_ALIPAY) {
@@ -515,19 +745,16 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
                         .getAlipay_trade_app_pay_response()
                         .getOut_trade_no(), mThirdPayLsn);
 
-            } else {
-                ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
-                thirdPayResponseMethod.setResult(false);
-                thirdPayResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
-                callJs(thirdPayResponseMethod);
             }
 
-        } else {
-            ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
-            thirdPayResponseMethod.setResult(false);
-            thirdPayResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
-            callJs(thirdPayResponseMethod);
+            return;
+
         }
+
+        ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+        thirdPayResponseMethod.setResult(false);
+        thirdPayResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
+        callJs(thirdPayResponseMethod);
 
     }
 
@@ -672,10 +899,11 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
             // _wxapi_baseresp_errcode=0, _wxapi_baseresp_errstr=null, _wxapi_baseresp_openId=null,
             // _wxapi_payresp_returnkey=, _wxapi_payresp_prepayid=wx19161021755341a72e45a0160131517529}]
 
-
-            String openId = baseResp.openId;
-            String no = payNoPrepayidMap.get(openId);
+            Bundle bundle = new Bundle();
+            baseResp.toBundle(bundle);
+            String no = bundle.getString("_wxapi_payresp_extdata");
             Tlog.v(TAG, " no:" + no);
+
             ChargerBusiManager.getInstance().getRealOrderPayStatus(no, mThirdPayLsn);
 
         } else {
@@ -693,16 +921,25 @@ public class MqttLstImpl extends AOnChargerMessageArriveListener {
     public void onWxLoginResult(BaseResp baseResp) {
         Tlog.v(TAG, "onWxLoginResult errorCode:" + baseResp.errCode);
 
-        if (baseResp.errCode == BaseResp.ErrCode.ERR_OK) {
+        SendAuth.Resp resp = (SendAuth.Resp) baseResp;
+        String state = resp.state;
+        String code = resp.code;
 
-            String code = ((SendAuth.Resp) baseResp).code;
-            onWxLoginSuccess(code);
+        if (Consts.WX_LOGIN_TAG.equals(state)) { // wxlogin
 
-        } else {
+            if (baseResp.errCode == BaseResp.ErrCode.ERR_OK) {
 
-            onWxLoginFail(baseResp.errCode);
+                onWxLoginSuccess(code);
+
+            } else {
+
+                onWxLoginFail(baseResp.errCode);
+
+            }
+        } else if (Consts.WX_BIND_TAG.equals(state)) { // wxbind
 
         }
+
 
     }
 

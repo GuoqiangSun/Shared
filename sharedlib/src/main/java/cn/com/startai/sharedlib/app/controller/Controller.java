@@ -8,7 +8,7 @@ import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.swain.baselib.app.IApp.IService;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

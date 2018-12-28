@@ -19,4 +19,8 @@ public class Consts {
     public static final String URL_GET_SUSERINFO = "https://api.weixin.qq.com/sns/userinfo?";
 
 
+    public static final String WX_LOGIN_TAG = "startai_wx_login";
+    public static final String WX_BIND_TAG = "startai_wx_bind";
+
+
 }

@@ -22,7 +22,7 @@ import cn.com.shared.weblib.js.ICallJS;
 import cn.com.swain.baselib.Queue.SyncLimitQueue;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.jsInterface.method.PressBackResponseMethod;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

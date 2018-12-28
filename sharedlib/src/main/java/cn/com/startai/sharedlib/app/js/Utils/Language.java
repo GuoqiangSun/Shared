@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import cn.com.swain.baselib.sp.BaseSpTool;
 import cn.com.swain.baselib.util.ChangeLanguageHelper;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

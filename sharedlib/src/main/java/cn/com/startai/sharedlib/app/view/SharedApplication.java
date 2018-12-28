@@ -7,7 +7,7 @@ import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.LooperManager;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

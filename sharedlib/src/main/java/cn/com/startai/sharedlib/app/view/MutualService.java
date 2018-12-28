@@ -7,7 +7,7 @@ import android.os.IBinder;
 
 import cn.com.startai.sharedlib.app.controller.Controller;
 import cn.com.swain.baselib.app.IApp.IService;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

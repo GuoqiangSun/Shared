@@ -14,7 +14,11 @@ import java.io.File;
 import java.io.IOException;
 
 import cn.com.startai.chargersdk.ChargerBusiManager;
+import cn.com.startai.chargersdk.entity.C_0x8307;
 import cn.com.startai.chargersdk.entity.C_0x8309;
+import cn.com.startai.chargersdk.entity.C_0x8312;
+import cn.com.startai.chargersdk.entity.C_0x8313;
+import cn.com.startai.chargersdk.entity.C_0x8314;
 import cn.com.startai.fssdk.FSDownloadCallback;
 import cn.com.startai.fssdk.FSUploadCallback;
 import cn.com.startai.fssdk.StartaiDownloaderManager;
@@ -25,10 +29,12 @@ import cn.com.startai.mqttsdk.StartAI;
 import cn.com.startai.mqttsdk.base.StartaiError;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8020;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8028;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
 import cn.com.startai.scansdk.permission.PermissionHelper;
+import cn.com.startai.sharedcharger.wxapi.Consts;
 import cn.com.startai.sharedcharger.wxapi.WXApiHelper;
 import cn.com.startai.sharedlib.R;
 import cn.com.startai.sharedlib.app.Debuger;
@@ -40,9 +46,12 @@ import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalanceDepositResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalancePayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BorrowDeviceResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ChargerFeeRuleResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.DepositFeeRuleResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DeviceInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetAppVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetIdentityCodeResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.GiveBackBorrowDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GiveBackDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLeastVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLoginResponseMethod;
@@ -51,16 +60,24 @@ import cn.com.startai.sharedlib.app.js.method2Impl.MobileLoginByIDCodeResponseMe
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyHeadpicResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserPwdResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.NearByStoreByAreaResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.NearByStoreByMapResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.OrderDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.OrderListResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ScanORResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.StoreInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.TransactionDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UpdateProgressResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.BalancePayRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BorrowDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.DeviceInfoJsRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.FeeRuleRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.GetIdentityCodeRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.GiveBackBorrowDeviceRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.GiveBackDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.LanguageSetRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.MobileLoginByIDCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean;
@@ -68,7 +85,12 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.OrderDetailRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.OrderListRequestBean;
-import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.StoresDetailLstRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.StoresInfoRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.StoresMapLstRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayOrderRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.TransactionDetailsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
@@ -76,9 +98,9 @@ import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
 import cn.com.startai.sharedlib.app.view.SharedApplication;
 import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
 import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod;
+import cn.com.swain.baselib.log.Tlog;
 import cn.com.swain.baselib.util.AppUtils;
 import cn.com.swain.baselib.util.PhotoUtils;
-import cn.com.swain169.log.Tlog;
 
 /**
  * author: Guoqiang_Sun
@@ -183,7 +205,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
 
         SendAuth.Req req = new SendAuth.Req();
         req.scope = "snsapi_userinfo";
-        req.state = "diandi_wx_login";
+        req.state = Consts.WX_LOGIN_TAG;
         //向微信发送请求
         WXApiHelper.getInstance().getWXApi(app).sendReq(req);
 
@@ -192,7 +214,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     @Override
     public void onJsAliLogin() {
 
-        ChargerBusiManager.getInstance().getAlipayAuthInfo(new IOnCallListener() {
+        ChargerBusiManager.getInstance().getAlipayAuthInfo(C_0x8033.AUTH_TYPE_LOGIN, new IOnCallListener() {
             @Override
             public void onSuccess(MqttPublishRequest request) {
                 if (Debuger.isLogDebug) {
@@ -288,9 +310,10 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     @Override
     public void onJSBalancePay(BalancePayRequestBean mPayBean) {
         ChargerBusiManager.getInstance().payForOrderWithBalance(mPayBean.getNo(), mBalancePayLsn);
+
     }
 
-    private final IOnCallListener mThirdPayLsn = new IOnCallListener() {
+    private final IOnCallListener mThirdPayOrderLsn = new IOnCallListener() {
         @Override
         public void onSuccess(MqttPublishRequest request) {
             if (Debuger.isLogDebug) {
@@ -317,15 +340,15 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     };
 
     @Override
-    public void onJSThirdPay(ThirdPayRequestBean mWXPayBean) {
+    public void onJSThirdPayOrder(ThirdPayOrderRequestBean mPayBean) {
         C_0x8028.Req.ContentBean req = new C_0x8028.Req.ContentBean(
                 Type.ThirdPayment.TYPE_ORDER,
-                mWXPayBean.getPlatform(),
-                mWXPayBean.getNo(),
-                mWXPayBean.getDescription(),
-                mWXPayBean.getCurrency(),
-                String.valueOf(mWXPayBean.getFee()));
-        ChargerBusiManager.getInstance().thirdPaymentUnifiedOrder(req, mThirdPayLsn);
+                mPayBean.getPlatform(),
+                mPayBean.getNo(),
+                mPayBean.getDescription(),
+                mPayBean.getCurrency(),
+                String.valueOf(mPayBean.getFee()));
+        ChargerBusiManager.getInstance().thirdPaymentUnifiedOrder(req, mThirdPayOrderLsn);
     }
 
     private final IOnCallListener mOrderDetailLsn = new IOnCallListener() {
@@ -339,7 +362,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
         @Override
         public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
             if (Debuger.isLogDebug) {
-                Tlog.v(TAG, "orderDetail msg send fail " + String.valueOf(startaiError));
+                Tlog.e(TAG, "orderDetail msg send fail " + String.valueOf(startaiError));
             }
 
             OrderDetailResponseMethod orderDetailResponseMethod = OrderDetailResponseMethod.getOrderDetailResponseMethod();
@@ -370,7 +393,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
         @Override
         public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
             if (Debuger.isLogDebug) {
-                Tlog.v(TAG, "getBalanceAndDeposit msg send fail " + String.valueOf(startaiError));
+                Tlog.e(TAG, "getBalanceAndDeposit msg send fail " + String.valueOf(startaiError));
             }
 
             BalanceDepositResponseMethod mBalanceDepositResponseMethod =
@@ -393,8 +416,253 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
         ChargerBusiManager.getInstance().getBalanceAndDeposit(mMutualManager.getUserID(), mBalanceDepositLsn);
     }
 
+    private final IOnCallListener mThirdPayBalanceLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "mThirdPayBalance msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "mThirdPayBalance msg send fail " + String.valueOf(startaiError));
+            }
+            ThirdPayResponseMethod rechargerResponseMethod =
+                    ThirdPayResponseMethod.getThirdPayResponseMethod();
+            rechargerResponseMethod.setResult(false);
+            rechargerResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(rechargerResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
     @Override
-    public void onJsLoginOut() {
+    public void onJSThirdPayBalance(ThirdPayBalanceRequestBean mRechargerBean) {
+
+        C_0x8307.Req.ContentBean req = new C_0x8307.Req.ContentBean(mRechargerBean.getFee(),
+                mRechargerBean.getPlatform(),
+                mRechargerBean.getType());
+        ChargerBusiManager.getInstance().requestRecharge(req, mThirdPayBalanceLsn);
+    }
+
+    private final IOnCallListener mTransactionDetailLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "mTransactionDetail msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "mTransactionDetail msg send fail " + String.valueOf(startaiError));
+            }
+            TransactionDetailResponseMethod transactionDetailResponseMethod =
+                    TransactionDetailResponseMethod.getTransactionDetailResponseMethod();
+            transactionDetailResponseMethod.setResult(false);
+            transactionDetailResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(transactionDetailResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+    @Override
+    public void onJSRequestTransactionDetail(TransactionDetailsRequestBean mTransactionDetailsBean) {
+
+        /**
+         * transactionType : 1
+         * page : 1
+         * count : 10
+         */
+        C_0x8314.Req.ContentBean req = new C_0x8314.Req.ContentBean(mTransactionDetailsBean.getTransactionType(),
+                mMutualManager.getUserID(),
+                mTransactionDetailsBean.getCurrentPage(),
+                mTransactionDetailsBean.getPageCount());
+        ChargerBusiManager.getInstance().getTransactionDetails(req, mTransactionDetailLsn);
+    }
+
+    private final IOnCallListener mFeeRuleLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "getChargerFee msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "getChargerFee msg send fail " + String.valueOf(startaiError));
+            }
+            ChargerFeeRuleResponseMethod feeRuleResponseMethod = ChargerFeeRuleResponseMethod.getFeeRuleResponseMethod();
+            feeRuleResponseMethod.setResult(false);
+            feeRuleResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(feeRuleResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+    @Override
+    public void onJSRequestFeeRule(FeeRuleRequestBean mFeeRuleBean) {
+        ChargerBusiManager.getInstance().getChargerFee(mFeeRuleBean.getIMEI(), mFeeRuleLsn);
+    }
+
+
+    private final IOnCallListener mDepositFeeRuleLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "getDepositFeeRule msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "getDepositFeeRule msg send fail " + String.valueOf(startaiError));
+            }
+            DepositFeeRuleResponseMethod feeRuleResponseMethod = DepositFeeRuleResponseMethod.getDepositFeeRuleResponseMethod();
+            feeRuleResponseMethod.setResult(false);
+            feeRuleResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(feeRuleResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+
+    @Override
+    public void onJSRequestDepositFeeRule() {
+        ChargerBusiManager.getInstance().getDepositFeeRule(mMutualManager.getUserID(), mDepositFeeRuleLsn);
+    }
+
+
+    private final IOnCallListener mStoresDetailLstLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "getNearbyStorsByArea msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "getNearbyStorsByArea msg send fail " + String.valueOf(startaiError));
+            }
+
+            NearByStoreByAreaResponseMethod nearByStoreByAreaResponseMethod =
+                    NearByStoreByAreaResponseMethod.getNearByStoreByAreaResponseMethod();
+            nearByStoreByAreaResponseMethod.setResult(false);
+            nearByStoreByAreaResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(nearByStoreByAreaResponseMethod);
+
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+
+    @Override
+    public void onJSRequestStoresDetailLst(StoresDetailLstRequestBean mStoresLstBean) {
+
+        C_0x8313.Req.ContentBean req = new C_0x8313.Req.ContentBean(mStoresLstBean.getDeviceType(),
+                mStoresLstBean.getRegion(), mStoresLstBean.getLan(), mStoresLstBean.getLat(),
+                mStoresLstBean.getPage(), mStoresLstBean.getCount());
+        ChargerBusiManager.getInstance().getNearbyStorsByArea(req, mStoresDetailLstLsn);
+    }
+
+
+    private final IOnCallListener mStoresMapLstLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "getNearbyStores msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "getNearbyStores msg send fail " + String.valueOf(startaiError));
+            }
+
+            NearByStoreByMapResponseMethod nearByStoreByMapResponseMethod =
+                    NearByStoreByMapResponseMethod.getNearByStoreByMapResponseMethod();
+            nearByStoreByMapResponseMethod.setResult(false);
+            nearByStoreByMapResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(nearByStoreByMapResponseMethod);
+
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+
+    @Override
+    public void onJSRequestStoresMapLst(StoresMapLstRequestBean mStoresMapLstBean) {
+        //经度，纬度
+        C_0x8312.Req.ContentBean req = new C_0x8312.Req.ContentBean(mStoresMapLstBean.getLan(), mStoresMapLstBean.getLat());
+        ChargerBusiManager.getInstance().getNearbyStores(req, mStoresMapLstLsn);
+    }
+
+    private final IOnCallListener mStoreInfoLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "getStoreInfo msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "getStoreInfo msg send fail " + String.valueOf(startaiError));
+            }
+            StoreInfoResponseMethod storeInfoResponseMethod = StoreInfoResponseMethod.getStoreInfoResponseMethod();
+            storeInfoResponseMethod.setResult(false);
+            storeInfoResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(storeInfoResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+    @Override
+    public void onJSRequestStoresInfo(StoresInfoRequestBean mStoresInfoBean) {
+        ChargerBusiManager.getInstance().getStoreInfo(mStoresInfoBean.getMerchantId(), mStoreInfoLsn);
+    }
+
+
+    @Override
+    public void onJsLogOut() {
         ChargerBusiManager.getInstance().logout();
     }
 
@@ -403,7 +671,6 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
         if (mCallBack != null) {
             mCallBack.scanQR(REQUEST_SCAN_QR_RESULT);
         }
-
     }
 
     private final IOnCallListener mGetChargerInfoLsn = new IOnCallListener() {
@@ -470,9 +737,11 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     };
 
     @Override
-    public void onJsBorrowDevice(DeviceInfoJsRequestBean mData) {
+    public void onJsBorrowDevice(BorrowDeviceRequestBean mData) {
 
-        ChargerBusiManager.getInstance().borrow(mMutualManager.getUserID(), mData.getIMEI(), mBorrowLsn);
+//        ChargerBusiManager.getInstance().borrow(mMutualManager.getUserID(), mData.getIMEI(), mBorrowLsn);
+
+        ChargerBusiManager.getInstance().borrowOrGiveBack(mMutualManager.getUserID(), mData.getIMEI(), mBorrowLsn);
 
     }
 
@@ -503,8 +772,45 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     };
 
     @Override
-    public void onJsGiveBackDevice(DeviceInfoJsRequestBean mGiveBackBean) {
-        ChargerBusiManager.getInstance().giveBack(mMutualManager.getUserID(), mGiveBackBean.getIMEI(), mGiveBackDeviceLsn);
+    public void onJsGiveBackDevice(GiveBackDeviceRequestBean mGiveBackBean) {
+
+        ChargerBusiManager.getInstance().borrowOrGiveBack(mMutualManager.getUserID(), mGiveBackBean.getIMEI(), mGiveBackDeviceLsn);
+
+//        ChargerBusiManager.getInstance().giveBack(mMutualManager.getUserID(), mGiveBackBean.getIMEI(), mGiveBackDeviceLsn);
+    }
+
+
+    private final IOnCallListener mGiveBackBorrowDeviceLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, " borrowOrGiveBack msg send success");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, " borrowOrGiveBack msg send fail " + String.valueOf(startaiError));
+            }
+            GiveBackBorrowDeviceResponseMethod giveBackBorrowDeviceResponseMethod =
+                    GiveBackBorrowDeviceResponseMethod.getGiveBackBorrowDeviceResponseMethod();
+            giveBackBorrowDeviceResponseMethod.setResult(false);
+            giveBackBorrowDeviceResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+            callJs(giveBackBorrowDeviceResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+    @Override
+    public void onJsGiveBackBorrowDevice(GiveBackBorrowDeviceRequestBean mGiveBackBorrowBean) {
+        ChargerBusiManager.getInstance().borrowOrGiveBack(mMutualManager.getUserID(),
+                mGiveBackBorrowBean.getIMEI(),
+                mGiveBackBorrowDeviceLsn);
     }
 
     private final IOnCallListener mGetIdentityCodeLsn = new IOnCallListener() {
@@ -576,6 +882,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     public void onJsMobileLoginByIdentityCode(MobileLoginByIDCodeRequestBean mMobileLoginByIDBean) {
         ChargerBusiManager.getInstance().login(mMobileLoginByIDBean.getPhone(), "",
                 mMobileLoginByIDBean.getCode(), mMobileLoginByIDLsn);
+
     }
 
     @Override
@@ -1178,7 +1485,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
         @Override
         public void onFailure(UploadBean uploadBean, int i) {
             if (Debuger.isLogDebug) {
-                Tlog.v(TAG, " mLogoUploadCallBack onFailure " + i + String.valueOf(uploadBean));
+                Tlog.v(TAG, " mLogoUploadCallBack onFailure " + i + " " + String.valueOf(uploadBean));
             }
 
         }

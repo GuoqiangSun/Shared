@@ -12,14 +12,15 @@ import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
  * date : 2018/8/28 0028
  * desc :
  */
-public class ThirdPayResponseMethod extends BaseResponseMethod2 {
+@Deprecated
+public class ThirdPayBalanceResponseMethod extends BaseResponseMethod2 {
 
-    public static ThirdPayResponseMethod getThirdPayResponseMethod() {
-        return new ThirdPayResponseMethod();
+    public static ThirdPayBalanceResponseMethod getThirdPayBalanceResponseMethod() {
+        return new ThirdPayBalanceResponseMethod();
     }
 
-    public ThirdPayResponseMethod() {
-        super(JsMsgType.TYPE_RESPONSE_THIRD_PAY);
+    public ThirdPayBalanceResponseMethod() {
+        super(JsMsgType.TYPE_RESPONSE_THIRD_PAY_BALANCE);
     }
 
     @Override

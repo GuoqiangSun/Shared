@@ -4,7 +4,7 @@ import android.view.View;
 
 import cn.com.shared.weblib.fragment.GuideFragment;
 import cn.com.startai.sharedlib.R;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

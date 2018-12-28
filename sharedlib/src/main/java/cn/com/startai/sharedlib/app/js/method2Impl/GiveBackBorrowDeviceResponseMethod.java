@@ -12,15 +12,15 @@ import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
  * date : 2018/8/28 0028
  * desc :
  */
-public class GiveBackDeviceResponseMethod extends BaseResponseMethod2 {
+public class GiveBackBorrowDeviceResponseMethod extends BaseResponseMethod2 {
 
-    public static GiveBackDeviceResponseMethod getGiveBackDeviceResponseMethod() {
-        return new GiveBackDeviceResponseMethod();
+    public static GiveBackBorrowDeviceResponseMethod getGiveBackBorrowDeviceResponseMethod() {
+        return new GiveBackBorrowDeviceResponseMethod();
     }
 
 
-    public GiveBackDeviceResponseMethod() {
-        super(JsMsgType.TYPE_RESPONSE_GIVEBACK_DEVICE);
+    public GiveBackBorrowDeviceResponseMethod() {
+        super(JsMsgType.TYPE_RESPONSE_GIVEBACK_DEVICE_BORROW);
     }
 
     @Override
@@ -51,6 +51,7 @@ public class GiveBackDeviceResponseMethod extends BaseResponseMethod2 {
             if (content != null) {
 
                 try {
+                    contentObj.put("type", content.getType());
                     contentObj.put("imei", content.getImei());
                     contentObj.put("no", content.getNo());
                     contentObj.put("lentTime", content.getLentTime());

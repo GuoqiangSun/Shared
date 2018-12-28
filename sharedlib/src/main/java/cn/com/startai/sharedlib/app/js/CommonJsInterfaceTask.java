@@ -8,8 +8,12 @@ import cn.com.shared.weblib.js.XWalkCommonJsRequest;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.BalancePayRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BorrowDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.DeviceInfoJsRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.FeeRuleRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.GetIdentityCodeRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.GiveBackBorrowDeviceRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.GiveBackDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.LanguageSetRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.MobileLoginByIDCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean;
@@ -17,12 +21,17 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.OrderDetailRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.OrderListRequestBean;
-import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.StoresDetailLstRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.StoresInfoRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.StoresMapLstRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayOrderRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.TransactionDetailsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.swain.baselib.jsInterface.base.AbsCommonJsInterfaceProxy;
 import cn.com.swain.baselib.jsInterface.base.IBaseJsRequestInterface;
 import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun
@@ -45,7 +54,7 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJsWXLogin();
 
-        void onJsLoginOut();
+        void onJsLogOut();
 
         void onJsCrashError(BaseCommonJsRequestBean mBaseData);
 
@@ -53,9 +62,9 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJsRequestDeviceInfo(DeviceInfoJsRequestBean mBaseData);
 
-        void onJsBorrowDevice(DeviceInfoJsRequestBean mBaseData);
+        void onJsBorrowDevice(BorrowDeviceRequestBean mBaseData);
 
-        void onJsGiveBackDevice(DeviceInfoJsRequestBean mGiveBackBean);
+        void onJsGiveBackDevice(GiveBackDeviceRequestBean mGiveBackBean);
 
         void onJsGetIdentityCode(GetIdentityCodeRequestBean mGetIDCodeBean);
 
@@ -91,12 +100,27 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJSBalancePay(BalancePayRequestBean mPayBean);
 
-        void onJSThirdPay(ThirdPayRequestBean mThirdPayBean);
+        void onJSThirdPayOrder(ThirdPayOrderRequestBean mThirdPayBean);
 
         void onJSOrderDetail(OrderDetailRequestBean mOrderDetailBean);
 
         void onJSRequestBalanceDeposit();
 
+        void onJSThirdPayBalance(ThirdPayBalanceRequestBean mRechargerBean);
+
+        void onJSRequestTransactionDetail(TransactionDetailsRequestBean mTransactionDetailsBean);
+
+        void onJSRequestFeeRule(FeeRuleRequestBean mFeeRuleBean);
+
+        void onJSRequestDepositFeeRule();
+
+        void onJSRequestStoresDetailLst(StoresDetailLstRequestBean mStoresLstBean);
+
+        void onJSRequestStoresMapLst(StoresMapLstRequestBean mStoresMapLstBean);
+
+        void onJSRequestStoresInfo(StoresInfoRequestBean mStoresInfoBean);
+
+        void onJsGiveBackBorrowDevice(GiveBackBorrowDeviceRequestBean mGiveBackBorrowBean);
     }
 
     private final IJsRequestInterface mCallBack;
@@ -142,7 +166,7 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
             case JsMsgType.TYPE_REQUEST_LOGIN_OUT:
 
-                mCallBack.onJsLoginOut();
+                mCallBack.onJsLogOut();
 
                 break;
 
@@ -167,15 +191,22 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
             case JsMsgType.TYPE_REQUEST_BORROW_DEVICE:
 
-                DeviceInfoJsRequestBean mBorrowBean = new DeviceInfoJsRequestBean(mData);
+                BorrowDeviceRequestBean mBorrowBean = new BorrowDeviceRequestBean(mData);
                 mCallBack.onJsBorrowDevice(mBorrowBean);
 
                 break;
 
             case JsMsgType.TYPE_REQUEST_GIVEBACK_DEVICE:
 
-                DeviceInfoJsRequestBean mGiveBackBean = new DeviceInfoJsRequestBean(mData);
+                GiveBackDeviceRequestBean mGiveBackBean = new GiveBackDeviceRequestBean(mData);
                 mCallBack.onJsGiveBackDevice(mGiveBackBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_GIVEBACK_DEVICE_BORROW:
+
+                GiveBackBorrowDeviceRequestBean mGiveBackBorrowBean = new GiveBackBorrowDeviceRequestBean(mData);
+                mCallBack.onJsGiveBackBorrowDevice(mGiveBackBorrowBean);
 
                 break;
 
@@ -277,10 +308,10 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
                 break;
 
-            case JsMsgType.TYPE_REQUEST_THIRD_PAY:
+            case JsMsgType.TYPE_REQUEST_THIRD_PAY_ORDER:
 
-                ThirdPayRequestBean mThirdPayBean = new ThirdPayRequestBean(mData);
-                mCallBack.onJSThirdPay(mThirdPayBean);
+                ThirdPayOrderRequestBean mThirdPayBean = new ThirdPayOrderRequestBean(mData);
+                mCallBack.onJSThirdPayOrder(mThirdPayBean);
 
                 break;
 
@@ -295,6 +326,43 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
                 mCallBack.onJSRequestBalanceDeposit();
                 break;
 
+            case JsMsgType.TYPE_REQUEST_THIRD_PAY_BALANCE:
+
+                ThirdPayBalanceRequestBean mRechargerBean = new ThirdPayBalanceRequestBean(mData);
+                mCallBack.onJSThirdPayBalance(mRechargerBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_TRANSACTION_DETAIL:
+                TransactionDetailsRequestBean mTransactionDetailsBean = new TransactionDetailsRequestBean(mData);
+                mCallBack.onJSRequestTransactionDetail(mTransactionDetailsBean);
+                break;
+
+            case JsMsgType.TYPE_REQUEST_DEPOSIT_FEE_RULE:
+                mCallBack.onJSRequestDepositFeeRule();
+                break;
+
+            case JsMsgType.TYPE_REQUEST_FEE_RULE:
+                FeeRuleRequestBean mFeeRuleBean = new FeeRuleRequestBean(mData);
+                mCallBack.onJSRequestFeeRule(mFeeRuleBean);
+                break;
+
+            case JsMsgType.TYPE_REQUEST_NEAR_STORES_DETAIL:
+                StoresDetailLstRequestBean mStoresLstBean = new StoresDetailLstRequestBean(mData);
+                mCallBack.onJSRequestStoresDetailLst(mStoresLstBean);
+                break;
+
+            case JsMsgType.TYPE_REQUEST_NEAR_STORES_MAP:
+                StoresMapLstRequestBean mStoresMapLstBean = new StoresMapLstRequestBean(mData);
+                mCallBack.onJSRequestStoresMapLst(mStoresMapLstBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_STORES_INFO:
+
+                StoresInfoRequestBean mStoresInfoBean = new StoresInfoRequestBean(mData);
+                mCallBack.onJSRequestStoresInfo(mStoresInfoBean);
+                break;
 
             default:
 

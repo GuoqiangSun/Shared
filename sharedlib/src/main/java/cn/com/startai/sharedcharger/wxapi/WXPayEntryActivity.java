@@ -3,44 +3,42 @@ package cn.com.startai.sharedcharger.wxapi;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 
-import cn.com.startai.mqttsdk.utils.SLog;
 import cn.com.startai.sharedlib.app.controller.Controller;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 
 public class WXPayEntryActivity extends Activity implements IWXAPIEventHandler {
 
-    private static final String TAG = WXPayEntryActivity.class.getSimpleName();
+    private String TAG = MutualManager.TAG;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        setContentView(R.layout.pay_result);
-        SLog.d(TAG, "onCreate");
+        Tlog.d(TAG, "onCreate");
         WXApiHelper.getInstance().getWXApi(getApplication()).handleIntent(getIntent(), this);
     }
 
 
     @Override
     public void onReq(BaseReq req) {
-        SLog.d(TAG, "onReq");
+        Tlog.d(TAG, "onReq");
     }
 
     @Override
     public void onResp(BaseResp resp) {
-        Log.d(TAG, "onPayFinish, errCode = " + resp.errCode);
+        Tlog.d(TAG, "onPayFinish, errCode = " + resp.errCode);
 
         if (resp.getType() == ConstantsAPI.COMMAND_PAY_BY_WX) {
-            Tlog.v("resp.transaction = " + resp.transaction);
-            Tlog.v("resp.errStr = " + resp.errStr);
+            Tlog.v(TAG,"resp.transaction = " + resp.transaction);
+            Tlog.v(TAG,"resp.errStr = " + resp.errStr);
 
             //[{_wxapi_baseresp_transaction=null, _wxapi_payresp_extdata=null, _wxapi_command_type=5, _wxapi_baseresp_errcode=0, _wxapi_baseresp_errstr=null, _wxapi_baseresp_openId=null, _wxapi_payresp_returnkey=, _wxapi_payresp_prepayid=wx19161021755341a72e45a0160131517529}]
 

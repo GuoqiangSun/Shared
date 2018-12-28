@@ -32,7 +32,7 @@ import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.util.PermissionRequest;
 import cn.com.swain.baselib.util.StatusBarUtil;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 public class SharedMainActivity extends WebHomeActivity
         implements IMutualCallBack {

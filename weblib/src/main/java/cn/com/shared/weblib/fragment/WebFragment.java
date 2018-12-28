@@ -17,7 +17,7 @@ import cn.com.shared.weblib.R;
 import cn.com.shared.weblib.view.CrossWebView;
 import cn.com.shared.weblib.view.DialogUtils;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun

@@ -7,8 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import cn.com.shared.weblib.R;
-import cn.com.swain169.log.Tlog;
+import cn.com.swain.baselib.log.Tlog;
 
 /**
  * author: Guoqiang_Sun
@@ -16,14 +15,13 @@ import cn.com.swain169.log.Tlog;
  * desc :
  */
 
-public abstract class  GuideFragment extends BaseFragment {
+public abstract class GuideFragment extends BaseFragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Tlog.v(" GuideFragment onCreate() ");
     }
-
 
 
     @Nullable

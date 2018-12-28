@@ -122,6 +122,17 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_GIVEBACK_DEVICE = "0x5212";
 
+    /**
+     * 租借归还充电宝请求
+     */
+    public static final String TYPE_REQUEST_GIVEBACK_DEVICE_BORROW = "0x5213";
+
+    /**
+     * 租借归还充电宝返回
+     */
+    public static final String TYPE_RESPONSE_GIVEBACK_DEVICE_BORROW = "0x5214";
+
+
     /*********国际化****/
 
     /**
@@ -250,12 +261,12 @@ public class JsMsgType extends BaseCommonJsUtils {
     /********支付*******/
 
     /**
-     * wx支付未付款单请求
+     * 第三方支付未付款单请求
      */
-    public static final String TYPE_REQUEST_THIRD_PAY = "0x5231";
+    public static final String TYPE_REQUEST_THIRD_PAY_ORDER = "0x5231";
 
     /**
-     * wx支付未付款单返回
+     * 第三方支付未付款单返回
      */
     public static final String TYPE_RESPONSE_THIRD_PAY = "0x5232";
 
@@ -280,6 +291,73 @@ public class JsMsgType extends BaseCommonJsUtils {
     public static final String TYPE_RESPONSE_BALANCE_DEPOSIT = "0x5242";
 
 
+
+    /**
+     * 充值押金及余额请求
+     */
+    public static final String TYPE_REQUEST_THIRD_PAY_BALANCE = "0x5243";
+    /**
+     * 充值押金及余额请求返回
+     */
+    public static final String TYPE_RESPONSE_THIRD_PAY_BALANCE = "0x5244";
+
+
+    /**
+     * 交易明细请求
+     */
+    public static final String TYPE_REQUEST_TRANSACTION_DETAIL = "0x5261";
+    /**
+     * 交易明细返回
+     */
+    public static final String TYPE_RESPONSE_TRANSACTION_DETAIL = "0x5262";
+
+    /**
+     * 查询押金收费标准请求
+     */
+    public static final String TYPE_REQUEST_DEPOSIT_FEE_RULE = "0x5245";
+    /**
+     * 查询押金收费标准返回
+     */
+    public static final String TYPE_RESPONSE_DEPOSIT_FEE_RULE = "0x5246";
+
+
+    /**
+     * 查询收费标准请求
+     */
+    public static final String TYPE_REQUEST_FEE_RULE = "0xAAAA";
+    /**
+     * 查询收费标准返回
+     */
+    public static final String TYPE_RESPONSE_FEE_RULE = "0xAAAA";
+
+
+
+    /**
+     * 获取指定坐标附近店铺信息（完整版本，适合列表显示时调用）
+     */
+    public static final String TYPE_REQUEST_NEAR_STORES_DETAIL = "0x5281";
+    /**
+     * 获取指定坐标附近店铺信息（完整版本，适合列表显示时调用）返回
+     */
+    public static final String TYPE_RESPONSE_NEAR_STORES_DETAIL = "0x5282";
+
+    /**
+     * 获取指定坐标附近店铺信息（完整版本，适合地图显示时调用）
+     */
+    public static final String TYPE_REQUEST_NEAR_STORES_MAP = "0x5283";
+    /**
+     * 获取指定坐标附近店铺信息（完整版本，适合地图显示时调用）返回
+     */
+    public static final String TYPE_RESPONSE_NEAR_STORES_MAP = "0x5284";
+
+    /**
+     * 门店详情
+     */
+    public static final String TYPE_REQUEST_STORES_INFO = "0x5285";
+    /**
+     * 门店详情返回
+     */
+    public static final String TYPE_RESPONSE_STORES_INFO = "0x5286";
 
 
 }

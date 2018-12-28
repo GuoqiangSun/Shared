@@ -12,10 +12,9 @@ import java.io.File;
 import cn.com.startai.sharedlib.BuildConfig;
 import cn.com.swain.baselib.app.IApp.IApp;
 import cn.com.swain.baselib.app.IApp.IService;
+import cn.com.swain.baselib.log.Tlog;
+import cn.com.swain.baselib.log.logRecord.impl.LogRecordManager;
 import cn.com.swain.baselib.util.AppUtils;
-import cn.com.swain169.log.TFlog;
-import cn.com.swain169.log.Tlog;
-import cn.com.swain169.log.logRecord.impl.LogRecordManager;
 
 /**
  * author: Guoqiang_Sun
@@ -29,7 +28,7 @@ public class Debuger implements IApp, IService {
 
     @Override
     public void onSCreate() {
-        TFlog.startRecord();
+        Tlog.startRecord();
     }
 
     @Override
@@ -44,12 +43,12 @@ public class Debuger implements IApp, IService {
 
     @Override
     public void onSDestroy() {
-        TFlog.stopRecord();
+        Tlog.stopRecord();
     }
 
     @Override
     public void onSFinish() {
-        TFlog.syncRecordData();
+        Tlog.syncRecordData();
     }
 
     private static final class ClassHolder {
@@ -97,7 +96,7 @@ public class Debuger implements IApp, IService {
      * @param activity
      */
     public void reCheckLogRecord(Activity activity) {
-        if (!TFlog.hasILogRecordImpl() && isRecordLogDebug) {
+        if (!Tlog.hasILogRecordImpl() && isRecordLogDebug) {
 
             boolean has = (ContextCompat.checkSelfPermission(activity,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
@@ -169,10 +168,10 @@ public class Debuger implements IApp, IService {
 
         if (logPath.exists()) {
             final String prefix = "00";
-            if (!TFlog.hasILogRecordImpl()) {
+            if (!Tlog.hasILogRecordImpl()) {
                 LogRecordManager mLogRecord = new LogRecordManager(logPath, prefix, 1024 * 1024 * 6);
                 Tlog.v("TFlog init LogRecordManager");
-                TFlog.set(mLogRecord);
+                Tlog.set(mLogRecord);
             }
         } else {
             Tlog.e(" recordLog logPath not exit");

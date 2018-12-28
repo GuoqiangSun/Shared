@@ -64,18 +64,20 @@ dependencies {
     implementation 'cn.com.startai:scansdk:1.1.4'
     //android 工具库
     implementation 'com.blankj:utilcode:1.19.3'
+
     // 下载
     implementation 'org.xutils:xutils:3.5.0'
     implementation 'cn.com.startai:fastdfssdk:1.0.2'
 
     //startai mqtt  sdk包
-    implementation 'cn.com.startai:mqsdk:3.1.31'
+    implementation 'cn.com.startai:mqsdk:3.1.32'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
     //startai mqtt charger sdk 包
-    implementation 'cn.com.startai:charger:1.1.108'
+    implementation 'cn.com.startai:charger:1.1.110'
 
 
     api project(':weblib')
     implementation 'org.jetbrains:annotations-java5:15.0'
+
 }
