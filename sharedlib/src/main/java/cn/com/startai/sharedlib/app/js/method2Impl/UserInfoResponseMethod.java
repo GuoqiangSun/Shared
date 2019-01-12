@@ -1,7 +1,10 @@
 package cn.com.startai.sharedlib.app.js.method2Impl;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
@@ -55,10 +58,39 @@ public class UserInfoResponseMethod extends BaseResponseMethod2 {
                 data.put("email", contentBean.getEmail());
                 data.put("mobile", contentBean.getMobile());
                 data.put("isHavePwd", contentBean.getIsHavePwd() == 1);
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            List<C_0x8024.Resp.ContentBean.ThirdInfosBean> thirdInfos = contentBean.getThirdInfos();
+
+            JSONArray mArray = new JSONArray();
+
+            JSONObject mObj;
+            if (thirdInfos != null && thirdInfos.size() > 0) {
+                for (C_0x8024.Resp.ContentBean.ThirdInfosBean mThirdInfos : thirdInfos) {
+                    /**
+                     * nickName : 微信
+                     * type : 10
+                     */
+                    mObj = new JSONObject();
+
+                    try {
+                        mObj.put("nickName", mThirdInfos.getNickName());
+                        mObj.put("type", mThirdInfos.getType());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    mArray.put(mObj);
+                }
+            }
+
+            try {
+                data.put("thirdInfos", mArray);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
         return toMethod(data);
 

@@ -30,9 +30,10 @@ import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
+import cn.com.swain.baselib.log.Tlog;
+import cn.com.swain.baselib.util.PermissionHelper;
 import cn.com.swain.baselib.util.PermissionRequest;
 import cn.com.swain.baselib.util.StatusBarUtil;
-import cn.com.swain.baselib.log.Tlog;
 
 public class SharedMainActivity extends WebHomeActivity
         implements IMutualCallBack {
@@ -226,13 +227,12 @@ public class SharedMainActivity extends WebHomeActivity
     @Override
     public String getLoadUrl() {
 
-        File localH5Resource = Debuger.getInstance().getLocalH5Resource();
-
-        if (localH5Resource != null && localH5Resource.exists()) {
-            Toast.makeText(getApplicationContext(),
-                    "load from SDCard",
-                    Toast.LENGTH_LONG).show();
-            return "file://" + localH5Resource.getAbsolutePath();
+        if (Debuger.isH5Debug && PermissionHelper.isGranted(getApplication(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            File localH5Resource = Debuger.getInstance().getLocalH5Resource();
+            if (localH5Resource != null && localH5Resource.exists()) {
+                Toast.makeText(getApplicationContext(), "load from SDCard", Toast.LENGTH_LONG).show();
+                return "file://" + localH5Resource.getAbsolutePath();
+            }
         }
 
         return super.getLoadUrl();

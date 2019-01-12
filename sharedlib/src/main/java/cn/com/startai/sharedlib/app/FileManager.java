@@ -2,6 +2,8 @@ package cn.com.startai.sharedlib.app;
 
 import android.Manifest;
 import android.app.Application;
+import android.content.Intent;
+import android.net.Uri;
 
 import com.blankj.utilcode.util.PermissionUtils;
 
@@ -20,7 +22,6 @@ import cn.com.swain.baselib.log.Tlog;
  */
 public class FileManager extends FileTemplate {
 
-
     private FileManager() {
     }
 
@@ -36,6 +37,18 @@ public class FileManager extends FileTemplate {
     public void init(Application app) {
         super.init(app);
         Tlog.i(" FileManager init finish ; success:" + exit);
+        String absolutePath = getProjectPath().getAbsolutePath();
+
+        notifySystemToScan(app, absolutePath);
+    }
+
+    public static void notifySystemToScan(Application app, String filePath) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File file = new File(filePath);
+
+        Uri uri = Uri.fromFile(file);
+        intent.setData(uri);
+        app.sendBroadcast(intent);
     }
 
     public void recreate(Application app) {
@@ -54,6 +67,11 @@ public class FileManager extends FileTemplate {
         return new File(getAppRootPath(), MY_PROJECT_PATH_NAME);
     }
 
+
+    @Override
+    protected String initMyAppRootPath() {
+        return "startai";
+    }
 
     /**
      * 文件保存路径

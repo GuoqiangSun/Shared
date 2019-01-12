@@ -29,6 +29,7 @@ import cn.com.startai.chargersdk.entity.C_0x8311;
 import cn.com.startai.chargersdk.entity.C_0x8312;
 import cn.com.startai.chargersdk.entity.C_0x8313;
 import cn.com.startai.chargersdk.entity.C_0x8314;
+import cn.com.startai.chargersdk.entity.C_0x8315;
 import cn.com.startai.chargersdk.entity.C_0x8316;
 import cn.com.startai.chargersdk.entity.C_0x8317;
 import cn.com.startai.mqttsdk.base.BaseMessage;
@@ -42,6 +43,8 @@ import cn.com.startai.mqttsdk.busi.entity.C_0x8025;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8028;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8031;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8034;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8037;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
@@ -49,16 +52,16 @@ import cn.com.startai.sharedcharger.wxapi.Consts;
 import cn.com.startai.sharedcharger.wxapi.WXApiHelper;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
+import cn.com.startai.sharedlib.app.js.method2Impl.AliBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalanceDepositResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalancePayResponseMethod;
-import cn.com.startai.sharedlib.app.js.method2Impl.BorrowDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ChargerFeeRuleResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ChargingStatusResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DepositFeeRuleResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DeviceInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetIdentityCodeResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GiveBackBorrowDeviceResponseMethod;
-import cn.com.startai.sharedlib.app.js.method2Impl.GiveBackDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLeastVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.LoginOutResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.MobileLoginByIDCodeResponseMethod;
@@ -68,10 +71,12 @@ import cn.com.startai.sharedlib.app.js.method2Impl.NearByStoreByAreaResponseMeth
 import cn.com.startai.sharedlib.app.js.method2Impl.NearByStoreByMapResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.OrderDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.OrderListResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.PhoneBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.StoreInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.TransactionDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UserInfoResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.WxBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
@@ -117,122 +122,6 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
     @Override
     public boolean needUISafety() {
         return false;
-    }
-
-    @Override
-    public void onGetAlipayAuthInfoResult(C_0x8033.Resp resp) {
-        super.onGetAlipayAuthInfoResult(resp);
-
-        if (Debuger.isLogDebug) {
-            Tlog.d(TAG, " onGetAlipayPrivateKeyResult :" + String.valueOf(resp));
-        }
-
-        String authTargetId = resp.getContent().getAuthTargetId(); // AUTH_1543265456453123 | LOGIN_15264564564
-
-        if (resp.getResult() == BaseMessage.RESULT_SUCCESS) {
-
-            Tlog.d(TAG, "支付宝密钥获取成功，准备登录 ");
-
-            String AUTH_INFO = resp.getContent().getAliPayAuthInfo();
-            aliLogin(AUTH_INFO);
-
-        } else {
-            if (authTargetId != null && authTargetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
-                AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
-                mAliResponseMethod.releaseCache();
-                mAliResponseMethod.setResult(false);
-                mAliResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
-                callJs(mAliResponseMethod);
-            } else {
-                Tlog.e(TAG, " unknown auth ");
-            }
-        }
-
-    }
-
-
-    // 支付宝登陆
-    private void aliLogin(String AUTH_INFO) {
-
-        Tlog.d(TAG, " aliLogin autoInfo = " + AUTH_INFO);
-        Activity activity = mCallBack != null ? mCallBack.getActivity() : null;
-
-        // 调用授权接口，获取授权结果
-        AuthTask authTask = new AuthTask(activity);
-        Map<String, String> result = authTask.authV2(AUTH_INFO, true);
-        AuthResult authResult = new AuthResult(result, true);
-
-
-        String targetId = authResult.getTargetId();
-        if (targetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
-            aliLogin(authResult);
-        } else if (targetId.startsWith(C_0x8033.AUTH_TYPE_AUTH)) {
-            // alibind
-        }
-
-    }
-
-    private void aliLogin(AuthResult authResult) {
-
-        String resultStatus = authResult.getResultStatus();
-        String resultCode = authResult.getResultCode();
-
-        // 判断resultStatus 为“9000”且result_code为“200”则代表授权成功，具体状态码代表含义可参考授权接口文档
-        Tlog.d(TAG, " resultStatus:" + resultStatus + " resultCode:" + resultCode);
-
-        if (TextUtils.equals(resultStatus, "9000") && TextUtils.equals(resultCode, "200")) {
-            // 获取alipay_open_id，调支付时作为参数extern_token 的value
-            // 传入，则支付账户为该授权账户
-
-            ChargerBusiManager.getInstance().loginWithThirdAccount(Type.Login.THIRD_ALIPAY, authResult.getAuthCode(), new IOnCallListener() {
-                @Override
-                public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
-                }
-
-                @Override
-                public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
-                    if (Debuger.isDebug) {
-                        Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
-                    }
-
-                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
-                    mAliResponseMethod.releaseCache();
-                    mAliResponseMethod.setResult(false);
-                    mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
-                    callJs(mAliResponseMethod);
-
-                }
-
-                @Override
-                public boolean needUISafety() {
-                    return false;
-                }
-            });
-
-
-        } else {
-            // 其他状态值则为授权失败
-//                            result_status
-//                            9000	请求处理成功
-//                            4000	系统异常
-//                            6001	用户中途取消
-//                            6002	网络连接出错
-
-//                            result_code
-//                            200	业务处理成功，会返回authCode
-//                            1005	账户已冻结，如有疑问，请联系支付宝技术支持
-//                            202	系统异常，请稍后再试或联系支付宝技术支持
-
-
-            AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
-            mAliResponseMethod.releaseCache();
-            mAliResponseMethod.setResult(false);
-            mAliResponseMethod.setErrorCode(String.valueOf(resultStatus));
-            callJs(mAliResponseMethod);
-
-
-        }
     }
 
 
@@ -293,7 +182,9 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
     public void onLogoutResult(int result, String errorCode, String errorMsg) {
         super.onLogoutResult(result, errorCode, errorMsg);
         if (Debuger.isLogDebug) {
-            Tlog.d(TAG, " onLogoutResult result:" + result + " " + errorCode + ":" + errorMsg);
+            Tlog.d(TAG, " onLogoutResult result:" + result
+                    + " errorCode:" + String.valueOf(errorCode)
+                    + " errorMsg:" + String.valueOf(errorMsg));
         }
         LoginOutResponseMethod loginOutResponseMethod =
                 LoginOutResponseMethod.getLoginOutResponseMethod();
@@ -303,7 +194,7 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
         callJs(loginOutResponseMethod);
 
         String userIDFromMq = mMutualManager.getUserIDFromMq();
-        Tlog.d(TAG, " logout userIDFromMq:" + userIDFromMq);
+        Tlog.d(TAG, " logout getUserIDFromMq:" + userIDFromMq);
         mMutualManager.setUserID(userIDFromMq);
     }
 
@@ -357,7 +248,7 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
 
         GiveBackBorrowDeviceResponseMethod giveBackBorrowDeviceResponseMethod =
                 GiveBackBorrowDeviceResponseMethod.getGiveBackBorrowDeviceResponseMethod();
-        giveBackBorrowDeviceResponseMethod.setResult(resp.getResult()==1);
+        giveBackBorrowDeviceResponseMethod.setResult(resp.getResult() == 1);
         C_0x8301.Resp.ContentBean content = resp.getContent();
         giveBackBorrowDeviceResponseMethod.setContent(content);
         if (content != null) {
@@ -435,7 +326,7 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
         storeInfoResponseMethod.setResult(resp.getResult() == 1);
         C_0x8304.Resp.ContentBean content = resp.getContent();
         storeInfoResponseMethod.setContent(content);
-        if(content!=null){
+        if (content != null) {
             storeInfoResponseMethod.setErrorCode(content.getErrcode());
         }
         callJs(storeInfoResponseMethod);
@@ -732,7 +623,6 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
 
             if (resp.getContent().getPlatform() == Type.ThirdPayment.PLATFOME_WECHAT) {
 
-
                 PayReq payReq = miofResponseToWechatPayReq(resp.getContent());
                 payReq.extData = resp.getContent().getOrder_num();
                 WXApiHelper.getInstance().getWXApi(app).sendReq(payReq);
@@ -740,21 +630,34 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
             } else if (resp.getContent().getPlatform() == Type.ThirdPayment.PLATFOME_ALIPAY) {
                 PayResult payResult = requestAlipay(resp.getContent().getWX_Sign());
 
-                ChargerBusiManager.getInstance().getRealOrderPayStatus(payResult
-                        .getResult()
-                        .getAlipay_trade_app_pay_response()
-                        .getOut_trade_no(), mThirdPayLsn);
+                String resultStatus = payResult.getResultStatus();
+
+                if (TextUtils.equals(resultStatus, "9000")) {
+
+                    ChargerBusiManager.getInstance().getRealOrderPayStatus(payResult
+                            .getResult()
+                            .getAlipay_trade_app_pay_response()
+                            .getOut_trade_no(), mThirdPayLsn);
+
+                } else {
+
+                    ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+                    thirdPayResponseMethod.setResult(false);
+                    thirdPayResponseMethod.setErrorCode(String.valueOf(resultStatus));
+                    callJs(thirdPayResponseMethod);
+
+                }
+
 
             }
 
-            return;
-
+        } else {
+            ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+            thirdPayResponseMethod.setResult(false);
+            thirdPayResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
+            callJs(thirdPayResponseMethod);
         }
 
-        ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
-        thirdPayResponseMethod.setResult(false);
-        thirdPayResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
-        callJs(thirdPayResponseMethod);
 
     }
 
@@ -902,7 +805,7 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
             Bundle bundle = new Bundle();
             baseResp.toBundle(bundle);
             String no = bundle.getString("_wxapi_payresp_extdata");
-            Tlog.v(TAG, " no:" + no);
+            Tlog.v(TAG, "onWxPayResult no:" + no);
 
             ChargerBusiManager.getInstance().getRealOrderPayStatus(no, mThirdPayLsn);
 
@@ -938,6 +841,15 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
             }
         } else if (Consts.WX_BIND_TAG.equals(state)) { // wxbind
 
+            if (baseResp.errCode == BaseResp.ErrCode.ERR_OK) {
+
+                onWxBindSuccess(code);
+
+            } else {
+
+                onWxBindFail(baseResp.errCode);
+
+            }
         }
 
 
@@ -946,7 +858,6 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
     private void onWxLoginFail(int errCode) {
 
         WxLoginResponseMethod mWxResponseMethod = WxLoginResponseMethod.getWxLoginResponseMethod();
-        mWxResponseMethod.releaseCache();
         mWxResponseMethod.setResult(false);
 
         switch (errCode) {
@@ -984,7 +895,6 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
                 }
 
                 WxLoginResponseMethod mWxResponseMethod = WxLoginResponseMethod.getWxLoginResponseMethod();
-                mWxResponseMethod.releaseCache();
                 mWxResponseMethod.setResult(false);
                 mWxResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                 callJs(mWxResponseMethod);
@@ -999,4 +909,341 @@ public class MqttLsnImpl extends AOnChargerMessageArriveListener {
 
     }
 
+
+    private void onWxBindSuccess(String code) {
+
+        Tlog.e(TAG, "onWxBindSuccess code: " + code);
+
+
+        //发送请求 接口调用前需要调用 微信的第三方登录SDK 授权api 拿到 code
+
+        C_0x8037.Req.ContentBean req = new C_0x8037.Req.ContentBean();
+        req.setCode(code); //code 来自微信授权返回
+        req.setType(C_0x8037.THIRD_WECHAT); //绑定微信账号
+
+        ChargerBusiManager.getInstance().bindThirdAccount(req, new IOnCallListener() {
+            @Override
+            public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+                Tlog.i(TAG, "bindThirdAccount wx msg send success ");
+            }
+
+            @Override
+            public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+                if (Debuger.isDebug) {
+                    Tlog.e(TAG, "bindThirdAccount wx msg send fail " + String.valueOf(startaiError));
+                }
+
+                WxBindResponseMethod mWxResponseMethod = WxBindResponseMethod.getWxBindResponseMethod();
+                mWxResponseMethod.setResult(false);
+                mWxResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                callJs(mWxResponseMethod);
+
+            }
+
+            @Override
+            public boolean needUISafety() {
+                return false;
+            }
+        });
+
+    }
+
+
+    private void onWxBindFail(int errCode) {
+
+        WxBindResponseMethod mWxResponseMethod = WxBindResponseMethod.getWxBindResponseMethod();
+        mWxResponseMethod.setResult(false);
+
+        switch (errCode) {
+            case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                Tlog.e(TAG, " user rejection wx bind");
+                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_USER_REJECTION);
+                break;
+            case BaseResp.ErrCode.ERR_USER_CANCEL:
+                Tlog.e(TAG, " user cancel wx bind ");
+                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_USER_CANCEL);
+                break;
+            default:
+                Tlog.e(TAG, " wx bind fail errorCode: " + errCode);
+                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_UNKNOWN);
+                break;
+        }
+
+        callJs(mWxResponseMethod);
+    }
+
+
+    @Override
+    public void onGetAlipayAuthInfoResult(C_0x8033.Resp resp) {
+        super.onGetAlipayAuthInfoResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetAlipayPrivateKeyResult :" + String.valueOf(resp));
+        }
+
+
+        if (resp.getResult() == BaseMessage.RESULT_SUCCESS) {
+
+            Tlog.d(TAG, "支付宝密钥获取成功，准备登录 ");
+
+            String AUTH_INFO = resp.getContent().getAliPayAuthInfo();
+            aliAuthInfo(AUTH_INFO, resp.getContent().getAuthTargetId());
+
+        } else {
+
+            String authTargetId = resp.getContent().getAuthTargetId(); // AUTH_1543265456453123 | LOGIN_15264564564
+            if (authTargetId != null) {
+                if (authTargetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
+                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+                    mAliResponseMethod.setResult(false);
+                    mAliResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
+                    callJs(mAliResponseMethod);
+                } else if (authTargetId.startsWith(C_0x8033.AUTH_TYPE_AUTH)) {
+                    AliBindResponseMethod aliBindResponseMethod = AliBindResponseMethod.getAliBindResponseMethod();
+                    aliBindResponseMethod.setResult(false);
+                    aliBindResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
+                    callJs(aliBindResponseMethod);
+                }
+            } else {
+                Tlog.e(TAG, " unknown auth ");
+            }
+        }
+
+    }
+
+
+    // 支付宝登陆
+    private void aliAuthInfo(String AUTH_INFO, String targetId1) {
+
+        Tlog.d(TAG, " aliAuthInfo autoInfo = " + AUTH_INFO + " targetId1:" + targetId1);
+        Activity activity = mCallBack != null ? mCallBack.getActivity() : null;
+
+        // 调用授权接口，获取授权结果
+        AuthTask authTask = new AuthTask(activity);
+        Map<String, String> result = authTask.authV2(AUTH_INFO, true);
+        AuthResult authResult = new AuthResult(result, true);
+
+        String targetId = authResult.getTargetId();
+
+        if (Debuger.isLogDebug) {
+            Tlog.v(TAG, " authTask map:" + String.valueOf(result));
+            Tlog.v(TAG, " aliAuthInfo targetId: " + targetId);
+        }
+
+        if (targetId == null) {
+            targetId = targetId1;
+        }
+
+        if (targetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
+            aliLogin(authResult);
+        } else if (targetId.startsWith(C_0x8033.AUTH_TYPE_AUTH)) {
+            // alibind
+            aliBind(authResult);
+        }
+
+    }
+
+    private void aliLogin(AuthResult authResult) {
+
+        String resultStatus = authResult.getResultStatus();
+        String resultCode = authResult.getResultCode();
+
+        // 判断resultStatus 为“9000”且result_code为“200”则代表授权成功，具体状态码代表含义可参考授权接口文档
+        Tlog.d(TAG, "aliLogin resultStatus:" + resultStatus + " resultCode:" + resultCode);
+
+        if (TextUtils.equals(resultStatus, "9000") && TextUtils.equals(resultCode, "200")) {
+            // 获取alipay_open_id，调支付时作为参数extern_token 的value
+            // 传入，则支付账户为该授权账户
+
+            ChargerBusiManager.getInstance().loginWithThirdAccount(Type.Login.THIRD_ALIPAY, authResult.getAuthCode(), new IOnCallListener() {
+                @Override
+                public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+                    Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
+                }
+
+                @Override
+                public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+                    if (Debuger.isDebug) {
+                        Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
+                    }
+
+                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+                    mAliResponseMethod.setResult(false);
+                    mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                    callJs(mAliResponseMethod);
+
+                }
+
+                @Override
+                public boolean needUISafety() {
+                    return false;
+                }
+            });
+
+
+        } else {
+            // 其他状态值则为授权失败
+//                            result_status
+//                            9000	请求处理成功
+//                            4000	系统异常
+//                            6001	用户中途取消
+//                            6002	网络连接出错
+
+//                            result_code
+//                            200	业务处理成功，会返回authCode
+//                            1005	账户已冻结，如有疑问，请联系支付宝技术支持
+//                            202	系统异常，请稍后再试或联系支付宝技术支持
+
+
+            AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+            mAliResponseMethod.setResult(false);
+            String errorCode = resultStatus == null ? resultCode : resultStatus;
+            mAliResponseMethod.setErrorCode(String.valueOf(errorCode));
+            callJs(mAliResponseMethod);
+
+        }
+    }
+
+
+    private void aliBind(AuthResult authResult) {
+
+        String resultStatus = authResult.getResultStatus();
+        String resultCode = authResult.getResultCode();
+
+        // 判断resultStatus 为“9000”且result_code为“200”则代表授权成功，具体状态码代表含义可参考授权接口文档
+        Tlog.d(TAG, " resultStatus:" + resultStatus + " resultCode:" + resultCode);
+
+        if (TextUtils.equals(resultStatus, "9000") && TextUtils.equals(resultCode, "200")) {
+            // 获取alipay_open_id，调支付时作为参数extern_token 的value
+            // 传入，则支付账户为该授权账户
+
+            C_0x8037.Req.ContentBean req = new C_0x8037.Req.ContentBean();
+            req.setCode(authResult.getAuthCode()); //code 来自微信授权返回
+            req.setType(C_0x8037.THIRD_ALIPAY); //绑定微信账号
+
+            ChargerBusiManager.getInstance().bindThirdAccount(req, new IOnCallListener() {
+                @Override
+                public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+                    Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
+                }
+
+                @Override
+                public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+                    if (Debuger.isDebug) {
+                        Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
+                    }
+
+                    AliBindResponseMethod mAliResponseMethod = AliBindResponseMethod.getAliBindResponseMethod();
+                    mAliResponseMethod.setResult(false);
+                    mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                    callJs(mAliResponseMethod);
+
+
+                }
+
+                @Override
+                public boolean needUISafety() {
+                    return false;
+                }
+            });
+
+        } else {
+            // 其他状态值则为授权失败
+//                            result_status
+//                            9000	请求处理成功
+//                            4000	系统异常
+//                            6001	用户中途取消
+//                            6002	网络连接出错
+
+//                            result_code
+//                            200	业务处理成功，会返回authCode
+//                            1005	账户已冻结，如有疑问，请联系支付宝技术支持
+//                            202	系统异常，请稍后再试或联系支付宝技术支持
+
+
+            AliBindResponseMethod mAliResponseMethod = AliBindResponseMethod.getAliBindResponseMethod();
+            mAliResponseMethod.setResult(false);
+            String errorCode = resultStatus == null ? resultCode : resultStatus;
+            mAliResponseMethod.setErrorCode(String.valueOf(errorCode));
+            callJs(mAliResponseMethod);
+
+        }
+    }
+
+    @Override
+    public void onBindThirdAccountResult(C_0x8037.Resp resp) {
+        super.onBindThirdAccountResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onBindThirdAccountResult :" + String.valueOf(resp));
+        }
+
+        C_0x8037.Resp.ContentBean content = resp.getContent();
+
+        if (content == null) {
+            return;
+        }
+
+        int type = content.getType();
+
+        switch (type) {
+            case C_0x8037.THIRD_ALIPAY:
+
+                AliBindResponseMethod mAliResponseMethod = AliBindResponseMethod.getAliBindResponseMethod();
+                mAliResponseMethod.setResult(resp.getResult() == 1);
+                mAliResponseMethod.setBinding(resp.getResult() == 1);
+                mAliResponseMethod.setErrorCode(String.valueOf(content.getErrcode()));
+                mAliResponseMethod.setContent(content);
+                callJs(mAliResponseMethod);
+
+                break;
+
+            case C_0x8037.THIRD_WECHAT:
+
+                WxBindResponseMethod mWxResponseMethod = WxBindResponseMethod.getWxBindResponseMethod();
+                mWxResponseMethod.setResult(resp.getResult() == 1);
+                mWxResponseMethod.setBinding(resp.getResult() == 1);
+                mWxResponseMethod.setErrorCode(String.valueOf(content.getErrcode()));
+                mWxResponseMethod.setContent(content);
+                callJs(mWxResponseMethod);
+
+                break;
+
+        }
+
+    }
+
+    @Override
+    public void onBindMobileNumResult(C_0x8034.Resp resp) {
+        super.onBindMobileNumResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onBindMobileNumResult :" + String.valueOf(resp));
+        }
+
+        C_0x8034.Resp.ContentBean content = resp.getContent();
+        PhoneBindResponseMethod phoneBindResponseMethod = PhoneBindResponseMethod.getPhoneBindResponseMethod();
+        phoneBindResponseMethod.setResult(resp.getResult() == 1);
+        phoneBindResponseMethod.setBinding(resp.getResult() == 1);
+        phoneBindResponseMethod.setErrorCode(String.valueOf(content.getErrcode()));
+        phoneBindResponseMethod.setContent(content);
+        callJs(phoneBindResponseMethod);
+    }
+
+    @Override
+    public void onGetUserChargingStatusResult(C_0x8315.Resp resp) {
+        super.onGetUserChargingStatusResult(resp);
+
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetUserChargingStatusResult :" + String.valueOf(resp));
+        }
+
+        ChargingStatusResponseMethod charginStatusResponseMethod = ChargingStatusResponseMethod.getChargingStatusResponseMethod();
+        charginStatusResponseMethod.setResult(resp.getResult() == 1);
+        C_0x8315.Resp.ContentBean content = resp.getContent();
+        charginStatusResponseMethod.setContent(content);
+        charginStatusResponseMethod.setErrorCode(content.getErrcode());
+        callJs(charginStatusResponseMethod);
+
+    }
 }

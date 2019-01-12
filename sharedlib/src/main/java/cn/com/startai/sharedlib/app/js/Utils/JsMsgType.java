@@ -236,6 +236,38 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_MODIFY_USERPWD = "0x5161";
 
+
+    /**
+     * 绑定手机号请求
+     */
+    public static final String TYPE_REQUEST_BIND_PHONE = "0x5162";
+
+    /**
+     * 绑定手机号返回
+     */
+    public static final String TYPE_RESPONSE_BIND_PHONE = "0x5163";
+
+    /**
+     * wx bind请求
+     */
+    public static final String TYPE_REQUEST_WX_BIND = "0x5164";
+
+    /**
+     * wx bind返回
+     */
+    public static final String TYPE_RESPONSE_WX_BIND = "0x5165";
+
+    /**
+     * 阿里bind请求
+     */
+    public static final String TYPE_REQUEST_ALI_BIND = "0x5166";
+
+    /**
+     * 阿里bind返回
+     */
+    public static final String TYPE_RESPONSE_ALI_BIND = "0x5167";
+
+
     /********订单*******/
 
     /**
@@ -256,6 +288,17 @@ public class JsMsgType extends BaseCommonJsUtils {
      * 订单详情请求返回
      */
     public static final String TYPE_RESPONSE_ORDER_DETAIL = "0x5224";
+
+
+    /**
+     * 查询有未归还充电宝
+     */
+    public static final String TYPE_REQUEST_CHARGING_STATUS = "0x5225";
+
+    /**
+     * 查询有未归还充电宝返回
+     */
+    public static final String TYPE_RESPONSE_CHARGING_STATUS = "0x5226";
 
 
     /********支付*******/
@@ -289,7 +332,6 @@ public class JsMsgType extends BaseCommonJsUtils {
      * 查询押金及余额返回
      */
     public static final String TYPE_RESPONSE_BALANCE_DEPOSIT = "0x5242";
-
 
 
     /**
@@ -331,7 +373,6 @@ public class JsMsgType extends BaseCommonJsUtils {
     public static final String TYPE_RESPONSE_FEE_RULE = "0xAAAA";
 
 
-
     /**
      * 获取指定坐标附近店铺信息（完整版本，适合列表显示时调用）
      */
@@ -359,5 +400,15 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_STORES_INFO = "0x5286";
 
+
+    /**
+     * MQTT状态返回
+     */
+    public static final String TYPE_RESPONSE_MQTT = "0x5032";
+
+    /**
+     * 网络状态返回
+     */
+    public static final String TYPE_RESPONSE_NETWORK = "0x5033";
 
 }

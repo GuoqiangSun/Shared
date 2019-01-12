@@ -63,7 +63,7 @@ dependencies {
     //startai 二维码扫描 sdk
     implementation 'cn.com.startai:scansdk:1.1.4'
     //android 工具库
-    implementation 'com.blankj:utilcode:1.19.3'
+    implementation 'com.blankj:utilcode:1.22.1'
 
     // 下载
     implementation 'org.xutils:xutils:3.5.0'

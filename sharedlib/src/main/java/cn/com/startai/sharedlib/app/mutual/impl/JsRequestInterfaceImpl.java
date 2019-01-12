@@ -30,6 +30,7 @@ import cn.com.startai.mqttsdk.base.StartaiError;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8020;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8028;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8034;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
@@ -42,11 +43,13 @@ import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.js.CommonJsInterfaceTask;
 import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
+import cn.com.startai.sharedlib.app.js.method2Impl.AliBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalanceDepositResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BalancePayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.BorrowDeviceResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ChargerFeeRuleResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ChargingStatusResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DepositFeeRuleResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.DeviceInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetAppVersionResponseMethod;
@@ -72,6 +75,7 @@ import cn.com.startai.sharedlib.app.js.method2Impl.UpdateProgressResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.BalancePayRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BindPhoneJsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.BorrowDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.DeviceInfoJsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.FeeRuleRequestBean;
@@ -212,13 +216,38 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     }
 
     @Override
+    public void onJsWXBind() {
+
+        //先判断是否安装微信APP,按照微信的说法，目前移动应用上微信登录只提供原生的登录方式，需要用户安装微信客户端才能配合使用。
+        if (!AppUtils.isAppInstalled(app, "com.tencent.mm")) {
+            Tlog.e(TAG, " com.tencent.mm is not install");
+
+            WxLoginResponseMethod mWxResponseMethod =
+                    WxLoginResponseMethod.getWxLoginResponseMethod();
+            mWxResponseMethod.setResult(false);
+            mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_NO_CLIENT);
+            callJs(mWxResponseMethod);
+
+            return;
+        }
+
+        SendAuth.Req req = new SendAuth.Req();
+        req.scope = "snsapi_userinfo";
+        req.state = Consts.WX_BIND_TAG;
+        //向微信发送请求
+        WXApiHelper.getInstance().getWXApi(app).sendReq(req);
+
+    }
+
+
+    @Override
     public void onJsAliLogin() {
 
         ChargerBusiManager.getInstance().getAlipayAuthInfo(C_0x8033.AUTH_TYPE_LOGIN, new IOnCallListener() {
             @Override
             public void onSuccess(MqttPublishRequest request) {
                 if (Debuger.isLogDebug) {
-                    Tlog.v(TAG, "getAlipayAuthInfo msg send success ");
+                    Tlog.v(TAG, "getAlipayAuthInfo login msg send success ");
                 }
             }
 
@@ -226,7 +255,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
             public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
 
                 if (Debuger.isLogDebug) {
-                    Tlog.e(TAG, "getAlipayAuthInfo msg send fail " + String.valueOf(startaiError));
+                    Tlog.e(TAG, "getAlipayAuthInfo login msg send fail " + String.valueOf(startaiError));
                 }
 
                 AliLoginResponseMethod mAliResponseMethod =
@@ -242,6 +271,95 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onJsAliBind() {
+        ChargerBusiManager.getInstance().getAlipayAuthInfo(C_0x8033.AUTH_TYPE_AUTH, new IOnCallListener() {
+            @Override
+            public void onSuccess(MqttPublishRequest request) {
+                if (Debuger.isLogDebug) {
+                    Tlog.v(TAG, "getAlipayAuthInfo bind msg send success ");
+                }
+            }
+
+            @Override
+            public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+
+                if (Debuger.isLogDebug) {
+                    Tlog.e(TAG, "getAlipayAuthInfo bind msg send fail " + String.valueOf(startaiError));
+                }
+
+                AliBindResponseMethod mAliResponseMethod =
+                        AliBindResponseMethod.getAliBindResponseMethod();
+                mAliResponseMethod.setResult(false);
+                mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                callJs(mAliResponseMethod);
+
+            }
+
+            @Override
+            public boolean needUISafety() {
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean) {
+        //发送请求 接口调用前需要先 调用 获取验证码，检验验证码
+        C_0x8034.Req.ContentBean req = new C_0x8034.Req.ContentBean(mMutualManager.getUserID(), mBindPhoneBean.getPhone());
+        //mobile 需要绑定的手机号
+        ChargerBusiManager.getInstance().bindMobileNum(req, new IOnCallListener() {
+            @Override
+            public void onSuccess(MqttPublishRequest request) {
+                if (Debuger.isLogDebug) {
+                    Tlog.v(TAG, "bindMobileNum msg send success ");
+                }
+            }
+
+            @Override
+            public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                if (Debuger.isLogDebug) {
+                    Tlog.e(TAG, "bindMobileNum msg send fail " + String.valueOf(startaiError));
+                }
+            }
+
+            @Override
+            public boolean needUISafety() {
+                return false;
+            }
+        });
+    }
+
+    private final IOnCallListener getUserChargingStatusLsn = new IOnCallListener() {
+        @Override
+        public void onSuccess(MqttPublishRequest request) {
+            if (Debuger.isLogDebug) {
+                Tlog.v(TAG, "getUserChargingStatus msg send success ");
+            }
+        }
+
+        @Override
+        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, "getUserChargingStatus msg send fail " + String.valueOf(startaiError));
+            }
+            ChargingStatusResponseMethod charginStatusResponseMethod = ChargingStatusResponseMethod.getChargingStatusResponseMethod();
+            charginStatusResponseMethod.setResult(false);
+            charginStatusResponseMethod.setErrorCode(String.valueOf(startaiError));
+            callJs(charginStatusResponseMethod);
+        }
+
+        @Override
+        public boolean needUISafety() {
+            return false;
+        }
+    };
+
+    @Override
+    public void onJSRequestChargingStatus() {
+        ChargerBusiManager.getInstance().getUserChargingStatus(mMutualManager.getUserID(), getUserChargingStatusLsn);
     }
 
     private final IOnCallListener mOrderLstLsn = new IOnCallListener() {
@@ -487,8 +605,8 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
          */
         C_0x8314.Req.ContentBean req = new C_0x8314.Req.ContentBean(mTransactionDetailsBean.getTransactionType(),
                 mMutualManager.getUserID(),
-                mTransactionDetailsBean.getCurrentPage(),
-                mTransactionDetailsBean.getPageCount());
+                mTransactionDetailsBean.getPage(),
+                mTransactionDetailsBean.getCount());
         ChargerBusiManager.getInstance().getTransactionDetails(req, mTransactionDetailLsn);
     }
 

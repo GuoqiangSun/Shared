@@ -87,7 +87,7 @@ public class Debuger implements IApp, IService {
     /**
      * 是否从本地加载H5页面
      */
-    public static boolean isLoadLocalH5 = false;
+    public static boolean isH5Debug = false;
 
 
     /**
@@ -137,7 +137,7 @@ public class Debuger implements IApp, IService {
 
             File h5File = new File(appRootPath, "h5.debug");
             if (h5File.exists()) {
-                isLoadLocalH5 = true;
+                isH5Debug = true;
                 mLocalH5 = getH5();
             }
 
@@ -224,7 +224,7 @@ public class Debuger implements IApp, IService {
     private File mLocalH5;
 
     public File getLocalH5Resource() {
-        if (isLoadLocalH5) {
+        if (isH5Debug) {
             return mLocalH5;
         }
         return null;

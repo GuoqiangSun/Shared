@@ -18,11 +18,11 @@ public class TransactionDetailsRequestBean extends BaseCommonJsRequestBeanWrappe
         return getIntByRootJson("transactionType");
     }
 
-    public int getCurrentPage() {
+    public int getPage() {
         return getIntByRootJson("page");
     }
 
-    public int getPageCount() {
+    public int getCount() {
         return getIntByRootJson("count");
     }
 }

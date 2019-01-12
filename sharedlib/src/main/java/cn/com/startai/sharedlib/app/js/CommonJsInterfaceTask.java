@@ -8,6 +8,7 @@ import cn.com.shared.weblib.js.XWalkCommonJsRequest;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.BalancePayRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BindPhoneJsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.BorrowDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.DeviceInfoJsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.FeeRuleRequestBean;
@@ -121,6 +122,15 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
         void onJSRequestStoresInfo(StoresInfoRequestBean mStoresInfoBean);
 
         void onJsGiveBackBorrowDevice(GiveBackBorrowDeviceRequestBean mGiveBackBorrowBean);
+
+        void onJsWXBind();
+
+        void onJsAliBind();
+
+        void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean);
+
+        void onJSRequestChargingStatus();
+
     }
 
     private final IJsRequestInterface mCallBack;
@@ -161,6 +171,18 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
             case JsMsgType.TYPE_REQUEST_ALI_LOGIN:
 
                 mCallBack.onJsAliLogin();
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_WX_BIND:
+
+                mCallBack.onJsWXBind();
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_ALI_BIND:
+
+                mCallBack.onJsAliBind();
 
                 break;
 
@@ -292,6 +314,14 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
                 ModifyUserPwdRequestBean mModifyPwdBean = new ModifyUserPwdRequestBean(mData);
                 mCallBack.onJSModifyUserPwd(mModifyPwdBean);
+                break;
+
+            case JsMsgType.TYPE_REQUEST_BIND_PHONE:
+
+                BindPhoneJsRequestBean mBindPhoneBean = new BindPhoneJsRequestBean(mData);
+                mCallBack.onJsBindPhone(mBindPhoneBean);
+
+                break;
 
             case JsMsgType.TYPE_REQUEST_ORDER_LIST:
 
@@ -353,6 +383,7 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
                 break;
 
             case JsMsgType.TYPE_REQUEST_NEAR_STORES_MAP:
+
                 StoresMapLstRequestBean mStoresMapLstBean = new StoresMapLstRequestBean(mData);
                 mCallBack.onJSRequestStoresMapLst(mStoresMapLstBean);
 
@@ -362,6 +393,12 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
                 StoresInfoRequestBean mStoresInfoBean = new StoresInfoRequestBean(mData);
                 mCallBack.onJSRequestStoresInfo(mStoresInfoBean);
+                break;
+
+            case JsMsgType.TYPE_REQUEST_CHARGING_STATUS:
+
+                mCallBack.onJSRequestChargingStatus();
+
                 break;
 
             default:
