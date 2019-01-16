@@ -3,6 +3,9 @@ package cn.com.startai.sharedlib.app.view;
 import android.content.res.Configuration;
 import android.os.Build;
 
+import com.facebook.stetho.Stetho;
+
+import cn.com.shared.weblib.view.CrossWebView;
 import cn.com.startai.sharedlib.app.Debuger;
 import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.LooperManager;
@@ -28,6 +31,12 @@ public class SharedApplication extends BaseApplication {
         FileManager.getInstance().init(this);
         Debuger.getInstance().init(this);
         LooperManager.getInstance().init(this);
+
+        if (Debuger.isDebug || Debuger.isLogDebug || Debuger.isH5Debug) {
+            CrossWebView.REMOTE_DEBUGGING = true;
+            Stetho.initializeWithDefaults(this); //chrome://inspect
+        }
+
         Tlog.i("SharedApplication onCreate(); pid:" + android.os.Process.myPid() + "; Build.VERSION.SDK_INT :" + Build.VERSION.SDK_INT);
     }
 

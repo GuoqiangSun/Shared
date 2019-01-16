@@ -7,9 +7,8 @@ import org.json.JSONObject;
 import java.util.List;
 
 import cn.com.startai.chargersdk.entity.C_0x8312;
-import cn.com.startai.chargersdk.entity.C_0x8313;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod2;
 
 /**
  * author: Guoqiang_Sun
@@ -36,7 +35,9 @@ public class NearByStoreByMapResponseMethod extends BaseResponseMethod2 {
     /**
      * lng : 113.367631
      * lat : 23.130781
-     * resultSet : [{"merchant_id":114,"m_lng":"113.367631","m_lat":"23.130781","type":3},{"merchant_id":115,"m_lng":"113.367631","m_lat":"23.130781","type":2},{"merchant_id":112,"m_lng":"113.367631","m_lat":"23.130781","type":1}]
+     * resultSet : [{"merchant_id":114,"m_lng":"113.367631","m_lat":"23.130781","type":3},
+     * {"merchant_id":115,"m_lng":"113.367631","m_lat":"23.130781","type":2},
+     * {"merchant_id":112,"m_lng":"113.367631","m_lat":"23.130781","type":1}]
      */
     private C_0x8312.Resp.ContentBean contentBean;
 

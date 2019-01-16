@@ -20,6 +20,8 @@ import cn.com.swain.baselib.log.Tlog;
 
 public class CrossWebView extends XWalkView {
 
+    public static boolean REMOTE_DEBUGGING = false;
+
     public CrossWebView(Context context) {
         super(context);
         init();
@@ -32,7 +34,7 @@ public class CrossWebView extends XWalkView {
 
     private void init() {
 
-        setDebugInChrome(true);
+        setDebugInChrome(REMOTE_DEBUGGING);
 
         setDrawingCacheEnabled(true);
         setChildrenDrawingCacheEnabled(true);

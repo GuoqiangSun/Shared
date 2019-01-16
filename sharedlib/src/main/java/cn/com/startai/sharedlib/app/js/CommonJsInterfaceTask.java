@@ -29,9 +29,8 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBea
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayOrderRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.TransactionDetailsRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
-import cn.com.swain.baselib.jsInterface.base.AbsCommonJsInterfaceProxy;
-import cn.com.swain.baselib.jsInterface.base.IBaseJsRequestInterface;
-import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
+import cn.com.swain.baselib.jsInterface.request.AbsCommonJsInterfaceProxy;
+import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
 import cn.com.swain.baselib.log.Tlog;
 
 /**
@@ -40,98 +39,6 @@ import cn.com.swain.baselib.log.Tlog;
  * desc :
  */
 public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
-
-    public interface IJsRequestInterface extends IBaseJsRequestInterface {
-
-        void onJsPressBackFinish();
-
-        void onJsPressBackFinishBefore();
-
-        void onJsPressBack();
-
-        void onJsDataParseError(JSONException e, String jsonData);
-
-        void onJsIsLogin();
-
-        void onJsWXLogin();
-
-        void onJsLogOut();
-
-        void onJsCrashError(BaseCommonJsRequestBean mBaseData);
-
-        void onJsRequestScanQR();
-
-        void onJsRequestDeviceInfo(DeviceInfoJsRequestBean mBaseData);
-
-        void onJsBorrowDevice(BorrowDeviceRequestBean mBaseData);
-
-        void onJsGiveBackDevice(GiveBackDeviceRequestBean mGiveBackBean);
-
-        void onJsGetIdentityCode(GetIdentityCodeRequestBean mGetIDCodeBean);
-
-        void onJsMobileLoginByIdentityCode(MobileLoginByIDCodeRequestBean mMobileLoginByIDBean);
-
-        void onJSQuerySystemLanguage();
-
-        void onJSSetSystemLanguage(LanguageSetRequestBean mLanguageSetRequestBean);
-
-        void onJSCheckAppIsNew();
-
-        void onJSRequestUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
-
-        void onJSCancelUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
-
-        void onJSRequestAppVersion();
-
-        void onJSRequestUserInfo();
-
-        void onJSRequestTakePhoto();
-
-        void onJSRequestLocalPhoto();
-
-        void onJSModifyUserName(ModifyUserNameRequestBean mModifyNameBean);
-
-        void onJSModifyUserPwd(ModifyUserPwdRequestBean mModifyPwdBean);
-
-        void onJSModifyNickName(ModifyNickNameRequestBean mModifyNicknameBean);
-
-        void onJsAliLogin();
-
-        void onJSRequestOrderLst(OrderListRequestBean mOrderLstBean);
-
-        void onJSBalancePay(BalancePayRequestBean mPayBean);
-
-        void onJSThirdPayOrder(ThirdPayOrderRequestBean mThirdPayBean);
-
-        void onJSOrderDetail(OrderDetailRequestBean mOrderDetailBean);
-
-        void onJSRequestBalanceDeposit();
-
-        void onJSThirdPayBalance(ThirdPayBalanceRequestBean mRechargerBean);
-
-        void onJSRequestTransactionDetail(TransactionDetailsRequestBean mTransactionDetailsBean);
-
-        void onJSRequestFeeRule(FeeRuleRequestBean mFeeRuleBean);
-
-        void onJSRequestDepositFeeRule();
-
-        void onJSRequestStoresDetailLst(StoresDetailLstRequestBean mStoresLstBean);
-
-        void onJSRequestStoresMapLst(StoresMapLstRequestBean mStoresMapLstBean);
-
-        void onJSRequestStoresInfo(StoresInfoRequestBean mStoresInfoBean);
-
-        void onJsGiveBackBorrowDevice(GiveBackBorrowDeviceRequestBean mGiveBackBorrowBean);
-
-        void onJsWXBind();
-
-        void onJsAliBind();
-
-        void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean);
-
-        void onJSRequestChargingStatus();
-
-    }
 
     private final IJsRequestInterface mCallBack;
 
@@ -427,5 +334,101 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
     protected void onJsPressBackFinishBefore() {
         mCallBack.onJsPressBackFinishBefore();
     }
+
+
+    public interface IJsRequestInterface  {
+
+        void onJsBaseRequest(BaseCommonJsRequestBean mData);
+
+        void onJsPressBackFinish();
+
+        void onJsPressBackFinishBefore();
+
+        void onJsPressBack();
+
+        void onJsDataParseError(JSONException e, String jsonData);
+
+        void onJsIsLogin();
+
+        void onJsWXLogin();
+
+        void onJsLogOut();
+
+        void onJsCrashError(BaseCommonJsRequestBean mBaseData);
+
+        void onJsRequestScanQR();
+
+        void onJsRequestDeviceInfo(DeviceInfoJsRequestBean mBaseData);
+
+        void onJsBorrowDevice(BorrowDeviceRequestBean mBaseData);
+
+        void onJsGiveBackDevice(GiveBackDeviceRequestBean mGiveBackBean);
+
+        void onJsGetIdentityCode(GetIdentityCodeRequestBean mGetIDCodeBean);
+
+        void onJsMobileLoginByIdentityCode(MobileLoginByIDCodeRequestBean mMobileLoginByIDBean);
+
+        void onJSQuerySystemLanguage();
+
+        void onJSSetSystemLanguage(LanguageSetRequestBean mLanguageSetRequestBean);
+
+        void onJSCheckAppIsNew();
+
+        void onJSRequestUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
+
+        void onJSCancelUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
+
+        void onJSRequestAppVersion();
+
+        void onJSRequestUserInfo();
+
+        void onJSRequestTakePhoto();
+
+        void onJSRequestLocalPhoto();
+
+        void onJSModifyUserName(ModifyUserNameRequestBean mModifyNameBean);
+
+        void onJSModifyUserPwd(ModifyUserPwdRequestBean mModifyPwdBean);
+
+        void onJSModifyNickName(ModifyNickNameRequestBean mModifyNicknameBean);
+
+        void onJsAliLogin();
+
+        void onJSRequestOrderLst(OrderListRequestBean mOrderLstBean);
+
+        void onJSBalancePay(BalancePayRequestBean mPayBean);
+
+        void onJSThirdPayOrder(ThirdPayOrderRequestBean mThirdPayBean);
+
+        void onJSOrderDetail(OrderDetailRequestBean mOrderDetailBean);
+
+        void onJSRequestBalanceDeposit();
+
+        void onJSThirdPayBalance(ThirdPayBalanceRequestBean mRechargerBean);
+
+        void onJSRequestTransactionDetail(TransactionDetailsRequestBean mTransactionDetailsBean);
+
+        void onJSRequestFeeRule(FeeRuleRequestBean mFeeRuleBean);
+
+        void onJSRequestDepositFeeRule();
+
+        void onJSRequestStoresDetailLst(StoresDetailLstRequestBean mStoresLstBean);
+
+        void onJSRequestStoresMapLst(StoresMapLstRequestBean mStoresMapLstBean);
+
+        void onJSRequestStoresInfo(StoresInfoRequestBean mStoresInfoBean);
+
+        void onJsGiveBackBorrowDevice(GiveBackBorrowDeviceRequestBean mGiveBackBorrowBean);
+
+        void onJsWXBind();
+
+        void onJsAliBind();
+
+        void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean);
+
+        void onJSRequestChargingStatus();
+
+    }
+
 
 }

@@ -1,6 +1,6 @@
 package cn.com.startai.sharedlib.app.js.Utils;
 
-import cn.com.swain.baselib.jsInterface.method.BaseCommonJsUtils;
+import cn.com.swain.baselib.jsInterface.response.BaseCommonJsUtils;
 
 /**
  * author: Guoqiang_Sun

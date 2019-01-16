@@ -8,7 +8,7 @@ import java.util.List;
 
 import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod2;
 
 /**
  * author: Guoqiang_Sun

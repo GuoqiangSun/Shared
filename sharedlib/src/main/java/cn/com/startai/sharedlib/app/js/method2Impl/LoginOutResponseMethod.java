@@ -3,7 +3,7 @@ package cn.com.startai.sharedlib.app.js.method2Impl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod2;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
 
 /**

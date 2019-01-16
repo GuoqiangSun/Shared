@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import cn.com.startai.chargersdk.entity.C_0x8315;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod2;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod2;
 
 /**
  * author: Guoqiang_Sun

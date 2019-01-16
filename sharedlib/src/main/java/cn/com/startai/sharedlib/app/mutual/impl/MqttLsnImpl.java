@@ -82,7 +82,7 @@ import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.startai.sharedlib.app.mutual.utils.AuthResult;
 import cn.com.startai.sharedlib.app.mutual.utils.PayResult;
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
 import cn.com.swain.baselib.log.Tlog;
 
 /**

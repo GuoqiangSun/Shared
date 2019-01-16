@@ -21,7 +21,7 @@ import cn.com.shared.weblib.fragment.WebFragment;
 import cn.com.shared.weblib.js.ICallJS;
 import cn.com.swain.baselib.Queue.SyncLimitQueue;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
-import cn.com.swain.baselib.jsInterface.method.PressBackResponseMethod;
+import cn.com.swain.baselib.jsInterface.response.PressBackResponseMethod;
 import cn.com.swain.baselib.log.Tlog;
 
 /**

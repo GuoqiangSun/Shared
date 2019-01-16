@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 
 import cn.com.startai.chargersdk.ChargerBusiManager;
+import cn.com.startai.chargersdk.entity.C_0x8304;
 import cn.com.startai.chargersdk.entity.C_0x8307;
 import cn.com.startai.chargersdk.entity.C_0x8309;
 import cn.com.startai.chargersdk.entity.C_0x8312;
@@ -100,8 +101,8 @@ import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
 import cn.com.startai.sharedlib.app.view.SharedApplication;
-import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
-import cn.com.swain.baselib.jsInterface.method.BaseResponseMethod;
+import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
 import cn.com.swain.baselib.log.Tlog;
 import cn.com.swain.baselib.util.AppUtils;
 import cn.com.swain.baselib.util.PhotoUtils;
@@ -598,11 +599,7 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
     @Override
     public void onJSRequestTransactionDetail(TransactionDetailsRequestBean mTransactionDetailsBean) {
 
-        /**
-         * transactionType : 1
-         * page : 1
-         * count : 10
-         */
+        // transactionType : 1 page : 1 count : 10
         C_0x8314.Req.ContentBean req = new C_0x8314.Req.ContentBean(mTransactionDetailsBean.getTransactionType(),
                 mMutualManager.getUserID(),
                 mTransactionDetailsBean.getPage(),
@@ -775,7 +772,14 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
 
     @Override
     public void onJSRequestStoresInfo(StoresInfoRequestBean mStoresInfoBean) {
-        ChargerBusiManager.getInstance().getStoreInfo(mStoresInfoBean.getMerchantId(), mStoreInfoLsn);
+
+        C_0x8304.Req.ContentBean req = new C_0x8304.Req.ContentBean();
+        req.setLat(mStoresInfoBean.getLat());
+        req.setLng(mStoresInfoBean.getLan());
+        req.setMerchantId(mStoresInfoBean.getMerchantId());
+        ChargerBusiManager.getInstance().getStoreInfo(req, mStoreInfoLsn);
+
+//        ChargerBusiManager.getInstance().getStoreInfo(mStoresInfoBean.getMerchantId(), mStoreInfoLsn);
     }
 
 
@@ -1572,6 +1576,14 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
                 Tlog.v(TAG, " mLogoUploadCallBack onSuccess " + uploadBean.toString());
             }
 
+            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+            modifyHeadpicSendResponseMethod.setResult(true);
+            modifyHeadpicSendResponseMethod.setIsSend(false);
+            modifyHeadpicSendResponseMethod.setUploadBean(uploadBean);
+            callJs(modifyHeadpicSendResponseMethod);
+
+
             C_0x8020.Req.ContentBean contentBean = new C_0x8020.Req.ContentBean();
             contentBean.setHeadPic(uploadBean.getHttpDownloadUrl());
             contentBean.setUserid(mMutualManager.getUserID());
@@ -1589,7 +1601,12 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
                     if (Debuger.isLogDebug) {
                         Tlog.e(TAG, " updateUserInfo msg send fail " + startaiError.getErrorCode());
                     }
-
+                    ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                            ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+                    modifyHeadpicSendResponseMethod.setResult(false);
+                    modifyHeadpicSendResponseMethod.setIsSend(false);
+                    modifyHeadpicSendResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                    callJs(modifyHeadpicSendResponseMethod);
                 }
 
                 @Override
@@ -1606,6 +1623,13 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
                 Tlog.v(TAG, " mLogoUploadCallBack onFailure " + i + " " + String.valueOf(uploadBean));
             }
 
+            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+            modifyHeadpicSendResponseMethod.setResult(false);
+            modifyHeadpicSendResponseMethod.setIsSend(false);
+            modifyHeadpicSendResponseMethod.setErrorCode(String.valueOf(i));
+            callJs(modifyHeadpicSendResponseMethod);
+
         }
 
         @Override
@@ -1613,6 +1637,13 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
             if (Debuger.isLogDebug) {
                 Tlog.v(TAG, " mLogoUploadCallBack onProgress " + uploadBean.getProgress());
             }
+
+            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+            modifyHeadpicSendResponseMethod.setResult(true);
+            modifyHeadpicSendResponseMethod.setIsSend(false);
+            modifyHeadpicSendResponseMethod.setUploadBean(uploadBean);
+            callJs(modifyHeadpicSendResponseMethod);
         }
 
         @Override
@@ -1620,6 +1651,12 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
             if (Debuger.isLogDebug) {
                 Tlog.v(TAG, " mLogoUploadCallBack onWaiting " + String.valueOf(uploadBean));
             }
+            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+            modifyHeadpicSendResponseMethod.setResult(true);
+            modifyHeadpicSendResponseMethod.setIsSend(false);
+            modifyHeadpicSendResponseMethod.setUploadBean(uploadBean);
+            callJs(modifyHeadpicSendResponseMethod);
         }
 
         @Override
@@ -1627,6 +1664,12 @@ public class JsRequestInterfaceImpl implements CommonJsInterfaceTask.IJsRequestI
             if (Debuger.isLogDebug) {
                 Tlog.v(TAG, " mLogoUploadCallBack onPause " + String.valueOf(uploadBean));
             }
+            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+            modifyHeadpicSendResponseMethod.setResult(true);
+            modifyHeadpicSendResponseMethod.setIsSend(false);
+            modifyHeadpicSendResponseMethod.setUploadBean(uploadBean);
+            callJs(modifyHeadpicSendResponseMethod);
         }
     };
 

@@ -1,7 +1,7 @@
 package cn.com.startai.sharedlib.app.js.requestBeanImpl;
 
-import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBean;
-import cn.com.swain.baselib.jsInterface.bean.BaseCommonJsRequestBeanWrapper;
+import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
+import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBeanWrapper;
 
 /**
  * author: Guoqiang_Sun
@@ -16,22 +16,14 @@ public class ModifyUserNameRequestBean extends BaseCommonJsRequestBeanWrapper {
 
     public ModifyUserNameRequestBean(BaseCommonJsRequestBean mBean) {
         super(mBean);
-        setType(getStringByRootJson("type"));
-
-        setValue(getStringByRootJson("value"));
     }
 
     public static final String TYPE_NAME = "name";//name
     public static final String TYPE_SURNAME = "surnam";//姓氏
 
-    private String type;
-
-    private void setType(String type) {
-        this.type = type;
-    }
 
     public String getType() {
-        return type;
+        return getStringByRootJson("type");
     }
 
     public boolean typeIsName() {
@@ -42,14 +34,8 @@ public class ModifyUserNameRequestBean extends BaseCommonJsRequestBeanWrapper {
         return TYPE_SURNAME.equalsIgnoreCase(getType());
     }
 
-    private String value;
-
-    private void setValue(String value) {
-        this.value = value;
-    }
-
     public String getValue() {
-        return value;
+        return getStringByRootJson("value");
     }
 
 

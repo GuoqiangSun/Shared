@@ -104,6 +104,7 @@ public class MutualManager implements IService, ICommonStateListener {
         jsRequestInterfaceImpl = new JsRequestInterfaceImpl(app, mCallBack, this);
         mJsInterface = new CommonJsInterfaceTask(workLooper, jsRequestInterfaceImpl);
 
+        // network
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
@@ -113,10 +114,79 @@ public class MutualManager implements IService, ICommonStateListener {
     }
 
     @Override
+    public void onSResume() {
+        Tlog.v(TAG, "mutualManager onSResume() ");
+    }
+
+    @Override
+    public void onSPause() {
+        Tlog.v(TAG, "mutualManager onSPause() ");
+    }
+
+    @Override
+    public void onSFinish() {
+        Tlog.v(TAG, "mutualManager onSFinish() ");
+        if (mJsInterface != null) {
+            mJsInterface.release();
+        }
+
+    }
+
+    @Override
+    public void onSDestroy() {
+        Tlog.v(TAG, "mutualManager onSDestroy() ");
+
+        jsRequestInterfaceImpl = null;
+        mMqttLstImpl = null;
+
+        if (app != null) {
+            app.unregisterReceiver(mNetWorkStateReceiver);
+        }
+
+        if (mJsInterface != null) {
+            mJsInterface.release();
+            mJsInterface = null;
+        }
+
+        StartAI.getInstance().unInit();
+    }
+
+    public void onWxLoginResult(BaseResp baseResp) {
+        if (mMqttLstImpl != null) {
+            mMqttLstImpl.onWxLoginResult(baseResp);
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (jsRequestInterfaceImpl != null) {
+            jsRequestInterfaceImpl.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+
+    public void onWxPayResult(BaseResp resp) {
+        if (mMqttLstImpl != null) {
+            mMqttLstImpl.onWxPayResult(resp);
+        }
+    }
+
+
+
+    @Override
+    public boolean needUISafety() {
+        return false;
+    }
+
+    @Override
     public void onTokenExpire(C_0x8018.Resp.ContentBean resp) {
         if (Debuger.isLogDebug) {
             Tlog.e(TAG, "MQTT onConnectExpire :" + String.valueOf(resp));
         }
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String errorMsg) {
+        Tlog.e(TAG, " mqtt onDisconnect -->" + errorCode + " :" + errorMsg);
     }
 
     @Override
@@ -147,69 +217,7 @@ public class MutualManager implements IService, ICommonStateListener {
 
     }
 
-    @Override
-    public void onDisconnect(int errorCode, String errorMsg) {
-        Tlog.e(TAG, " mqtt onDisconnect -->" + errorCode + " :" + errorMsg);
-    }
-
-    @Override
-    public boolean needUISafety() {
-        return false;
-    }
-
-    @Override
-    public void onSResume() {
-        Tlog.v(TAG, "mutualManager onSResume() ");
-    }
-
-    @Override
-    public void onSPause() {
-        Tlog.v(TAG, "mutualManager onSPause() ");
-    }
-
-    @Override
-    public void onSFinish() {
-        Tlog.v(TAG, "mutualManager onSFinish() ");
-        if (mJsInterface != null) {
-            mJsInterface.release();
-        }
-
-    }
-
-    @Override
-    public void onSDestroy() {
-        Tlog.v(TAG, "mutualManager onSDestroy() ");
-        if (mJsInterface != null) {
-            mJsInterface.release();
-            mJsInterface = null;
-        }
-
-        jsRequestInterfaceImpl = null;
-        mMqttLstImpl = null;
-
-        if (app != null) {
-            app.unregisterReceiver(mNetWorkStateReceiver);
-        }
-    }
-
-    public void onWxLoginResult(BaseResp baseResp) {
-        if (mMqttLstImpl != null) {
-            mMqttLstImpl.onWxLoginResult(baseResp);
-        }
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (jsRequestInterfaceImpl != null) {
-            jsRequestInterfaceImpl.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-
-    public void onWxPayResult(BaseResp resp) {
-        if (mMqttLstImpl != null) {
-            mMqttLstImpl.onWxPayResult(resp);
-        }
-    }
+    private final NetworkStatusResponseMethod networkStatusResponseMethod = NetworkStatusResponseMethod.getNetworkStatusResponseMethod();
 
     private final BroadcastReceiver mNetWorkStateReceiver = new BroadcastReceiver() {
         @Override
@@ -282,7 +290,6 @@ public class MutualManager implements IService, ICommonStateListener {
 //                ｝
 //        }
 
-            NetworkStatusResponseMethod networkStatusResponseMethod = NetworkStatusResponseMethod.getNetworkStatusResponseMethod();
             networkStatusResponseMethod.setResult(true);
             networkStatusResponseMethod.setType(type);
             networkStatusResponseMethod.setState(NetworkStatusResponseMethod.changeState(state));
