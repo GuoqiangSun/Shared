@@ -11,6 +11,7 @@ import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 
 import cn.com.startai.sharedlib.app.controller.Controller;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
+import cn.com.startai.sharedlib.app.mutual.utils.WXApiHelper;
 import cn.com.swain.baselib.log.Tlog;
 
 

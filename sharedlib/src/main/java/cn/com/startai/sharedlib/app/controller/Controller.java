@@ -4,7 +4,7 @@ import android.app.Application;
 
 import java.util.ArrayList;
 
-import cn.com.startai.sharedlib.app.Debuger;
+import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.swain.baselib.app.IApp.IService;

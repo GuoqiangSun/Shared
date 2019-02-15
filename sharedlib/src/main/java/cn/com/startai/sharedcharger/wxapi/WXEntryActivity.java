@@ -8,9 +8,10 @@ import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 
-import cn.com.startai.sharedlib.app.Debuger;
+import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.controller.Controller;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
+import cn.com.startai.sharedlib.app.mutual.utils.WXApiHelper;
 import cn.com.swain.baselib.log.Tlog;
 
 public class WXEntryActivity extends Activity implements IWXAPIEventHandler {

@@ -3,6 +3,7 @@ package cn.com.shared.weblib.fragment;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,7 @@ import cn.com.swain.baselib.log.Tlog;
  * desc :
  */
 
-public class WebFragment extends BaseFragment {
+public class WebFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,8 +40,9 @@ public class WebFragment extends BaseFragment {
 
     private IWebFragmentCallBack mCallBack;
 
-    @Override
-    protected View inflateView() {
+    private View mRootView;
+
+    private View inflateView() {
         Tlog.v(" WebFragment inflateView() ");
 
         View mRootView = View.inflate(getActivity(), R.layout.weblib_framgment_web,
@@ -50,11 +52,12 @@ public class WebFragment extends BaseFragment {
         return mRootView;
     }
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         Tlog.v(" WebFragment onCreateView() " + hashCode());
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        if (mRootView == null) {
+            mRootView = inflateView();
+        }
 
         Activity activity = getActivity();
         if (activity instanceof IWebFragmentCallBack) {
@@ -80,11 +83,11 @@ public class WebFragment extends BaseFragment {
 //        mWebView.addJavascriptInterface(jsInterfaces, jsInterfaces.getName());
 
         mWebView.setUIClient(new MXWalkUIClient(mWebView));
+        String loadUrl = mCallBack.getLoadUrl();
+        Tlog.v(" loadUrl:" + loadUrl);
+        mWebView.loadUrl(loadUrl);
 
-        Tlog.v(" loadUrl:" + mCallBack.getLoadUrl());
-        mWebView.loadUrl(mCallBack.getLoadUrl());
-
-        return view;
+        return mRootView;
     }
 
     @Override
@@ -94,6 +97,13 @@ public class WebFragment extends BaseFragment {
             mWebView.stopLoading();
             mWebView.onDestroy();
             mWebView = null;
+        }
+        if (mRootView != null) {
+            ViewGroup vg = (ViewGroup) mRootView.getParent();
+            if (vg != null) {
+                vg.removeView(mRootView);
+            }
+            mRootView = null;
         }
         super.onDestroyView();
     }
@@ -107,12 +117,6 @@ public class WebFragment extends BaseFragment {
     public void disableGoBack(boolean status) {
         if (mWebView != null) {
             mWebView.disableGoBack(status);
-        }
-    }
-
-    public void setWebViewDebugInChrome(boolean debug) {
-        if (mWebView != null) {
-            mWebView.setDebugInChrome(debug);
         }
     }
 

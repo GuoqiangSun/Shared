@@ -33,8 +33,8 @@ public class CrossWebView extends XWalkView {
     }
 
     private void init() {
-
-        setDebugInChrome(REMOTE_DEBUGGING);
+        // crossWalk 在浏览器调试
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, REMOTE_DEBUGGING);
 
         setDrawingCacheEnabled(true);
         setChildrenDrawingCacheEnabled(true);
@@ -69,11 +69,6 @@ public class CrossWebView extends XWalkView {
         settings.setDomStorageEnabled(true);
         settings.setCacheMode(XWalkSettings.LOAD_DEFAULT);
 
-    }
-
-    // crossWalk 在浏览器调试
-    public void setDebugInChrome(boolean debug) {
-        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, debug);
     }
 
     @Deprecated

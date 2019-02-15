@@ -18,4 +18,8 @@ public class GetIdentityCodeRequestBean extends BaseCommonJsRequestBeanWrapper {
         return getStringByRootJson("phone");
     }
 
+    public int getType() {
+        return getIntByRootJson("type");
+    }
+
 }

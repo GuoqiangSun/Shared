@@ -1,5 +1,6 @@
 package cn.com.startai.sharedcharger;
 
+import cn.com.startai.sharedlib.app.global.CustomManager;
 import cn.com.startai.sharedlib.app.view.SharedApplication;
 
 /**
@@ -11,10 +12,8 @@ public class RuiooChargerApplication extends SharedApplication {
 
     @Override
     public void onCreate() {
+        CustomManager.getInstance().initRuiooProject();
         super.onCreate();
-
-
-
     }
 
 }

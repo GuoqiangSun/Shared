@@ -8,26 +8,26 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.Looper;
 
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 
 import cn.com.startai.chargersdk.ChargerBusiHandler;
 import cn.com.startai.chargersdk.PersistentEventChargerDispatcher;
 import cn.com.startai.mqttsdk.StartAI;
+import cn.com.startai.mqttsdk.base.DistributeParam;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8018;
-import cn.com.startai.mqttsdk.event.ICommonStateListener;
 import cn.com.startai.mqttsdk.localbusi.UserBusi;
 import cn.com.startai.mqttsdk.mqtt.MqttInitParam;
 import cn.com.startai.sharedlib.BuildConfig;
-import cn.com.startai.sharedlib.app.Debuger;
-import cn.com.startai.sharedlib.app.LooperManager;
-import cn.com.startai.sharedlib.app.info.RuiooChargerDeveloperInfo;
-import cn.com.startai.sharedlib.app.js.CommonJsInterfaceTask;
-import cn.com.startai.sharedlib.app.js.method2Impl.MqttStatusResponseMethod;
+import cn.com.startai.sharedlib.app.global.LooperManager;
+import cn.com.startai.sharedlib.app.info.DeveloperInfoFactory;
+import cn.com.startai.sharedlib.app.js.ChargerJsInterfaceTask;
 import cn.com.startai.sharedlib.app.js.method2Impl.NetworkStatusResponseMethod;
-import cn.com.startai.sharedlib.app.mutual.impl.JsRequestInterfaceImpl;
-import cn.com.startai.sharedlib.app.mutual.impl.MqttLsnImpl;
+import cn.com.startai.sharedlib.app.mutual.impl.ChargerJsRequestInterfaceImpl;
+import cn.com.startai.sharedlib.app.mutual.impl.ChargerMqttLsnImpl;
+import cn.com.startai.sharedlib.app.mutual.impl.CommonJsRequestInterfaceImpl;
+import cn.com.startai.sharedlib.app.mutual.impl.CommonMqttLsnImpl;
+import cn.com.startai.sharedlib.app.mutual.impl.MqStateLsnImpl;
 import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.log.Tlog;
@@ -37,7 +37,7 @@ import cn.com.swain.baselib.log.Tlog;
  * date : 2018/8/27 0027
  * desc :
  */
-public class MutualManager implements IService, ICommonStateListener {
+public class MutualManager implements IUserIDManager, IService {
 
     public static final String TAG = AbsJsInterface.TAG;
 
@@ -57,10 +57,12 @@ public class MutualManager implements IService, ICommonStateListener {
 
     private String userID;
 
+    @Override
     public void setUserID(String userID) {
         this.userID = userID;
     }
 
+    @Override
     public String getUserID() {
 //        if (Debuger.isDebug) {
 //            return "3a5f4bafe52943e286c7ee7240d52a42";
@@ -68,6 +70,7 @@ public class MutualManager implements IService, ICommonStateListener {
         return userID;
     }
 
+    @Override
     public String getUserIDFromMq() {
         UserBusi userBusi = new UserBusi();
         C_0x8018.Resp.ContentBean currUser = userBusi.getCurrUser();
@@ -77,32 +80,37 @@ public class MutualManager implements IService, ICommonStateListener {
         return null;
     }
 
-    private JsRequestInterfaceImpl jsRequestInterfaceImpl;
-    private MqttLsnImpl mMqttLstImpl;
+    private CommonJsRequestInterfaceImpl commonJsRequestInterfaceImpl;
+    private CommonMqttLsnImpl commonMqttLsnImpl;
+    private MqStateLsnImpl mMqStateLsnImpl;
 
     @Override
     public void onSCreate() {
 
         Tlog.v(TAG, "mutualManager onSCreate() debug:" + BuildConfig.DEBUG);
 
-
         // mqtt
-        MqttInitParam initParam = new RuiooChargerDeveloperInfo();
-
-        StartAI.getInstance().initialization(app, initParam);
+        DistributeParam.THIRDPAYMENTUNIFIEDORDER_DISTRIBUTE = true;
+        MqttInitParam mqttInitParam = DeveloperInfoFactory.produceMqttInitParam();
+        StartAI.getInstance().initialization(app, mqttInitParam);
         StartAI.getInstance().getPersisitnet().setBusiHandler(new ChargerBusiHandler());
         StartAI.getInstance().getPersisitnet().setEventDispatcher(PersistentEventChargerDispatcher.getInstance());
 
-        StartAI.getInstance().getPersisitnet().getEventDispatcher().registerOnTunnelStateListener(this);
+        mMqStateLsnImpl = new MqStateLsnImpl(mCallBack);
+        StartAI.getInstance().getPersisitnet().getEventDispatcher().registerOnTunnelStateListener(mMqStateLsnImpl);
 
-        mMqttLstImpl = new MqttLsnImpl(app, mCallBack, this);
-        StartAI.getInstance().getPersisitnet().getEventDispatcher().registerOnPushListener(mMqttLstImpl);
-
+        commonMqttLsnImpl = new CommonMqttLsnImpl(app, mCallBack, this);
+        ChargerMqttLsnImpl mChargerMqttLsnImpl = new ChargerMqttLsnImpl(commonMqttLsnImpl);
+        StartAI.getInstance().getPersisitnet().getEventDispatcher().registerOnPushListener(mChargerMqttLsnImpl);
 
         // js
-        Looper workLooper = LooperManager.getInstance().getWorkLooper();
-        jsRequestInterfaceImpl = new JsRequestInterfaceImpl(app, mCallBack, this);
-        mJsInterface = new CommonJsInterfaceTask(workLooper, jsRequestInterfaceImpl);
+        ChargerJsRequestInterfaceImpl mChargerJsRequestInterfaceImpl = new ChargerJsRequestInterfaceImpl(app,
+                mCallBack,
+                this);
+        commonJsRequestInterfaceImpl = mChargerJsRequestInterfaceImpl;
+
+        mJsInterface = new ChargerJsInterfaceTask(LooperManager.getInstance().getWorkLooper(),
+                mChargerJsRequestInterfaceImpl);
 
         // network
         IntentFilter filter = new IntentFilter();
@@ -129,15 +137,11 @@ public class MutualManager implements IService, ICommonStateListener {
         if (mJsInterface != null) {
             mJsInterface.release();
         }
-
     }
 
     @Override
     public void onSDestroy() {
         Tlog.v(TAG, "mutualManager onSDestroy() ");
-
-        jsRequestInterfaceImpl = null;
-        mMqttLstImpl = null;
 
         if (app != null) {
             app.unregisterReceiver(mNetWorkStateReceiver);
@@ -149,77 +153,37 @@ public class MutualManager implements IService, ICommonStateListener {
         }
 
         StartAI.getInstance().unInit();
+        StartAI.getInstance().getPersisitnet().getEventDispatcher().unregisterOnTunnelStateListener(mMqStateLsnImpl);
+        StartAI.getInstance().getPersisitnet().getEventDispatcher().unregisterOnPushListener(commonMqttLsnImpl);
+
+        commonJsRequestInterfaceImpl = null;
+        commonMqttLsnImpl = null;
+        mMqStateLsnImpl = null;
     }
 
     public void onWxLoginResult(BaseResp baseResp) {
-        if (mMqttLstImpl != null) {
-            mMqttLstImpl.onWxLoginResult(baseResp);
+        if (commonMqttLsnImpl != null) {
+            commonMqttLsnImpl.onWxLoginResult(baseResp);
         }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (jsRequestInterfaceImpl != null) {
-            jsRequestInterfaceImpl.onActivityResult(requestCode, resultCode, data);
+        if (commonJsRequestInterfaceImpl != null) {
+            commonJsRequestInterfaceImpl.onActivityResult(requestCode, resultCode, data);
         }
     }
 
 
     public void onWxPayResult(BaseResp resp) {
-        if (mMqttLstImpl != null) {
-            mMqttLstImpl.onWxPayResult(resp);
+        if (commonMqttLsnImpl != null) {
+            commonMqttLsnImpl.onWxPayResult(resp);
         }
     }
 
 
+    private NetworkStatusResponseMethod networkStatusResponseMethod = NetworkStatusResponseMethod.getNetworkStatusResponseMethod();
 
-    @Override
-    public boolean needUISafety() {
-        return false;
-    }
-
-    @Override
-    public void onTokenExpire(C_0x8018.Resp.ContentBean resp) {
-        if (Debuger.isLogDebug) {
-            Tlog.e(TAG, "MQTT onConnectExpire :" + String.valueOf(resp));
-        }
-    }
-
-    @Override
-    public void onDisconnect(int errorCode, String errorMsg) {
-        Tlog.e(TAG, " mqtt onDisconnect -->" + errorCode + " :" + errorMsg);
-    }
-
-    @Override
-    public void onConnectFail(int errorCode, String errorMsg) {
-        Tlog.e(TAG, " mqtt onConnectFail -->" + errorCode + " :" + errorMsg);
-
-        MqttStatusResponseMethod networkStatusResponseMethod = MqttStatusResponseMethod.getNetworkStatusResponseMethod();
-        networkStatusResponseMethod.setResult(true);
-        networkStatusResponseMethod.setConnect(true);
-        networkStatusResponseMethod.setCode(String.valueOf(errorCode));
-        networkStatusResponseMethod.setTypeIsWideNetwork();
-        if (mCallBack != null) {
-            mCallBack.callJs(networkStatusResponseMethod.toMethod());
-        }
-    }
-
-    @Override
-    public void onConnected() {
-        Tlog.e(TAG, " mqtt onConnected ");
-
-        MqttStatusResponseMethod networkStatusResponseMethod = MqttStatusResponseMethod.getNetworkStatusResponseMethod();
-        networkStatusResponseMethod.setResult(true);
-        networkStatusResponseMethod.setConnect(true);
-        networkStatusResponseMethod.setTypeIsWideNetwork();
-        if (mCallBack != null) {
-            mCallBack.callJs(networkStatusResponseMethod.toMethod());
-        }
-
-    }
-
-    private final NetworkStatusResponseMethod networkStatusResponseMethod = NetworkStatusResponseMethod.getNetworkStatusResponseMethod();
-
-    private final BroadcastReceiver mNetWorkStateReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mNetWorkStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 

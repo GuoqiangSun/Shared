@@ -14,7 +14,6 @@ public class MobileLoginByIDCodeRequestBean extends BaseCommonJsRequestBeanWrapp
         super(mBean);
     }
 
-
     public String getPhone() {
         return getStringByRootJson("phone");
     }

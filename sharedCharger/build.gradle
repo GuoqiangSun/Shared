@@ -16,10 +16,12 @@ android {
         applicationId "cn.com.startai.sharedcharger"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 10040
-        versionName "1.0.040"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        versionCode 10042
+        versionName "1.0.042"
         signingConfig signingConfigs.config
+        multiDexEnabled true
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
         checkReleaseBuilds false

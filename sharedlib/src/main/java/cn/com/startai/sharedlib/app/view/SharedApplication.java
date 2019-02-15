@@ -6,9 +6,10 @@ import android.os.Build;
 import com.facebook.stetho.Stetho;
 
 import cn.com.shared.weblib.view.CrossWebView;
-import cn.com.startai.sharedlib.app.Debuger;
-import cn.com.startai.sharedlib.app.FileManager;
-import cn.com.startai.sharedlib.app.LooperManager;
+import cn.com.startai.sharedlib.app.global.CustomManager;
+import cn.com.startai.sharedlib.app.global.Debuger;
+import cn.com.startai.sharedlib.app.global.FileManager;
+import cn.com.startai.sharedlib.app.global.LooperManager;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
 import cn.com.swain.baselib.log.Tlog;
 
@@ -28,6 +29,7 @@ public class SharedApplication extends BaseApplication {
 
         Language.changeLanguage(getApplicationContext());
 
+        CustomManager.getInstance().init(this);
         FileManager.getInstance().init(this);
         Debuger.getInstance().init(this);
         LooperManager.getInstance().init(this);
@@ -37,7 +39,9 @@ public class SharedApplication extends BaseApplication {
             Stetho.initializeWithDefaults(this); //chrome://inspect
         }
 
-        Tlog.i("SharedApplication onCreate(); pid:" + android.os.Process.myPid() + "; Build.VERSION.SDK_INT :" + Build.VERSION.SDK_INT);
+        Tlog.i("SharedApplication onCreate(); pid:" + android.os.Process.myPid()
+                + "; Build.VERSION.SDK_INT :" + Build.VERSION.SDK_INT);
+
     }
 
     @Override

@@ -13,7 +13,7 @@ import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod2;
  */
 public class MqttStatusResponseMethod extends BaseResponseMethod2 {
 
-    public static MqttStatusResponseMethod getNetworkStatusResponseMethod() {
+    public static MqttStatusResponseMethod getMqttStatusResponseMethod() {
         return new MqttStatusResponseMethod();
     }
 
@@ -63,10 +63,14 @@ public class MqttStatusResponseMethod extends BaseResponseMethod2 {
     public String toMethod() {
 
         JSONObject contentObj = new JSONObject();
+        try {
+            contentObj.put("status", connect);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         if (getResult()) {
             try {
                 contentObj.put("type", type);
-                contentObj.put("status", connect);
                 contentObj.put("code", code);
             } catch (JSONException e) {
                 e.printStackTrace();

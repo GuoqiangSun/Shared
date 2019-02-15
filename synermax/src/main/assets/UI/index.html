@@ -1,0 +1,153 @@
+﻿
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>charger</title>
+    <!-- <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.8&key=dd0ab4dec22fcb03c2e6a193fd42780d"></script>  -->
+  </head>
+  <style>
+
+
+
+.about-container{
+  color: #585858;
+}
+#iema, #sn{
+  width: 100%;
+  padding: 20px;
+  font-size: 30px;
+  text-align: left;
+  font-weight: 600;
+  overflow: hidden;
+  }
+  .code{
+    width: 150px;
+    background: yellow;
+    float: right;
+    line-height: 30px;
+    text-align: center;
+    font-size: 15px;
+    margin-right: 50px;
+    margin-top: 5px;
+  }
+#pasw{
+width: 100%;
+height: 80%;
+display: flex;
+flex-wrap: wrap;
+}
+#pasw span{
+font-size: 24px;
+color: black;
+width: 25%;
+height: 30px;
+padding: 10px;
+}
+</style>
+
+  <body>
+    <div class="about-container">
+      <div id="iema">sn:
+        <div class="code" id="scan">返回扫码</div>
+      </div>
+      <div id="sn">
+      </div>
+      <div id="pasw">
+      </div>
+    </div>
+    <!-- built files will be auto injected -->
+  </body>
+  <script>
+    window.onload = function () {
+      let i, sn, dd
+      let code = { "msgType": "0x5201" }
+      window.Data.dataInteractionRequest(JSON.stringify(code))
+      // window.dataInteractionResponse('{"msgType":"0x5202","result":true,"data":{"imei":"866157037268639","merchantId":"114"}}')
+      window.dataInteractionResponse = function (data) {
+        data = JSON.parse(data)
+        if (data.msgType === '0x5202') {
+          if (data.result) {
+            sn = data.data.imei
+            document.getElementById('sn').innerHTML = sn
+            var sendData = {};
+            let url = 'https://share.startai.cn/shared-power-bank-h5/queryChargingCableBillPwds?cableId=' + sn
+            console.log(url)
+            Ajax('POST', url, sendData, function (data) {
+              dd = JSON.parse(data).data.split(',')
+              var str = ''
+              for (i in dd) {
+                str += '<span>' + dd[i] + '</span>'
+              }
+              document.getElementById('pasw').innerHTML = str
+              console.log(data);
+            }, function (error) {
+              console.log(error);
+            });
+          } else {
+            document.getElementById('pasw').innerHTML = '扫码失败'
+          }
+        } else if (data.msgType === '0x5001') {
+          window.Data.dataInteractionRequest(JSON.stringify(code))
+          document.getElementById('sn').innerHTML = ''
+          document.getElementById('pasw').innerHTML = ''
+        }
+      }
+      document.getElementById('scan').onclick = function () {
+        window.Data.dataInteractionRequest(JSON.stringify(code))
+        document.getElementById('sn').innerHTML = ''
+        document.getElementById('pasw').innerHTML = ''
+      }
+      function Ajax(type, url, data, success, failed) {
+        // 创建ajax对象
+        var xhr = null;
+        if (window.XMLHttpRequest) {
+          xhr = new XMLHttpRequest();
+        } else {
+          xhr = new ActiveXObject('Microsoft.XMLHTTP')
+        }
+
+        var type = type.toUpperCase();
+        // 用于清除缓存
+        var random = Math.random();
+
+        if (typeof data == 'object') {
+          var str = '';
+          for (var key in data) {
+            str += key + '=' + data[key] + '&';
+          }
+          data = str.replace(/&$/, '');
+        }
+
+        if (type == 'GET') {
+          if (data) {
+            xhr.open('GET', url + '?' + data, true);
+          } else {
+            xhr.open('GET', url + '?t=' + random, true);
+          }
+          xhr.send();
+
+        } else if (type == 'POST') {
+          xhr.open('POST', url, true);
+          // 如果需要像 html 表单那样 POST 数据，请使用 setRequestHeader() 来添加 http 头。
+          xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+          xhr.send(data);
+        }
+
+        // 处理返回数据
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              success(xhr.responseText);
+            } else {
+              if (failed) {
+                failed(xhr.status);
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+</html>

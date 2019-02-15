@@ -1,4 +1,4 @@
-include ':sharedCharger', ':sharedlib', ':weblib'
+include ':sharedCharger', ':sharedlib', ':weblib', ':synermax'
 
 //include ':baseLibary'
 //project(":baseLibary").projectDir = new File('../Common/baseLibrary')

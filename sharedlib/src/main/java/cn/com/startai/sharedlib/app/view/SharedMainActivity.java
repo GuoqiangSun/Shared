@@ -17,19 +17,18 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
-import cn.com.shared.weblib.activity.WebHomeActivity;
-import cn.com.shared.weblib.fragment.GuideFragment;
 import cn.com.startai.scansdk.ChargerScanActivity;
-import cn.com.startai.sharedcharger.wxapi.WXApiHelper;
-import cn.com.startai.sharedlib.app.Debuger;
-import cn.com.startai.sharedlib.app.FileManager;
 import cn.com.startai.sharedlib.app.controller.Controller;
+import cn.com.startai.sharedlib.app.global.Debuger;
+import cn.com.startai.sharedlib.app.global.FileManager;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
 import cn.com.startai.sharedlib.app.js.method2Impl.LanguageResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
+import cn.com.startai.sharedlib.app.mutual.utils.WXApiHelper;
 import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
+import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
 import cn.com.swain.baselib.log.Tlog;
 import cn.com.swain.baselib.util.PermissionHelper;
 import cn.com.swain.baselib.util.PermissionRequest;
@@ -55,7 +54,7 @@ public class SharedMainActivity extends WebHomeActivity
                 LanguageResponseMethod languageResponseMethod = LanguageResponseMethod.getLanguageResponseMethod();
                 languageResponseMethod.setResult(true);
                 languageResponseMethod.setLan(type);
-                callJs(languageResponseMethod.toMethod());
+                callJs(languageResponseMethod);
             }
         }
     }
@@ -69,7 +68,7 @@ public class SharedMainActivity extends WebHomeActivity
         LanguageResponseMethod languageResponseMethod = LanguageResponseMethod.getLanguageResponseMethod();
         languageResponseMethod.setResult(true);
         languageResponseMethod.setLan(type);
-        callJs(languageResponseMethod.toMethod());
+        callJs(languageResponseMethod);
     }
 
     private PermissionRequest mPermissionRequest;
@@ -139,7 +138,7 @@ public class SharedMainActivity extends WebHomeActivity
     }
 
     @Override
-    protected GuideFragment newGuideFragment() {
+    protected BaseFragment newGuideFragment() {
         return new SharedGuideFragment();
     }
 
@@ -210,8 +209,13 @@ public class SharedMainActivity extends WebHomeActivity
     }
 
     @Override
-    public void scanQR(int code) {
-        ChargerScanActivity.showActivityForResult(this, code);
+    public void callJs(BaseResponseMethod mBaseResponseMethod) {
+        callJs(mBaseResponseMethod.toMethod());
+    }
+
+    @Override
+    public void scanQR(int requestCode) {
+        ChargerScanActivity.showActivityForResult(this, requestCode);
     }
 
     @Override

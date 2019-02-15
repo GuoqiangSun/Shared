@@ -11,6 +11,7 @@ android {
         targetSdkVersion 28
         versionCode 2
         versionName "2.0"
+        multiDexEnabled true
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -56,7 +57,7 @@ dependencies {
     //支付宝 sdk
     api(name: 'alipaySdk-15.5.9-20181123210601', ext: 'aar')
 
-    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:+'
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:5.3.1'
 
     //zxing二维码识别 基础包
     implementation 'com.google.zxing:core:3.3.0'
@@ -72,7 +73,7 @@ dependencies {
     implementation 'cn.com.startai:fastdfssdk:1.0.2'
 
     //startai mqtt  sdk包
-    implementation 'cn.com.startai:mqsdk:3.1.38'
+    implementation 'cn.com.startai:mqsdk:3.1.39'
     //startai mqtt charger sdk 包
     implementation 'cn.com.startai:charger:1.1.111'
     implementation 'com.google.code.gson:gson:2.8.5'

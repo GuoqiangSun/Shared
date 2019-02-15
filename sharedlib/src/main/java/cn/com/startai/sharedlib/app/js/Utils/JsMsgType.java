@@ -268,6 +268,27 @@ public class JsMsgType extends BaseCommonJsUtils {
     public static final String TYPE_RESPONSE_ALI_BIND = "0x5167";
 
 
+    /**
+     * 微信解绑请求
+     */
+    public static final String TYPE_REQUEST_UNBIND_WX = "0x516A";
+
+    /**
+     * 微信解绑返回
+     */
+    public static final String TYPE_RESPONSE_UNBIND_WX = "0x516B";
+
+    /**
+     * 支付宝解绑请求
+     */
+    public static final String TYPE_REQUEST_UNBIND_ALI = "0x516C";
+
+    /**
+     * 支付宝解绑返回
+     */
+    public static final String TYPE_RESPONSE_UNBIND_ALI = "0x516D";
+
+
     /********订单*******/
 
     /**
