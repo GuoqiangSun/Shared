@@ -23,11 +23,12 @@ public class CustomManager implements IApp {
         return ClassHolder.FLAVORS;
     }
 
-    private boolean isRuiooProject = false;
+    private boolean isTestProject = false;
+    private boolean isSharedChargerProject = false;
     private boolean isSynerMaxProject = false;
 
-    public boolean isRuioo() {
-        return isRuiooProject;
+    public boolean isSharedCharger() {
+        return isSharedChargerProject;
     }
 
     public boolean isSynerMax() {
@@ -39,9 +40,14 @@ public class CustomManager implements IApp {
         this.isSynerMaxProject = true;
     }
 
-    public void initRuiooProject() {
-        Tlog.i(" init Ruioo project ");
-        this.isRuiooProject = true;
+    public void initSharedChargerProject() {
+        Tlog.i(" init shared charger project ");
+        this.isSharedChargerProject = true;
+    }
+
+    public void initTestProject() {
+        Tlog.i(" init Test project ");
+        this.isTestProject = true;
     }
 
 
@@ -49,7 +55,7 @@ public class CustomManager implements IApp {
     public void init(Application app) {
         Tlog.i("CustomManager init : ");
 
-        if (isRuioo()) {
+        if (isSharedCharger()) {
 
         } else if (isSynerMax()) {
 

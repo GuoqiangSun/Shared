@@ -18,7 +18,7 @@ public class ModifyHeadpicResponseMethod extends BaseResponseMethod2 {
         return new ModifyHeadpicResponseMethod();
     }
 
-    public ModifyHeadpicResponseMethod() {
+    private ModifyHeadpicResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_MODIFY_HEADPIC_DATA);
     }
 

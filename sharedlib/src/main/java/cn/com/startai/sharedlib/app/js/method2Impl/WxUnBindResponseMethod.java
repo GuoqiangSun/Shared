@@ -17,7 +17,7 @@ public class WxUnBindResponseMethod extends BaseResponseMethod2 {
         return new WxUnBindResponseMethod();
     }
 
-    public WxUnBindResponseMethod() {
+    private WxUnBindResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_UNBIND_WX);
     }
 

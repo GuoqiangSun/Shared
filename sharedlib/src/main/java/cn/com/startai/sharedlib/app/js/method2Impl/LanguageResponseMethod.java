@@ -17,7 +17,7 @@ public class LanguageResponseMethod extends BaseResponseMethod2 {
         return new LanguageResponseMethod();
     }
 
-    public LanguageResponseMethod() {
+    private LanguageResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_SYSTEM_LANGUAGE);
     }
 

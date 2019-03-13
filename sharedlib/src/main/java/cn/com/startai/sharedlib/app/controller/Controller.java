@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.MutualManager;
+import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
 import cn.com.swain.baselib.app.IApp.IService;
 import cn.com.swain.baselib.log.Tlog;
 
@@ -110,6 +111,7 @@ public class Controller implements IService {
         this.create = false;
         Tlog.v(" Controller onSDestroy");
         Debuger.getInstance().onSDestroy();
+        WXApiHelper.getInstance().releaseWxApi();
     }
 
     @Override

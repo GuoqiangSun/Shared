@@ -18,7 +18,7 @@ public class ThirdPayResponseMethod extends BaseResponseMethod2 {
         return new ThirdPayResponseMethod();
     }
 
-    public ThirdPayResponseMethod() {
+    private ThirdPayResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_THIRD_PAY);
     }
 

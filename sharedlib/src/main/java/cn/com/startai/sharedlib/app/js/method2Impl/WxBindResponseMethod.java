@@ -18,7 +18,7 @@ public class WxBindResponseMethod extends BaseResponseMethod2 {
         return new WxBindResponseMethod();
     }
 
-    public WxBindResponseMethod() {
+    private WxBindResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_WX_BIND);
     }
 

@@ -39,8 +39,6 @@ public class LooperManager implements IApp {
     @Override
     public void init(Application app) {
 
-        startWorkThread();
-
         Tlog.i(" LooperManager init success...");
     }
 
@@ -84,6 +82,7 @@ public class LooperManager implements IApp {
     }
 
     public final Looper getWorkLooper() {
+        startWorkThread();
         return mWorkThread.getLooper();
     }
 

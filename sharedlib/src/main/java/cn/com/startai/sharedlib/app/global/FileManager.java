@@ -2,6 +2,7 @@ package cn.com.startai.sharedlib.app.global;
 
 import android.Manifest;
 import android.app.Application;
+import android.media.MediaScannerConnection;
 
 import com.blankj.utilcode.util.PermissionUtils;
 
@@ -36,21 +37,30 @@ public class FileManager extends FileTemplate {
     public void init(Application app) {
         super.init(app);
         Tlog.i(" FileManager init finish ; success:" + exit);
-        FileUtil.notifySystemToScan(app, getProjectPath().getAbsolutePath());
+//        FileUtil.notifySystemToScan(app, getProjectPath().getAbsolutePath());
+        File f = new File(getProjectPath(),"notify.txt");
+        FileUtil.createNullFile(f);
+
+        MediaScannerConnection.scanFile(app.getApplicationContext(),new String[]{f.getAbsolutePath()},null,null);
     }
+
 
     public void recreate(Application app) {
         super.init(app);
         Tlog.i(" FileManager recreate finish ; success:" + exit);
+//        FileUtil.notifySystemToScan(app, getProjectPath().getAbsolutePath());
     }
 
-    private static final String MY_PROJECT_PATH_NAME = "Ruioo";
 
     @Override
     protected File initMyProjectPath() {
-        return new File(getAppRootPath(), MY_PROJECT_PATH_NAME);
+        if (CustomManager.getInstance().isSharedCharger()) {
+            return new File(getAppRootPath(), "SharedCharger");
+        } else if (CustomManager.getInstance().isSynerMax()) {
+            return new File(getAppRootPath(), "Synermax");
+        }
+        return new File(getAppRootPath(), "shared");
     }
-
 
     @Override
     protected String initMyAppRootPath() {
@@ -66,17 +76,23 @@ public class FileManager extends FileTemplate {
         if (!PermissionUtils.isGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             return null;
         }
+        return getPhotoFileNoCheckPermission();
+    }
 
-        SimpleDateFormat timeStampFormat = new SimpleDateFormat(
-                "yyyy_MM_dd_HH_mm_ss", Locale.getDefault());
-        String filename = timeStampFormat.format(new Date());
+    /**
+     * 文件保存路径
+     */
+    public static File getPhotoFileNoCheckPermission() {
+
         File cachePath = FileManager.getInstance().getCachePath();
         boolean mkdirs = FileManager.getInstance().mkdirs(cachePath);
         if (!mkdirs) {
             return null;
         }
+        SimpleDateFormat timeStampFormat = new SimpleDateFormat(
+                "yyyy_MM_dd_HH_mm_ss", Locale.getDefault());
+        String filename = timeStampFormat.format(new Date());
         return new File(cachePath, filename + ".jpg");
     }
-
 
 }

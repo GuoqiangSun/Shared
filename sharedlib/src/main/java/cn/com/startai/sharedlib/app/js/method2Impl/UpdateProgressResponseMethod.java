@@ -18,7 +18,7 @@ public class UpdateProgressResponseMethod extends BaseResponseMethod2 {
         return new UpdateProgressResponseMethod();
     }
 
-    public UpdateProgressResponseMethod() {
+    private UpdateProgressResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_APP_UPGRADE);
     }
 

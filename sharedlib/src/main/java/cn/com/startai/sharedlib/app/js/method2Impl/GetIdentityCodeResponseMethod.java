@@ -17,7 +17,7 @@ public class GetIdentityCodeResponseMethod extends BaseResponseMethod2 {
         return new GetIdentityCodeResponseMethod();
     }
 
-    public GetIdentityCodeResponseMethod() {
+    private GetIdentityCodeResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_GET_IDENTITY_CODE);
     }
 

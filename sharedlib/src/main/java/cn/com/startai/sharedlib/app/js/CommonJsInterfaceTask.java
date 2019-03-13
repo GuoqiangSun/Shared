@@ -34,7 +34,6 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
         final XWalkCommonJsRequest commonJsRequest = new XWalkCommonJsRequest(mLooper, this);
         attachAbsJsInterface(commonJsRequest);
         this.mCallBack = mCallBack;
-
     }
 
     @Override

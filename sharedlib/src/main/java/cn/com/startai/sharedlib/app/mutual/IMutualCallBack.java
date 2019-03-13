@@ -3,7 +3,7 @@ package cn.com.startai.sharedlib.app.mutual;
 import android.app.Activity;
 import android.content.Intent;
 
-import cn.com.startai.sharedlib.app.view.ICallJS;
+import cn.com.startai.sharedlib.app.view.activity.ICallJS;
 import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
 
 /**

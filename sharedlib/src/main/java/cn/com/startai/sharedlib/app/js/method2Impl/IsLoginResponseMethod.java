@@ -17,7 +17,7 @@ public class IsLoginResponseMethod extends BaseResponseMethod2 {
         return new IsLoginResponseMethod();
     }
 
-    public IsLoginResponseMethod() {
+    private IsLoginResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_IS_LOGIN);
     }
 

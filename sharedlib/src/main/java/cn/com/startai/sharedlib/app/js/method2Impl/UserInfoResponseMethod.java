@@ -21,7 +21,7 @@ public class UserInfoResponseMethod extends BaseResponseMethod2 {
         return new UserInfoResponseMethod();
     }
 
-    public UserInfoResponseMethod() {
+    private UserInfoResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_USER_INFO);
     }
 

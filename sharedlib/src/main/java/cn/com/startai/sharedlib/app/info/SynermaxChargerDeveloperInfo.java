@@ -10,9 +10,9 @@ import cn.com.startai.mqttsdk.mqtt.MqttInitParam;
 public class SynermaxChargerDeveloperInfo extends MqttInitParam {
 
     public SynermaxChargerDeveloperInfo() {
-        super.domain = "ruioo";
+        super.domain = "synermax";
         super.apptype = "sharedPowerBank/controll/android";
-        super.appid = "f7cc35b33c8f579fae3df9f3e5941608";
+        super.appid = "qxb546488afc25b190";
         super.m_ver = "Json_9.2.5_1.3.4";
     }
 

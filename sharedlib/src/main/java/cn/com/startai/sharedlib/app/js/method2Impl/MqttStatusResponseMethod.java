@@ -17,7 +17,7 @@ public class MqttStatusResponseMethod extends BaseResponseMethod2 {
         return new MqttStatusResponseMethod();
     }
 
-    public MqttStatusResponseMethod() {
+    private MqttStatusResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_MQTT);
     }
 
@@ -33,17 +33,17 @@ public class MqttStatusResponseMethod extends BaseResponseMethod2 {
     public static final String NETWORK_WAN = "wideNetwork";
     public static final String NETWORK_LAN = "localNetwork ";
 
-    public void setTypeIsWideNetwork() {
+    public void setNetworkTypeIsWAN() {
         type = NETWORK_WAN;
     }
 
-    public void setTypeIsLocalNetwork() {
-        type = NETWORK_WAN;
+    public void setNetworkTypeIsLAN() {
+        type = NETWORK_LAN;
     }
 
     private String type;
 
-    public void setType(String type) {
+    public void setNetworkType(String type) {
         this.type = type;
     }
 

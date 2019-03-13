@@ -16,8 +16,8 @@ android {
         applicationId "cn.com.startai.sharedcharger"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 10042
-        versionName "1.0.042"
+        versionCode 10043
+        versionName "1.0.043"
         signingConfig signingConfigs.config
         multiDexEnabled true
 
@@ -41,7 +41,7 @@ android {
     }
     android.applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "RUIOO-${variant.versionName}-${variant.buildType.name}.apk"
+            outputFileName = "Qvik-${variant.versionName}-${variant.buildType.name}.apk"
         }
     }
     productFlavors {
@@ -53,6 +53,7 @@ repositories {
         dirs 'libs'
     }
 }
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     //noinspection GradleCompatible

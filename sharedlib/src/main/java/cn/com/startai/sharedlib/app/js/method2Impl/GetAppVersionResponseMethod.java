@@ -17,7 +17,7 @@ public class GetAppVersionResponseMethod extends BaseResponseMethod2 {
         return new GetAppVersionResponseMethod();
     }
 
-    public GetAppVersionResponseMethod() {
+    private GetAppVersionResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_APP_VERSION);
     }
 

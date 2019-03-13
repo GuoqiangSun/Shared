@@ -19,7 +19,7 @@ public class NetworkStatusResponseMethod extends BaseResponseMethod2 {
         return new NetworkStatusResponseMethod();
     }
 
-    public NetworkStatusResponseMethod() {
+    private NetworkStatusResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_NETWORK);
     }
 

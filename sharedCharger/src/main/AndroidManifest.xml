@@ -3,19 +3,14 @@
     package="cn.com.startai.sharedcharger">
 
     <application
-        android:name=".RuiooChargerApplication"
-        android:allowBackup="true"
-        android:hardwareAccelerated="true"
-        android:largeHeap="true"
-        android:screenOrientation="portrait"
-        android:supportsRtl="true"
-        android:icon="@mipmap/shared_charger"
+        android:name=".SharedChargerApplication"
         android:label="@string/shared_charger_app_name"
-        android:roundIcon="@mipmap/shared_charger"
+        android:icon="@mipmap/ic_launcher_qvik"
+        android:roundIcon="@mipmap/ic_launcher_qvik"
         android:theme="@style/AppTheme">
 
         <activity
-            android:name="cn.com.startai.sharedlib.app.view.SharedMainActivity"
+            android:name="cn.com.startai.sharedlib.app.view.activity.SharedMainActivity"
             android:configChanges="locale|orientation|screenSize|layoutDirection"
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
@@ -28,6 +23,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="cn.com.startai.sharedcharger.wxapi.WXEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+
+        <activity
+            android:name="cn.com.startai.sharedcharger.wxapi.WXPayEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
             android:name=".TestActivity"

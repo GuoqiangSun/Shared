@@ -1,12 +1,14 @@
 package cn.com.shared.weblib.fragment;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import org.xwalk.core.XWalkJavascriptResult;
 import org.xwalk.core.XWalkUIClient;
@@ -15,6 +17,7 @@ import org.xwalk.core.XWalkView;
 import java.util.ArrayList;
 
 import cn.com.shared.weblib.R;
+import cn.com.shared.weblib.activity.XWalkWebActivity;
 import cn.com.shared.weblib.view.CrossWebView;
 import cn.com.shared.weblib.view.DialogUtils;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
@@ -42,22 +45,41 @@ public class WebFragment extends Fragment {
 
     private View mRootView;
 
-    private View inflateView() {
-        Tlog.v(" WebFragment inflateView() ");
-
-        View mRootView = View.inflate(getActivity(), R.layout.weblib_framgment_web,
-                null);
-
-        mWebView = mRootView.findViewById(R.id.web_view);
-        return mRootView;
+    public void onXwalReady() {
+        Tlog.w(" WebFragment onXwalReady()");
+        initXwalkView(mRootView);
     }
 
-    @Override
-    public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        Tlog.v(" WebFragment onCreateView() " + hashCode());
-        if (mRootView == null) {
-            mRootView = inflateView();
+    private synchronized void initXwalkView(View mRootView) {
+        if (mWebView == null) {
+            Activity activity = getActivity();
+
+            if (activity == null) {
+                Tlog.e(" initXwalkView activity==null");
+                return;
+            }
+
+            XWalkWebActivity mXWalkWebActivity = null;
+
+            if (activity instanceof XWalkWebActivity) {
+                mXWalkWebActivity = (XWalkWebActivity) activity;
+            }
+
+            if (mXWalkWebActivity == null) {
+                throw new NullPointerException(" your activity must instanceof XWalkWebActivity");
+            }
+
+            if (mXWalkWebActivity.isXWalkReady()) {
+                initXW(mRootView);
+            } else {
+                Tlog.w(" WebFragment isXReady false ");
+            }
+        } else {
+            Tlog.w(" WebFragment onXWalkReady mCallBack=null ");
         }
+    }
+
+    private void initXW(View mRootView) {
 
         Activity activity = getActivity();
         if (activity instanceof IWebFragmentCallBack) {
@@ -65,8 +87,13 @@ public class WebFragment extends Fragment {
         }
 
         if (mCallBack == null) {
-            throw new NullPointerException(" webFragment IWebFragmentCallBack must not be null ");
+            throw new NullPointerException(" your activity must instanceof  IWebFragmentCallBack");
         }
+
+        mWebView = new CrossWebView(getContext());
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        ((ViewGroup) mRootView).addView(mWebView, params);
 
         ArrayList<AbsJsInterface> jsInterfaces = mCallBack.getJsInterfaces();
 
@@ -83,9 +110,39 @@ public class WebFragment extends Fragment {
 //        mWebView.addJavascriptInterface(jsInterfaces, jsInterfaces.getName());
 
         mWebView.setUIClient(new MXWalkUIClient(mWebView));
+
         String loadUrl = mCallBack.getLoadUrl();
-        Tlog.v(" loadUrl:" + loadUrl);
-        mWebView.loadUrl(loadUrl);
+
+        Tlog.d(" loadUrl :" + loadUrl);
+
+        if (loadUrl != null) {
+            mWebView.loadUrl(loadUrl);
+        } else {
+            mWebView.setBackgroundColor(Color.parseColor("#ff00ff"));
+            if (mCallBack != null) {
+                mCallBack.onWebLoadFinish();
+            }
+        }
+
+    }
+
+
+    private View inflateView() {
+        Tlog.v(" WebFragment inflateView() ");
+
+        View mRootView = View.inflate(getActivity(), R.layout.weblib_framgment_xwalk,
+                null);
+        initXwalkView(mRootView);
+
+        return mRootView;
+    }
+
+    @Override
+    public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        Tlog.v(" WebFragment onCreateView() " + hashCode());
+        if (mRootView == null) {
+            mRootView = inflateView();
+        }
 
         return mRootView;
     }

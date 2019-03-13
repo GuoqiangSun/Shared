@@ -18,7 +18,7 @@ public class PhoneBindResponseMethod extends BaseResponseMethod2 {
         return new PhoneBindResponseMethod();
     }
 
-    public PhoneBindResponseMethod() {
+    private PhoneBindResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_BIND_PHONE);
     }
 

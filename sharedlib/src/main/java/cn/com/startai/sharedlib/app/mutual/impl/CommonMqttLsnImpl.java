@@ -1,6 +1,5 @@
 package cn.com.startai.sharedlib.app.mutual.impl;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -16,25 +15,37 @@ import com.tencent.mm.opensdk.modelpay.PayReq;
 
 import java.util.Map;
 
-import cn.com.startai.chargersdk.ChargerBusiManager;
 import cn.com.startai.mqttsdk.StartAI;
 import cn.com.startai.mqttsdk.base.BaseMessage;
 import cn.com.startai.mqttsdk.base.StartaiError;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8001;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8002;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8003;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8004;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8005;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8015;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8016;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8017;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8018;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8020;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8021;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8022;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8023;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8025;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8026;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8028;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8031;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8034;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8035;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8036;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8037;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8038;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8039;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8200;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
-import cn.com.startai.mqttsdk.event.AOnStartaiMessageArriveListener;
+import cn.com.startai.mqttsdk.event.IOnStartaiMsgArriveListener;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
 import cn.com.startai.sharedlib.app.global.Debuger;
@@ -56,11 +67,9 @@ import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxUnBindResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
-import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.startai.sharedlib.app.mutual.utils.AuthResult;
 import cn.com.startai.sharedlib.app.mutual.utils.PayResult;
-import cn.com.startai.sharedlib.app.mutual.utils.WXApiHelper;
-import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
+import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
 import cn.com.swain.baselib.log.Tlog;
 
 /**
@@ -68,42 +77,14 @@ import cn.com.swain.baselib.log.Tlog;
  * date: 2018/12/25 0025
  * Desc:
  */
-public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
-
-    protected String TAG = MutualManager.TAG;
+public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartaiMsgArriveListener {
 
     private final Application app;
 
-    private final MutualCallBackWrapper mCallBack;
-
-    public MutualCallBackWrapper getMutualCallBackWrapper() {
-        return mCallBack;
-    }
-
     public CommonMqttLsnImpl(Application app, IMutualCallBack mCallBack, IUserIDManager mUserID) {
+        super(mCallBack, mUserID);
         this.app = app;
-        this.mCallBack = new MutualCallBackWrapper(mCallBack, mUserID);
     }
-
-    ///////////
-
-    private void callJs(BaseResponseMethod mBaseResponseMethod) {
-        mCallBack.callJs(mBaseResponseMethod);
-    }
-
-    private String getUserIDFromMq() {
-        return mCallBack.getUserIDFromMq();
-    }
-
-    private String getUserID() {
-        return mCallBack.getUserID();
-    }
-
-    private void setUserID(String userID) {
-        mCallBack.setUserID(userID);
-    }
-
-    /////////
 
     @Override
     public void onCommand(String s, String s1) {
@@ -113,26 +94,26 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
     }
 
     @Override
-    public boolean needUISafety() {
-        return false;
-    }
-
-
-    @Override
     public void onLoginResult(C_0x8018.Resp resp) {
-        super.onLoginResult(resp);
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onLoginResult :" + String.valueOf(resp));
         }
+
+        if (resp.getResult() == 1) {
+            String userIDFromMq = getUserIDFromMq();
+            Tlog.d(TAG, " login userIDFromMq:" + userIDFromMq);
+            setUserID(userIDFromMq);
+        }
+
         C_0x8018.Resp.ContentBean loginInfo = resp.getContent();
 
         switch (loginInfo.getType()) {
-            case 1: // email
+            case Type.Login.EMAIL_PWD: // email
 
                 break;
-            case 2://mobile + code
-            case 3://mobile + pwd
-            case 5:// mobile + code + pwd
+            case Type.Login.MOBILE_PWD://mobile + code
+            case Type.Login.MOBILE_CODE://mobile + pwd
+            case Type.Login.MOBILE_CODE_PWD:// mobile + code + pwd
 
                 MobileLoginByIDCodeResponseMethod mobileLoginByIDCodeResponseMethod =
                         MobileLoginByIDCodeResponseMethod.getMobileLoginByIDCodeResponseMethod();
@@ -141,10 +122,10 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                 mobileLoginByIDCodeResponseMethod.setErrorCode(loginInfo.getErrcode());
                 callJs(mobileLoginByIDCodeResponseMethod);
                 break;
-            case 4:// user + pwd
+            case Type.Login.UNAME_PWD:// user + pwd
                 break;
 
-            case 10: // wx
+            case Type.Login.THIRD_WECHAT: // wx
 
                 WxLoginResponseMethod mWxResponseMethod =
                         WxLoginResponseMethod.getWxLoginResponseMethod();
@@ -154,7 +135,7 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                 callJs(mWxResponseMethod);
 
                 break;
-            case Type.Login.THIRD_ALIPAY:
+            case Type.Login.THIRD_ALIPAY://ali
 
                 AliLoginResponseMethod mAliResponseMethod =
                         AliLoginResponseMethod.getAliLoginResponseMethod();
@@ -166,19 +147,20 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                 break;
         }
 
-        String userIDFromMq = getUserIDFromMq();
-        Tlog.d(TAG, " login userIDFromMq:" + userIDFromMq);
-        setUserID(userIDFromMq);
     }
 
     @Override
     public void onLogoutResult(int result, String errorCode, String errorMsg) {
-        super.onLogoutResult(result, errorCode, errorMsg);
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onLogoutResult result:" + result
                     + " errorCode:" + String.valueOf(errorCode)
                     + " errorMsg:" + String.valueOf(errorMsg));
         }
+
+        String userIDFromMq = getUserIDFromMq();
+        Tlog.d(TAG, " logout getUserIDFromMq:" + userIDFromMq);
+        setUserID(userIDFromMq);
+
         LoginOutResponseMethod loginOutResponseMethod =
                 LoginOutResponseMethod.getLoginOutResponseMethod();
         loginOutResponseMethod.setResult(result == 1);
@@ -186,20 +168,17 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
         loginOutResponseMethod.setErrorCode(errorCode);
         callJs(loginOutResponseMethod);
 
-        String userIDFromMq = getUserIDFromMq();
-        Tlog.d(TAG, " logout getUserIDFromMq:" + userIDFromMq);
-        setUserID(userIDFromMq);
     }
 
     @Override
     public void onGetRealOrderPayStatus(C_0x8031.Resp resp) {
-        super.onGetRealOrderPayStatus(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onGetRealOrderPayStatus :" + String.valueOf(resp));
         }
 
-        ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+        ThirdPayResponseMethod thirdPayResponseMethod =
+                ThirdPayResponseMethod.getThirdPayResponseMethod();
         thirdPayResponseMethod.setResult(resp.getResult() == 1);
         C_0x8031.Resp.ContentBean content = resp.getContent();
         if (content != null) {
@@ -227,22 +206,23 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                         + startaiError.getErrorCode());
             }
 
-            ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+            ThirdPayResponseMethod thirdPayResponseMethod =
+                    ThirdPayResponseMethod.getThirdPayResponseMethod();
             thirdPayResponseMethod.setResult(false);
             thirdPayResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
             callJs(thirdPayResponseMethod);
         }
 
-        @Override
-        public boolean needUISafety() {
-            return false;
-        }
     };
 
+    /**
+     * if wx pay see {@link #onWxPayResult(BaseResp)}
+     * <p>
+     * if ali pay see {@link #onGetRealOrderPayStatus(C_0x8031.Resp)}
+     */
     // 第三方支付订单
     @Override
     public void onThirdPaymentUnifiedOrderResult(C_0x8028.Resp resp) {
-        super.onThirdPaymentUnifiedOrderResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onThirdPaymentUnifiedOrderResult :" + String.valueOf(resp));
@@ -263,14 +243,15 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
                 if (TextUtils.equals(resultStatus, "9000")) {
 
-                    ChargerBusiManager.getInstance().getRealOrderPayStatus(payResult
+                    StartAI.getInstance().getBaseBusiManager().getRealOrderPayStatus(payResult
                             .getResult()
                             .getAlipay_trade_app_pay_response()
                             .getOut_trade_no(), mThirdPayLsn);
 
                 } else {
 
-                    ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+                    ThirdPayResponseMethod thirdPayResponseMethod =
+                            ThirdPayResponseMethod.getThirdPayResponseMethod();
                     thirdPayResponseMethod.setResult(false);
                     thirdPayResponseMethod.setErrorCode(String.valueOf(resultStatus));
                     callJs(thirdPayResponseMethod);
@@ -281,7 +262,8 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
             }
 
         } else {
-            ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+            ThirdPayResponseMethod thirdPayResponseMethod =
+                    ThirdPayResponseMethod.getThirdPayResponseMethod();
             thirdPayResponseMethod.setResult(false);
             thirdPayResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
             callJs(thirdPayResponseMethod);
@@ -311,7 +293,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onGetIdentifyCodeResult(C_0x8021.Resp resp) {
-        super.onGetIdentifyCodeResult(resp);
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onGetIdentifyCodeResult :" + String.valueOf(resp));
         }
@@ -326,7 +307,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onCheckIdetifyResult(C_0x8022.Resp resp) {
-        super.onCheckIdetifyResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onCheckIdetifyResult :" + String.valueOf(resp));
@@ -353,7 +333,8 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                             Tlog.e(TAG, "bindMobileNum msg send fail " + String.valueOf(startaiError));
                         }
 
-                        PhoneBindResponseMethod phoneBindResponseMethod = PhoneBindResponseMethod.getPhoneBindResponseMethod();
+                        PhoneBindResponseMethod phoneBindResponseMethod =
+                                PhoneBindResponseMethod.getPhoneBindResponseMethod();
                         phoneBindResponseMethod.setBinding(false);
                         phoneBindResponseMethod.setResult(false);
                         phoneBindResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
@@ -361,13 +342,10 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
                     }
 
-                    @Override
-                    public boolean needUISafety() {
-                        return false;
-                    }
                 });
             } else {
-                PhoneBindResponseMethod phoneBindResponseMethod = PhoneBindResponseMethod.getPhoneBindResponseMethod();
+                PhoneBindResponseMethod phoneBindResponseMethod =
+                        PhoneBindResponseMethod.getPhoneBindResponseMethod();
                 phoneBindResponseMethod.setBinding(false);
                 phoneBindResponseMethod.setResult(false);
                 phoneBindResponseMethod.setErrorCode(content.getErrcode());
@@ -377,9 +355,9 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
         }
     }
 
+
     @Override
     public void onGetLatestVersionResult(C_0x8016.Resp resp) {
-        super.onGetLatestVersionResult(resp);
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onGetLatestVersionResult :" + String.valueOf(resp));
         }
@@ -390,7 +368,7 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
         isLeastVersionResponseMethod.setErrorCode(resp.getContent().getErrcode());
 
         boolean isLatestVersion = true;
-        if (resp.getResult() == 1) {
+        if (resp.getResult() == 1 && app != null) {
             try {
                 PackageInfo packageInfo = app.getPackageManager()
                         .getPackageInfo(app.getPackageName(), 0);
@@ -402,6 +380,7 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
+                Tlog.e(TAG, " getVersion :NameNotFoundException ", e);
             }
 
             String tmpDownloadUrl = resp.getContent().getUpdateUrl();
@@ -414,15 +393,16 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     }
 
+
     @Override
     public void onGetUserInfoResult(C_0x8024.Resp resp) {
-        super.onGetUserInfoResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.v(TAG, " onGetUserInfoResult:" + String.valueOf(resp));
         }
 
-        UserInfoResponseMethod userInfoResponseMethod = UserInfoResponseMethod.getUserInfoResponseMethod();
+        UserInfoResponseMethod userInfoResponseMethod =
+                UserInfoResponseMethod.getUserInfoResponseMethod();
         userInfoResponseMethod.setResult(resp.getResult() == 1);
 
         C_0x8024.Resp.ContentBean contentBean = resp.getContent();
@@ -436,7 +416,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onUpdateUserInfoResult(C_0x8020.Resp resp) {
-        super.onUpdateUserInfoResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.v(TAG, " onUpdateUserInfoResult:" + String.valueOf(resp));
@@ -455,7 +434,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onUpdateUserPwdResult(C_0x8025.Resp resp) {
-        super.onUpdateUserPwdResult(resp);
         if (Debuger.isLogDebug) {
             Tlog.v(TAG, " onUpdateUserPwdResult:" + String.valueOf(resp));
         }
@@ -472,6 +450,9 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     }
 
+    /**
+     * result see {@link #onGetRealOrderPayStatus(C_0x8031.Resp)}
+     */
     // wx pay result
     public void onWxPayResult(BaseResp baseResp) {
         //resp.errCode == 0 支付成功
@@ -489,12 +470,13 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
             String no = bundle.getString("_wxapi_payresp_extdata");
             Tlog.v(TAG, "onWxPayResult no:" + no);
 
-            ChargerBusiManager.getInstance().getRealOrderPayStatus(no, mThirdPayLsn);
+            StartAI.getInstance().getBaseBusiManager().getRealOrderPayStatus(no, mThirdPayLsn);
 
         } else {
             // error
 
-            ThirdPayResponseMethod thirdPayResponseMethod = ThirdPayResponseMethod.getThirdPayResponseMethod();
+            ThirdPayResponseMethod thirdPayResponseMethod =
+                    ThirdPayResponseMethod.getThirdPayResponseMethod();
             thirdPayResponseMethod.setResult(false);
             thirdPayResponseMethod.setErrorCode(String.valueOf(baseResp.errCode));
             callJs(thirdPayResponseMethod);
@@ -502,15 +484,15 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     }
 
-    // wx login result
-    public void onWxLoginResult(BaseResp baseResp) {
-        Tlog.v(TAG, "onWxLoginResult errorCode:" + baseResp.errCode);
+    // wx login bind result
+    public void onWxEntryResult(BaseResp baseResp) {
+        Tlog.v(TAG, "WxEntryResult errorCode:" + baseResp.errCode);
 
         SendAuth.Resp resp = (SendAuth.Resp) baseResp;
         String state = resp.state;
         String code = resp.code;
 
-        if (WXApiHelper.Consts.WX_LOGIN_TAG.equals(state)) { // wxlogin
+        if (WXApiHelper.Constants.WX_LOGIN_TAG.equals(state)) { // wxlogin
 
             if (baseResp.errCode == BaseResp.ErrCode.ERR_OK) {
 
@@ -521,7 +503,7 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                 onWxLoginFail(baseResp.errCode);
 
             }
-        } else if (WXApiHelper.Consts.WX_BIND_TAG.equals(state)) { // wxbind
+        } else if (WXApiHelper.Constants.WX_BIND_TAG.equals(state)) { // wxbind
 
             if (baseResp.errCode == BaseResp.ErrCode.ERR_OK) {
 
@@ -564,30 +546,28 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
         Tlog.e(TAG, "onWxLoginSuccess code: " + code);
 
-        ChargerBusiManager.getInstance().loginWithThirdAccount(Type.Login.THIRD_WECHAT, code, new IOnCallListener() {
-            @Override
-            public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                Tlog.i(TAG, "loginWithThirdAccount wx msg send success ");
-            }
+        StartAI.getInstance().getBaseBusiManager().loginWithThirdAccount(Type.Login.THIRD_WECHAT, code,
+                new IOnCallListener() {
+                    @Override
+                    public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+                        if (Debuger.isLogDebug) {
+                            Tlog.i(TAG, "loginWithThirdAccount wx msg send success ");
+                        }
+                    }
 
-            @Override
-            public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
-                if (Debuger.isDebug) {
-                    Tlog.e(TAG, "loginWithThirdAccount wx msg send fail " + String.valueOf(startaiError));
-                }
+                    @Override
+                    public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+                        if (Debuger.isLogDebug) {
+                            Tlog.e(TAG, "loginWithThirdAccount wx msg send fail " + String.valueOf(startaiError));
+                        }
 
-                WxLoginResponseMethod mWxResponseMethod = WxLoginResponseMethod.getWxLoginResponseMethod();
-                mWxResponseMethod.setResult(false);
-                mWxResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
-                callJs(mWxResponseMethod);
+                        WxLoginResponseMethod mWxResponseMethod = WxLoginResponseMethod.getWxLoginResponseMethod();
+                        mWxResponseMethod.setResult(false);
+                        mWxResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                        callJs(mWxResponseMethod);
 
-            }
-
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
-        });
+                    }
+                });
 
     }
 
@@ -603,15 +583,17 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
         req.setCode(code); //code 来自微信授权返回
         req.setType(C_0x8037.THIRD_WECHAT); //绑定微信账号
 
-        ChargerBusiManager.getInstance().bindThirdAccount(req, new IOnCallListener() {
+        StartAI.getInstance().getBaseBusiManager().bindThirdAccount(req, new IOnCallListener() {
             @Override
             public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                Tlog.i(TAG, "bindThirdAccount wx msg send success ");
+                if (Debuger.isLogDebug) {
+                    Tlog.i(TAG, "bindThirdAccount wx msg send success ");
+                }
             }
 
             @Override
             public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
-                if (Debuger.isDebug) {
+                if (Debuger.isLogDebug) {
                     Tlog.e(TAG, "bindThirdAccount wx msg send fail " + String.valueOf(startaiError));
                 }
 
@@ -620,11 +602,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                 mWxResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                 callJs(mWxResponseMethod);
 
-            }
-
-            @Override
-            public boolean needUISafety() {
-                return false;
             }
         });
 
@@ -639,15 +616,15 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
         switch (errCode) {
             case BaseResp.ErrCode.ERR_AUTH_DENIED:
                 Tlog.e(TAG, " user rejection wx bind");
-                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_USER_REJECTION);
+                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_BIND_USER_REJECTION);
                 break;
             case BaseResp.ErrCode.ERR_USER_CANCEL:
                 Tlog.e(TAG, " user cancel wx bind ");
-                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_USER_CANCEL);
+                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_BIND_USER_CANCEL);
                 break;
             default:
                 Tlog.e(TAG, " wx bind fail errorCode: " + errCode);
-                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_UNKNOWN);
+                mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_BIND_UNKNOWN);
                 break;
         }
 
@@ -657,7 +634,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onGetAlipayAuthInfoResult(C_0x8033.Resp resp) {
-        super.onGetAlipayAuthInfoResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onGetAlipayPrivateKeyResult :" + String.valueOf(resp));
@@ -666,7 +642,7 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
         if (resp.getResult() == BaseMessage.RESULT_SUCCESS) {
 
-            Tlog.d(TAG, "支付宝密钥获取成功，准备登录 ");
+            Tlog.d(TAG, "get alipay auth info success");
 
             String AUTH_INFO = resp.getContent().getAliPayAuthInfo();
             aliAuthInfo(AUTH_INFO, resp.getContent().getAuthTargetId());
@@ -676,18 +652,20 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
             String authTargetId = resp.getContent().getAuthTargetId(); // AUTH_1543265456453123 | LOGIN_15264564564
             if (authTargetId != null) {
                 if (authTargetId.startsWith(C_0x8033.AUTH_TYPE_LOGIN)) {
-                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
+                    AliLoginResponseMethod mAliResponseMethod =
+                            AliLoginResponseMethod.getAliLoginResponseMethod();
                     mAliResponseMethod.setResult(false);
                     mAliResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
                     callJs(mAliResponseMethod);
                 } else if (authTargetId.startsWith(C_0x8033.AUTH_TYPE_AUTH)) {
-                    AliBindResponseMethod aliBindResponseMethod = AliBindResponseMethod.getAliBindResponseMethod();
+                    AliBindResponseMethod aliBindResponseMethod =
+                            AliBindResponseMethod.getAliBindResponseMethod();
                     aliBindResponseMethod.setResult(false);
                     aliBindResponseMethod.setErrorCode(String.valueOf(resp.getContent().getErrcode()));
                     callJs(aliBindResponseMethod);
                 }
             } else {
-                Tlog.e(TAG, " unknown auth ");
+                Tlog.e(TAG, " getAlipayAuthInfoResult unknown auth ");
             }
         }
 
@@ -698,10 +676,9 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
     private void aliAuthInfo(String AUTH_INFO, String targetId1) {
 
         Tlog.d(TAG, " aliAuthInfo autoInfo = " + AUTH_INFO + " targetId1:" + targetId1);
-        Activity activity = mCallBack.getActivity();
 
         // 调用授权接口，获取授权结果
-        AuthTask authTask = new AuthTask(activity);
+        AuthTask authTask = new AuthTask(getActivity());
         Map<String, String> result = authTask.authV2(AUTH_INFO, true);
         AuthResult authResult = new AuthResult(result, true);
 
@@ -737,30 +714,31 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
             // 获取alipay_open_id，调支付时作为参数extern_token 的value
             // 传入，则支付账户为该授权账户
 
-            ChargerBusiManager.getInstance().loginWithThirdAccount(Type.Login.THIRD_ALIPAY, authResult.getAuthCode(), new IOnCallListener() {
-                @Override
-                public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
-                }
+            StartAI.getInstance().getBaseBusiManager().loginWithThirdAccount(
+                    Type.Login.THIRD_ALIPAY,
+                    authResult.getAuthCode(),
+                    new IOnCallListener() {
+                        @Override
+                        public void onSuccess(MqttPublishRequest mqttPublishRequest) {
+                            if (Debuger.isLogDebug) {
+                                Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
+                            }
+                        }
 
-                @Override
-                public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
-                    if (Debuger.isDebug) {
-                        Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
-                    }
+                        @Override
+                        public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
+                            if (Debuger.isLogDebug) {
+                                Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
+                            }
 
-                    AliLoginResponseMethod mAliResponseMethod = AliLoginResponseMethod.getAliLoginResponseMethod();
-                    mAliResponseMethod.setResult(false);
-                    mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
-                    callJs(mAliResponseMethod);
+                            AliLoginResponseMethod mAliResponseMethod =
+                                    AliLoginResponseMethod.getAliLoginResponseMethod();
+                            mAliResponseMethod.setResult(false);
+                            mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                            callJs(mAliResponseMethod);
 
-                }
-
-                @Override
-                public boolean needUISafety() {
-                    return false;
-                }
-            });
+                        }
+                    });
 
 
         } else {
@@ -803,15 +781,17 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
             req.setCode(authResult.getAuthCode()); //code 来自微信授权返回
             req.setType(C_0x8037.THIRD_ALIPAY); //绑定微信账号
 
-            ChargerBusiManager.getInstance().bindThirdAccount(req, new IOnCallListener() {
+            StartAI.getInstance().getBaseBusiManager().bindThirdAccount(req, new IOnCallListener() {
                 @Override
                 public void onSuccess(MqttPublishRequest mqttPublishRequest) {
-                    Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
+                    if (Debuger.isLogDebug) {
+                        Tlog.i(TAG, "loginWithThirdAccount ali msg send success ");
+                    }
                 }
 
                 @Override
                 public void onFailed(MqttPublishRequest mqttPublishRequest, StartaiError startaiError) {
-                    if (Debuger.isDebug) {
+                    if (Debuger.isLogDebug) {
                         Tlog.e(TAG, "loginWithThirdAccount ali msg send fail " + String.valueOf(startaiError));
                     }
 
@@ -820,12 +800,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                     mAliResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                     callJs(mAliResponseMethod);
 
-
-                }
-
-                @Override
-                public boolean needUISafety() {
-                    return false;
                 }
             });
 
@@ -854,7 +828,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onBindThirdAccountResult(C_0x8037.Resp resp) {
-        super.onBindThirdAccountResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onBindThirdAccountResult :" + String.valueOf(resp));
@@ -897,7 +870,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onBindMobileNumResult(C_0x8034.Resp resp) {
-        super.onBindMobileNumResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onBindMobileNumResult :" + String.valueOf(resp));
@@ -915,7 +887,6 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
 
     @Override
     public void onUnBindThirdAccountResult(C_0x8036.Resp resp) {
-        super.onUnBindThirdAccountResult(resp);
 
         if (Debuger.isLogDebug) {
             Tlog.d(TAG, " onUnBindThirdAccountResult :" + String.valueOf(resp));
@@ -944,6 +915,114 @@ public class CommonMqttLsnImpl extends AOnStartaiMessageArriveListener {
                 break;
         }
 
+    }
+
+
+    @Override
+    public void onResetLoginPwdResult(C_0x8026.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onResetLoginPwdResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onGetBindListByPageResult(C_0x8038.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetBindListByPageResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onBindEmailResult(C_0x8039.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onBindEmailResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onPassthroughResult(C_0x8200.Resp resp, String dataString, byte[] dataByteArray) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onPassthroughResult :" + String.valueOf(resp));
+        }
+    }
+
+
+    @Override
+    public void onGetWeatherInfoResult(C_0x8035.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetWeatherInfoResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onDeviceConnectStatusChange(String userid, int status, String sn) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onDeviceConnectStatusChange : userid:" + userid + " sn:" + sn + " status:" + status);
+        }
+    }
+
+    @Override
+    public void onSendEmailResult(C_0x8023.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onSendEmailResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onActiviteResult(C_0x8001.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onActiviteResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onHardwareActivateResult(C_0x8001.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onHardwareActivateResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onBindResult(C_0x8002.Resp resp, String id, C_0x8002.Resp.ContentBean.BebindingBean bebinding) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onBindResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onUnActiviteResult(C_0x8003.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onUnActiviteResult :" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onUnBindResult(C_0x8004.Resp resp, String id, String beUnbindid) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onUnBindResult : id:" + id + " beUnibindid:" + beUnbindid + " resp:" + String.valueOf(resp));
+        }
+    }
+
+    @Override
+    public void onGetBindListResult(C_0x8005.Response response) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onGetBindListResult :" + String.valueOf(response));
+        }
+    }
+
+    @Override
+    public void onUpdateRemarkResult(C_0x8015.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onUpdateRemarkResult :" + String.valueOf(resp));
+        }
+    }
+
+
+    @Override
+    public void onRegisterResult(C_0x8017.Resp resp) {
+        if (Debuger.isLogDebug) {
+            Tlog.d(TAG, " onRegisterResult :" + String.valueOf(resp));
+        }
     }
 
 

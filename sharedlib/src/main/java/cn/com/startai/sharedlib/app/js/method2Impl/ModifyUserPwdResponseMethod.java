@@ -17,7 +17,7 @@ public class ModifyUserPwdResponseMethod extends BaseResponseMethod2 {
         return new ModifyUserPwdResponseMethod();
     }
 
-    public ModifyUserPwdResponseMethod() {
+    private ModifyUserPwdResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_MODIFY_USERPWD);
     }
 

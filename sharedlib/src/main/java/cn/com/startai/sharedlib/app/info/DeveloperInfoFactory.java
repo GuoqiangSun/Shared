@@ -15,8 +15,8 @@ public class DeveloperInfoFactory {
 
     public static MqttInitParam produceMqttInitParam() {
 
-        if (CustomManager.getInstance().isRuioo()) {
-            return new RuiooChargerDeveloperInfo();
+        if (CustomManager.getInstance().isSharedCharger()) {
+            return new SharedChargerDeveloperInfo();
         } else if (CustomManager.getInstance().isSynerMax()) {
             return new SynermaxChargerDeveloperInfo();
         }

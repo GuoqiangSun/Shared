@@ -17,7 +17,7 @@ public class MobileLoginByIDCodeResponseMethod extends BaseResponseMethod2 {
         return new MobileLoginByIDCodeResponseMethod();
     }
 
-    public MobileLoginByIDCodeResponseMethod() {
+    private MobileLoginByIDCodeResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_MOBILE_LOGIN_BY_IDCODE);
     }
 

@@ -1,8 +1,8 @@
 package cn.com.startai.sharedlib.app.global;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
@@ -93,9 +93,9 @@ public class Debuger implements IApp, IService {
     /**
      * 权限申请后再判断录制文件是否创建
      *
-     * @param activity
+     * @param activity {@link Context}
      */
-    public void reCheckLogRecord(Activity activity) {
+    public void reCheckLogRecord(Context activity) {
         if (!Tlog.hasILogRecordImpl() && isRecordLogDebug) {
 
             boolean has = (ContextCompat.checkSelfPermission(activity,

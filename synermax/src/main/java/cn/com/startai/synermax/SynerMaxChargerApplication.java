@@ -1,7 +1,7 @@
 package cn.com.startai.synermax;
 
 import cn.com.startai.sharedlib.app.global.CustomManager;
-import cn.com.startai.sharedlib.app.view.SharedApplication;
+import cn.com.startai.sharedlib.app.view.app.SharedApplication;
 
 /**
  * author: Guoqiang_Sun

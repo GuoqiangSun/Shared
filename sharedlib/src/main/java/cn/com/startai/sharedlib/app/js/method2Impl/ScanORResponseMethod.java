@@ -19,7 +19,7 @@ public class ScanORResponseMethod extends BaseResponseMethod2 {
     }
 
 
-    public ScanORResponseMethod() {
+    private ScanORResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_SCAN_OR);
     }
 

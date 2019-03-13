@@ -17,7 +17,7 @@ public class AliUnBindResponseMethod extends BaseResponseMethod2 {
         return new AliUnBindResponseMethod();
     }
 
-    public AliUnBindResponseMethod() {
+    private AliUnBindResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_UNBIND_ALI);
     }
 

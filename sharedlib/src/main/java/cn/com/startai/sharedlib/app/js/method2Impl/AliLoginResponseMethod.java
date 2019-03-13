@@ -17,7 +17,7 @@ public class AliLoginResponseMethod extends BaseResponseMethod2 {
         return new AliLoginResponseMethod();
     }
 
-    public AliLoginResponseMethod() {
+    private AliLoginResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_ALI_LOGIN);
     }
 

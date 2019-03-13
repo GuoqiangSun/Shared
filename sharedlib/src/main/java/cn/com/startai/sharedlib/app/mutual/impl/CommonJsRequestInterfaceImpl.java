@@ -1,11 +1,13 @@
 package cn.com.startai.sharedlib.app.mutual.impl;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 import android.widget.Toast;
 
+import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 
@@ -22,7 +24,12 @@ import cn.com.startai.fssdk.db.entity.DownloadBean;
 import cn.com.startai.fssdk.db.entity.UploadBean;
 import cn.com.startai.mqttsdk.StartAI;
 import cn.com.startai.mqttsdk.base.StartaiError;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8018;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8020;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8021;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8022;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8025;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8028;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8036;
@@ -30,7 +37,6 @@ import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
 import cn.com.startai.scansdk.ChargerScanActivity;
-import cn.com.startai.scansdk.permission.PermissionHelper;
 import cn.com.startai.sharedlib.R;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.global.FileManager;
@@ -68,11 +74,14 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
 import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
-import cn.com.startai.sharedlib.app.mutual.utils.WXApiHelper;
-import cn.com.startai.sharedlib.app.view.SharedApplication;
+import cn.com.startai.sharedlib.app.view.app.SharedApplication;
+import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
 import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
 import cn.com.swain.baselib.log.Tlog;
 import cn.com.swain.baselib.util.AppUtils;
+import cn.com.swain.baselib.util.PermissionGroup;
+import cn.com.swain.baselib.util.PermissionHelper;
+import cn.com.swain.baselib.util.PermissionRequest;
 import cn.com.swain.baselib.util.PhotoUtils;
 
 /**
@@ -80,7 +89,8 @@ import cn.com.swain.baselib.util.PhotoUtils;
  * date: 2018/12/25 0025
  * Desc:
  */
-public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implements CommonJsInterfaceTask.ICommonJsRequestInterface {
+public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
+        implements CommonJsInterfaceTask.ICommonJsRequestInterface {
 
     private final Application app;
 
@@ -117,7 +127,7 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
     public void onJsDataParseError(JSONException e, String jsonData) {
 
         if (Debuger.isLogDebug) {
-            Tlog.e(TAG, " jsonData: " + jsonData + "\n handleJsRequest parse json ", e);
+            Tlog.e(TAG, " handleJsRequest parse jsonData: " + jsonData, e);
         }
 
     }
@@ -135,39 +145,32 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
     }
 
+    /**
+     * result at {@link CommonMqttLsnImpl#onWxEntryResult(BaseResp)}
+     */
     @Override
     public void onJsWXLogin() {
-
-        //先判断是否安装微信APP,按照微信的说法，目前移动应用上微信登录只提供原生的登录方式，需要用户安装微信客户端才能配合使用。
-        if (!AppUtils.isAppInstalled(app, "com.tencent.mm")) {
-            Tlog.e(TAG, " com.tencent.mm is not install");
-
-            WxLoginResponseMethod mWxResponseMethod =
-                    WxLoginResponseMethod.getWxLoginResponseMethod();
-            mWxResponseMethod.setResult(false);
-            mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_NO_CLIENT);
-            callJs(mWxResponseMethod);
-
-            return;
-        }
-
-        SendAuth.Req req = new SendAuth.Req();
-        req.scope = "snsapi_userinfo";
-        req.state = WXApiHelper.Consts.WX_LOGIN_TAG;
-        //向微信发送请求
-        WXApiHelper.getInstance().getWXApi(app).sendReq(req);
-
-    }
-
-    @Override
-    public void onJsWXBind() {
-
-        //先判断是否安装微信APP,按照微信的说法，目前移动应用上微信登录只提供原生的登录方式，需要用户安装微信客户端才能配合使用。
         IWXAPI wxApi = WXApiHelper.getInstance().getWXApi(app);
-//        if (!AppUtils.isAppInstalled(app, "com.tencent.mm")) {
 
+        if (wxApi == null) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, " onJsWXLogin IWXAPI = null ");
+            }
+
+            WxLoginResponseMethod mWxResponseMethod =
+                    WxLoginResponseMethod.getWxLoginResponseMethod();
+            mWxResponseMethod.setResult(false);
+            mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_LOGIN_NO_REGISTER);
+            callJs(mWxResponseMethod);
+
+            return;
+        }
+
+        //先判断是否安装微信APP,按照微信的说法，目前移动应用上微信登录只提供原生的登录方式，需要用户安装微信客户端才能配合使用。
         if (!wxApi.isWXAppInstalled()) {
-            Tlog.e(TAG, " com.tencent.mm is not install");
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, " onJsWXLogin error, wx client is not install");
+            }
 
             WxLoginResponseMethod mWxResponseMethod =
                     WxLoginResponseMethod.getWxLoginResponseMethod();
@@ -180,13 +183,61 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
         SendAuth.Req req = new SendAuth.Req();
         req.scope = "snsapi_userinfo";
-        req.state = WXApiHelper.Consts.WX_BIND_TAG;
+        req.state = WXApiHelper.Constants.WX_LOGIN_TAG;
         //向微信发送请求
         wxApi.sendReq(req);
 
     }
 
 
+    /**
+     * result at {@link CommonMqttLsnImpl#onWxEntryResult(BaseResp)}
+     */
+    @Override
+    public void onJsWXBind() {
+
+        //先判断是否安装微信APP,按照微信的说法，目前移动应用上微信登录只提供原生的登录方式，需要用户安装微信客户端才能配合使用。
+        IWXAPI wxApi = WXApiHelper.getInstance().getWXApi(app);
+
+        if (wxApi == null) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, " onJsWXBind IWXAPI=null ");
+            }
+
+            WxLoginResponseMethod mWxResponseMethod =
+                    WxLoginResponseMethod.getWxLoginResponseMethod();
+            mWxResponseMethod.setResult(false);
+            mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_BIND_NO_REGISTER);
+            callJs(mWxResponseMethod);
+
+            return;
+        }
+
+        if (!wxApi.isWXAppInstalled()) {
+            if (Debuger.isLogDebug) {
+                Tlog.e(TAG, " onJsWXBind error, wx client is not install");
+            }
+
+            WxLoginResponseMethod mWxResponseMethod =
+                    WxLoginResponseMethod.getWxLoginResponseMethod();
+            mWxResponseMethod.setResult(false);
+            mWxResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_WX_BIND_NO_CLIENT);
+            callJs(mWxResponseMethod);
+
+            return;
+        }
+
+        SendAuth.Req req = new SendAuth.Req();
+        req.scope = "snsapi_userinfo";
+        req.state = WXApiHelper.Constants.WX_BIND_TAG;
+        //向微信发送请求
+        wxApi.sendReq(req);
+
+    }
+
+    /**
+     * see {@link CommonMqttLsnImpl#onGetAlipayAuthInfoResult(C_0x8033.Resp)}
+     */
     @Override
     public void onJsAliLogin() {
 
@@ -213,13 +264,12 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
             }
 
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
         });
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onGetAlipayAuthInfoResult(C_0x8033.Resp)}
+     */
     @Override
     public void onJsAliBind() {
         StartAI.getInstance().getBaseBusiManager().getAlipayAuthInfo(C_0x8033.AUTH_TYPE_AUTH, new IOnCallListener() {
@@ -245,13 +295,12 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
             }
 
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
         });
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onCheckIdetifyResult(C_0x8022.Resp)}
+     */
     @Override
     public void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean) {
 
@@ -279,13 +328,12 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
                         callJs(phoneBindResponseMethod);
                     }
 
-                    @Override
-                    public boolean needUISafety() {
-                        return false;
-                    }
                 });
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onUnBindThirdAccountResult(C_0x8036.Resp)}
+     */
     @Override
     public void onJsWXUnBind() {
         //发送请求
@@ -310,14 +358,12 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
                 wxUnBindResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                 callJs(wxUnBindResponseMethod);
             }
-
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
         });
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onUnBindThirdAccountResult(C_0x8036.Resp)}
+     */
     @Override
     public void onJsAliUnBind() {
         //发送请求
@@ -343,10 +389,6 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
                 callJs(aliUnBindResponseMethod);
             }
 
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
         });
     }
 
@@ -371,12 +413,11 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
             callJs(thirdPayResponseMethod);
         }
 
-        @Override
-        public boolean needUISafety() {
-            return false;
-        }
     };
 
+    /**
+     * see {@link CommonMqttLsnImpl#onThirdPaymentUnifiedOrderResult(C_0x8028.Resp)}
+     */
     @Override
     public void onJsThirdPayOrder(ThirdPayOrderRequestBean mPayBean) {
         C_0x8028.Req.ContentBean req = new C_0x8028.Req.ContentBean(
@@ -432,12 +473,11 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
         }
 
-        @Override
-        public boolean needUISafety() {
-            return false;
-        }
     };
 
+    /**
+     * see {@link CommonMqttLsnImpl#onGetIdentifyCodeResult(C_0x8021.Resp)}
+     */
     @Override
     public void onJsGetIdentityCode(GetIdentityCodeRequestBean mGetIDCodeBean) {
         StartAI.getInstance().getBaseBusiManager().getIdentifyCode(mGetIDCodeBean.getPhone(),
@@ -468,12 +508,11 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
         }
 
-        @Override
-        public boolean needUISafety() {
-            return false;
-        }
     };
 
+    /**
+     * see {@link CommonMqttLsnImpl#onLoginResult(C_0x8018.Resp)}
+     */
     @Override
     public void onJsMobileLoginByIdentityCode(MobileLoginByIDCodeRequestBean mMobileLoginByIDBean) {
         StartAI.getInstance().getBaseBusiManager().login(mMobileLoginByIDBean.getPhone(), "",
@@ -527,10 +566,6 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
             callJs(isLeastVersionResponseMethod);
         }
 
-        @Override
-        public boolean needUISafety() {
-            return false;
-        }
     };
 
 
@@ -684,7 +719,7 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
         GetAppVersionResponseMethod appVersionResponseMethod =
                 GetAppVersionResponseMethod.getAppVersionResponseMethod();
         appVersionResponseMethod.setResult(true);
-        appVersionResponseMethod.setVersion(com.blankj.utilcode.util.AppUtils.getAppVersionName());
+        appVersionResponseMethod.setVersion(AppUtils.getAppVersionStr(app));
         callJs(appVersionResponseMethod);
     }
 
@@ -712,65 +747,84 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
         }
 
-        @Override
-        public boolean needUISafety() {
-            return false;
-        }
     };
 
-
+    /**
+     * see {@link CommonMqttLsnImpl#onGetUserInfoResult(C_0x8024.Resp)}
+     */
     @Override
     public void onJsRequestUserInfo() {
         StartAI.getInstance().getBaseBusiManager().getUserInfo(mGetUserInfoLsn);
     }
 
+    /**
+     * see {@link #onActivityResult(int, int, Intent)}
+     */
     @Override
     public void onJsRequestTakePhoto() {
 
-        final File savePhotoFile = FileManager.getPhotoFile();
-
-        Tlog.d(TAG, "takePhoto() " + (savePhotoFile != null ? savePhotoFile.getAbsolutePath() : " null "));
-
-        if (savePhotoFile == null) {
-            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
-                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
-            modifyHeadpicSendResponseMethod.setResult(false);
-            modifyHeadpicSendResponseMethod.setIsSend(false);
-            modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
-            callJs(modifyHeadpicSendResponseMethod);
-            return;
-        }
-
-        PermissionHelper.requestCamara(new PermissionHelper.OnPermissionGrantedListener() {
+        PermissionHelper.requestPermission(app, new PermissionRequest.OnPermissionResult() {
             @Override
-            public void onPermissionGranted() {
+            public boolean onPermissionRequestResult(String permission, boolean granted) {
+
+                if (!granted) {
+                    ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                            ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+                    modifyHeadpicSendResponseMethod.setResult(false);
+                    modifyHeadpicSendResponseMethod.setIsSend(false);
+
+                    if (Manifest.permission.WRITE_EXTERNAL_STORAGE.equals(permission)) {
+                        modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
+                    } else if (Manifest.permission.CAMERA.equals(permission)) {
+                        modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_CAMERA_PERMISSION);
+                    }
+                    callJs(modifyHeadpicSendResponseMethod);
+                }
+
+                return granted;
+            }
+        }, new PermissionRequest.OnPermissionFinish() {
+            @Override
+            public void onAllPermissionRequestFinish() {
+                final File savePhotoFile = FileManager.getPhotoFileNoCheckPermission();
+                Tlog.d(TAG, "takePhoto() " + (savePhotoFile != null ? savePhotoFile.getAbsolutePath() : " null "));
                 Uri imageUri = PhotoUtils.getTakePhotoURI(app, savePhotoFile);
                 Intent intent = PhotoUtils.requestTakePhoto(imageUri);
                 takePhotoUri = imageUri;
                 jsStartActivityForResult(intent, TAKE_PHOTO_CODE);
             }
-        }, new PermissionHelper.OnPermissionDeniedListener() {
-            @Override
-            public void onPermissionDenied() {
-                ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
-                        ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
-                modifyHeadpicSendResponseMethod.setResult(false);
-                modifyHeadpicSendResponseMethod.setIsSend(false);
-                modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_CAMERA_PERMISSION);
-                callJs(modifyHeadpicSendResponseMethod);
-            }
-        });
-
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA);
 
     }
 
-
+    /**
+     * see {@link #onActivityResult(int, int, Intent)}
+     */
     @Override
     public void onJsRequestLocalPhoto() {
-        Intent intent = PhotoUtils.requestLocalPhoto();
-        jsStartActivityForResult(intent, LOCAL_PHOTO_CODE);
+        PermissionHelper.requestSinglePermission(app, new PermissionRequest.OnPermissionResult() {
+            @Override
+            public boolean onPermissionRequestResult(String permission, boolean granted) {
+                if (granted) {
+                    Intent intent = PhotoUtils.requestLocalPhoto();
+                    jsStartActivityForResult(intent, LOCAL_PHOTO_CODE);
+                } else {
+                    ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                            ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+                    modifyHeadpicSendResponseMethod.setResult(false);
+                    modifyHeadpicSendResponseMethod.setIsSend(false);
+                    modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
+                    callJs(modifyHeadpicSendResponseMethod);
+                }
+                return  true;
+            }
+        }, PermissionGroup.STORAGE);
+
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onUpdateUserInfoResult(C_0x8020.Resp)}
+     */
     @Override
     public void onJsModifyUserName(ModifyUserNameRequestBean mModifyNameBean) {
 
@@ -818,14 +872,13 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
             }
 
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
         });
 
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onUpdateUserPwdResult(C_0x8025.Resp)}
+     */
     @Override
     public void onJsModifyUserPwd(ModifyUserPwdRequestBean mModifyPwdBean) {
         Tlog.v(TAG, "updateUserPwd() old:" + mModifyPwdBean.getOldPwd() + " new:" + mModifyPwdBean.getNewPwd());
@@ -850,13 +903,12 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
                         modifyUserPwdResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
                     }
 
-                    @Override
-                    public boolean needUISafety() {
-                        return false;
-                    }
                 });
     }
 
+    /**
+     * see {@link CommonMqttLsnImpl#onUpdateUserInfoResult(C_0x8020.Resp)}
+     */
     @Override
     public void onJsModifyNickName(ModifyNickNameRequestBean mModifyNicknameBean) {
         C_0x8020.Req.ContentBean contentBean = new C_0x8020.Req.ContentBean();
@@ -884,10 +936,6 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
             }
 
-            @Override
-            public boolean needUISafety() {
-                return false;
-            }
         });
 
     }
@@ -940,7 +988,7 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
         if (requestCode == LOCAL_PHOTO_CODE) {
 
-            Uri imageUri = data.getData();
+            final Uri imageUri = data.getData();
             Tlog.d(TAG, " onActivityResult LOCAL_PHOTO_CODE success " + String.valueOf(imageUri));
             localPhotoFile = crop(imageUri, CROP_LOCAL_PHOTO);
 
@@ -987,7 +1035,6 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
             return null;
         }
 
-
         // 启动裁剪程序
         Uri outUri = Uri.fromFile(path);
         Intent intent = PhotoUtils.cropHeadpic(imageUri, outUri);
@@ -1021,6 +1068,13 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
 
             getStartaiUploaderManager().startUpload(uploadentity, mLogoUploadCallBack);
 
+        } else {
+            ModifyHeadpicResponseMethod modifyHeadpicSendResponseMethod =
+                    ModifyHeadpicResponseMethod.getModifyHeadpicResponseMethod();
+            modifyHeadpicSendResponseMethod.setResult(false);
+            modifyHeadpicSendResponseMethod.setIsSend(false);
+            modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_COMPRESS_ERROR);
+            callJs(modifyHeadpicSendResponseMethod);
         }
 
     }
@@ -1074,10 +1128,6 @@ public class CommonJsRequestInterfaceImpl extends MutualCallBackWrapper implemen
                     callJs(modifyHeadpicSendResponseMethod);
                 }
 
-                @Override
-                public boolean needUISafety() {
-                    return false;
-                }
             });
 
         }

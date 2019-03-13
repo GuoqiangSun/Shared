@@ -17,7 +17,7 @@ public class IsLeastVersionResponseMethod extends BaseResponseMethod2 {
         return new IsLeastVersionResponseMethod();
     }
 
-    public IsLeastVersionResponseMethod() {
+    private IsLeastVersionResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_IS_NEWVERSION);
     }
 

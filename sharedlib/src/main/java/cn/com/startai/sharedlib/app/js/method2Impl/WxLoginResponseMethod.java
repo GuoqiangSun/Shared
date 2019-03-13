@@ -17,7 +17,7 @@ public class WxLoginResponseMethod extends BaseResponseMethod2 {
         return new WxLoginResponseMethod();
     }
 
-    public WxLoginResponseMethod() {
+    private WxLoginResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_WX_LOGIN);
     }
 

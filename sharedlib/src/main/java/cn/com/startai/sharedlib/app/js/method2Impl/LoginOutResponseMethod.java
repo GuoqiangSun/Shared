@@ -17,7 +17,7 @@ public class LoginOutResponseMethod extends BaseResponseMethod2 {
         return new LoginOutResponseMethod();
     }
 
-    public LoginOutResponseMethod() {
+    private LoginOutResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_LOGIN_OUT);
     }
 

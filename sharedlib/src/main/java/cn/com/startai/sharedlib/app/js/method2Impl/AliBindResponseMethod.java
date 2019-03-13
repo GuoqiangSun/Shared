@@ -18,7 +18,7 @@ public class AliBindResponseMethod extends BaseResponseMethod2 {
         return new AliBindResponseMethod();
     }
 
-    public AliBindResponseMethod() {
+    private AliBindResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_ALI_BIND);
     }
 

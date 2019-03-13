@@ -3,30 +3,37 @@
 
     <application
         android:name=".SynerMaxChargerApplication"
-        android:allowBackup="true"
-        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher_synermax"
         android:label="@string/synermax_app_name"
-        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_synermax"
-        android:screenOrientation="portrait"
-        android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
         <activity
-            android:name="cn.com.startai.sharedlib.app.view.SharedMainActivity"
+            android:name="cn.com.startai.sharedlib.app.view.activity.SharedMainActivity"
             android:configChanges="locale|orientation|screenSize|layoutDirection"
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+
+        <activity
+            android:name="cn.com.startai.synermax.wxapi.WXEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name="cn.com.startai.synermax.wxapi.WXPayEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
 
     </application>

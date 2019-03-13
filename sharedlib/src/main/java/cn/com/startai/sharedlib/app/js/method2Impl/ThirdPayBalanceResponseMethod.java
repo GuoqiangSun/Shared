@@ -19,7 +19,7 @@ public class ThirdPayBalanceResponseMethod extends BaseResponseMethod2 {
         return new ThirdPayBalanceResponseMethod();
     }
 
-    public ThirdPayBalanceResponseMethod() {
+    private ThirdPayBalanceResponseMethod() {
         super(JsMsgType.TYPE_RESPONSE_THIRD_PAY_BALANCE);
     }
 
