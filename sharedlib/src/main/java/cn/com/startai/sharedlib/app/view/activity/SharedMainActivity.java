@@ -25,13 +25,13 @@ import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.startai.sharedlib.app.view.fragment.BaseFragment;
 import cn.com.startai.sharedlib.app.view.fragment.SharedGuideFragment;
 import cn.com.swain.baselib.app.IApp.IService;
+import cn.com.swain.baselib.app.utils.StatusBarUtil;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
 import cn.com.swain.baselib.log.Tlog;
-import cn.com.swain.baselib.util.PermissionGroup;
-import cn.com.swain.baselib.util.PermissionHelper;
-import cn.com.swain.baselib.util.PermissionRequest;
-import cn.com.swain.baselib.util.StatusBarUtil;
+import cn.com.swain.baselib.permission.PermissionGroup;
+import cn.com.swain.baselib.permission.PermissionHelper;
+import cn.com.swain.baselib.permission.PermissionRequest;
 
 
 /**

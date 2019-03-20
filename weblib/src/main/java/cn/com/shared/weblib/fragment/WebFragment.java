@@ -2,17 +2,23 @@ package cn.com.shared.weblib.fragment;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.widget.RelativeLayout;
 
+import org.xwalk.core.XWalkHttpAuthHandler;
 import org.xwalk.core.XWalkJavascriptResult;
+import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkWebResourceRequest;
+import org.xwalk.core.XWalkWebResourceResponse;
 
 import java.util.ArrayList;
 
@@ -30,6 +36,8 @@ import cn.com.swain.baselib.log.Tlog;
  */
 
 public class WebFragment extends Fragment {
+
+    private static final String TAG = "chromium";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -110,6 +118,7 @@ public class WebFragment extends Fragment {
 //        mWebView.addJavascriptInterface(jsInterfaces, jsInterfaces.getName());
 
         mWebView.setUIClient(new MXWalkUIClient(mWebView));
+        mWebView.setResourceClient(new MXWalkResourceClient(mWebView));
 
         String loadUrl = mCallBack.getLoadUrl();
 
@@ -188,6 +197,66 @@ public class WebFragment extends Fragment {
         }
     }
 
+
+    private class MXWalkResourceClient extends XWalkResourceClient {
+
+        private MXWalkResourceClient(XWalkView view) {
+            super(view);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "WebFragment shouldOverrideUrlLoading() " + url);
+            }
+            return super.shouldOverrideUrlLoading(view, url);
+        }
+
+        @Override
+        public void onReceivedLoadError(XWalkView view, int errorCode, String description, String failingUrl) {
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "WebFragment onReceivedLoadError() "
+                        + String.valueOf(errorCode)
+                        + " description:" + description
+                        + " failingUrl:" + failingUrl);
+            }
+            super.onReceivedLoadError(view, errorCode, description, failingUrl);
+        }
+
+        @Override
+        public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "WebFragment onReceivedSslError() " + String.valueOf(error));
+            }
+            super.onReceivedSslError(view, callback, error);
+        }
+
+        @Override
+        public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "WebFragment onReceivedHttpAuthRequest() " + String.valueOf(host) + " realm:" + realm);
+            }
+            super.onReceivedHttpAuthRequest(view, handler, host, realm);
+        }
+
+        @Override
+        public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+
+            if (Tlog.isDebug()) {
+
+                Tlog.v(TAG, "WebActivity shouldInterceptLoadRequest() "
+                        + " [getMethod]:" + request.getMethod()
+                        + ", [getUrl]:" + request.getUrl()
+                        + ", [getRequestHeaders]:" + String.valueOf(request.getRequestHeaders())
+                );
+
+            }
+
+            return super.shouldInterceptLoadRequest(view, request);
+        }
+    }
+
+
     private class MXWalkUIClient extends XWalkUIClient {
 
         MXWalkUIClient(XWalkView view) {
@@ -197,13 +266,17 @@ public class WebFragment extends Fragment {
         @Override
         public void onPageLoadStarted(XWalkView view, String url) {
             super.onPageLoadStarted(view, url);
-            Tlog.v("MXWalkUIClient onPageLoadStarted() ");
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "MXWalkUIClient onPageLoadStarted() ");
+            }
         }
 
         @Override
         public void onPageLoadStopped(XWalkView view, String url, LoadStatus status) {
             super.onPageLoadStopped(view, url, status);
-            Tlog.v("MXWalkUIClient onPageLoadStopped() ");
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "MXWalkUIClient onPageLoadStopped() ");
+            }
             if (firstAdd) {
                 firstAdd = false;
                 if (mCallBack != null) {
@@ -214,20 +287,26 @@ public class WebFragment extends Fragment {
 
         @Override
         public boolean onJsAlert(XWalkView view, String url, String message, final XWalkJavascriptResult result) {
-            Tlog.v("MXWalkUIClient onJsAlert() " + message);
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "MXWalkUIClient onJsAlert() " + message);
+            }
             DialogUtils.alert(getActivity(), message, result);
             return true;
         }
 
         @Override
         public boolean onJsConfirm(XWalkView view, String url, String message, XWalkJavascriptResult result) {
-            Tlog.v("MXWalkUIClient onJsConfirm() ");
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "MXWalkUIClient onJsConfirm() ");
+            }
             return super.onJsConfirm(view, url, message, result);
         }
 
         @Override
         public boolean onJsPrompt(XWalkView view, String url, String message, String defaultValue, XWalkJavascriptResult result) {
-            Tlog.v("MXWalkUIClient onJsPrompt() ");
+            if (Tlog.isDebug()) {
+                Tlog.v(TAG, "MXWalkUIClient onJsPrompt() ");
+            }
             return super.onJsPrompt(view, url, message, defaultValue, result);
         }
 

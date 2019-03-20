@@ -12,9 +12,9 @@ import java.io.File;
 import cn.com.startai.sharedlib.BuildConfig;
 import cn.com.swain.baselib.app.IApp.IApp;
 import cn.com.swain.baselib.app.IApp.IService;
+import cn.com.swain.baselib.app.utils.AppUtils;
 import cn.com.swain.baselib.log.Tlog;
 import cn.com.swain.baselib.log.logRecord.impl.LogRecordManager;
-import cn.com.swain.baselib.util.AppUtils;
 
 /**
  * author: Guoqiang_Sun

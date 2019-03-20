@@ -76,12 +76,12 @@ import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
 import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
 import cn.com.startai.sharedlib.app.view.app.SharedApplication;
 import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
+import cn.com.swain.baselib.app.utils.AppUtils;
 import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
 import cn.com.swain.baselib.log.Tlog;
-import cn.com.swain.baselib.util.AppUtils;
-import cn.com.swain.baselib.util.PermissionGroup;
-import cn.com.swain.baselib.util.PermissionHelper;
-import cn.com.swain.baselib.util.PermissionRequest;
+import cn.com.swain.baselib.permission.PermissionGroup;
+import cn.com.swain.baselib.permission.PermissionHelper;
+import cn.com.swain.baselib.permission.PermissionRequest;
 import cn.com.swain.baselib.util.PhotoUtils;
 
 /**
@@ -816,7 +816,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
                     modifyHeadpicSendResponseMethod.setErrorCode(JSErrorCode.UPDATE_HEAD_PIC_ERROR_NO_LOCAL_PERMISSION);
                     callJs(modifyHeadpicSendResponseMethod);
                 }
-                return  true;
+                return true;
             }
         }, PermissionGroup.STORAGE);
 

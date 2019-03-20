@@ -1,5 +1,6 @@
 package cn.com.startai.sharedlib.app.mutual.impl;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 
+import java.io.File;
 import java.util.Map;
 
 import cn.com.startai.mqttsdk.StartAI;
@@ -68,9 +70,11 @@ import cn.com.startai.sharedlib.app.js.method2Impl.WxUnBindResponseMethod;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
 import cn.com.startai.sharedlib.app.mutual.utils.AuthResult;
+import cn.com.startai.sharedlib.app.mutual.utils.DownloadTask;
 import cn.com.startai.sharedlib.app.mutual.utils.PayResult;
 import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
 import cn.com.swain.baselib.log.Tlog;
+import cn.com.swain.baselib.permission.PermissionHelper;
 
 /**
  * author: Guoqiang_Sun
@@ -406,12 +410,41 @@ public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartai
         userInfoResponseMethod.setResult(resp.getResult() == 1);
 
         C_0x8024.Resp.ContentBean contentBean = resp.getContent();
+
+        if (resp.getResult() == 1 && contentBean != null) {
+            // 有缓存头像,就用缓存头像,否则就去下载。
+
+            String headPic = contentBean.getHeadPic();
+            File cacheDownPath = DownloadTask.getCacheDownPath(headPic);
+
+            if (headPic != null && !"".equalsIgnoreCase(headPic)) {
+                //
+                if (cacheDownPath.exists()) {
+                    if (PermissionHelper.isGranted(app, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+                        String absolutePath = cacheDownPath.getAbsolutePath();
+                        Tlog.w(TAG, " onResultModifyUserInformation() use cache path:" + absolutePath);
+                        // 替换成缓存头像
+
+                        contentBean.setHeadPic("file://" + absolutePath);
+                    }
+                } else {
+                    if (PermissionHelper.isGranted(app, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        new DownloadTask(headPic).execute();
+                    }
+                }
+            }
+
+
+        }
+
         userInfoResponseMethod.setContent(contentBean);
 
         if (contentBean != null) {
             userInfoResponseMethod.setErrorCode(contentBean.getErrcode());
         }
         callJs(userInfoResponseMethod);
+
     }
 
     @Override
@@ -425,6 +458,36 @@ public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartai
                 ModifyUserInfoResponseMethod.getModifyUserInfoResponseMethod();
         userInfoResponseMethod.setResult(resp.getResult() == 1);
         C_0x8020.Resp.ContentBean contentBean = resp.getContent();
+
+        if (resp.getResult() == 1 && contentBean != null) {
+            // 有缓存头像,就用缓存头像,否则就去下载。
+
+            String headPic = contentBean.getHeadPic();
+            File cacheDownPath = DownloadTask.getCacheDownPath(headPic);
+
+            if (headPic != null && !"".equalsIgnoreCase(headPic)) {
+                //
+                if (cacheDownPath.exists()) {
+                    if (PermissionHelper.isGranted(app, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+                        String absolutePath = cacheDownPath.getAbsolutePath();
+                        Tlog.w(TAG, " onResultModifyUserInformation() use cache path:" + absolutePath);
+                        // 替换成缓存头像
+
+                        contentBean.setHeadPic("file://" + absolutePath);
+                    }
+                } else {
+                    if (PermissionHelper.isGranted(app, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        new DownloadTask(headPic).execute();
+                    }
+                }
+            }
+
+
+        }
+
+
+
         userInfoResponseMethod.setContent(contentBean);
         if (contentBean != null) {
             userInfoResponseMethod.setErrorCode(contentBean.getErrcode());

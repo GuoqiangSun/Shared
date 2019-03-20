@@ -1,14 +1,20 @@
 package cn.com.startai.sharedlib.app.js.method2Impl;
 
+import android.Manifest;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.List;
 
 import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
+import cn.com.startai.sharedlib.app.mutual.utils.DownloadTask;
 import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod2;
+import cn.com.swain.baselib.log.Tlog;
+import cn.com.swain.baselib.permission.PermissionHelper;
 
 /**
  * author: Guoqiang_Sun
@@ -51,7 +57,8 @@ public class UserInfoResponseMethod extends BaseResponseMethod2 {
                 data.put("town", contentBean.getTown());
                 data.put("address", contentBean.getAddress());
                 data.put("nickName", contentBean.getNickName());
-                data.put("headPic", contentBean.getHeadPic());
+                String headPic = contentBean.getHeadPic();
+                data.put("headPic", headPic);
                 data.put("sex", contentBean.getSex());
                 data.put("firstName", contentBean.getFirstName());
                 data.put("lastName", contentBean.getLastName());

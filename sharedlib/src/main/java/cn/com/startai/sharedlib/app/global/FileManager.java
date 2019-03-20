@@ -37,18 +37,14 @@ public class FileManager extends FileTemplate {
     public void init(Application app) {
         super.init(app);
         Tlog.i(" FileManager init finish ; success:" + exit);
-//        FileUtil.notifySystemToScan(app, getProjectPath().getAbsolutePath());
-        File f = new File(getProjectPath(),"notify.txt");
-        FileUtil.createNullFile(f);
-
-        MediaScannerConnection.scanFile(app.getApplicationContext(),new String[]{f.getAbsolutePath()},null,null);
+        FileUtil.notifySystemToScan(app, getProjectPath());
     }
 
 
     public void recreate(Application app) {
         super.init(app);
         Tlog.i(" FileManager recreate finish ; success:" + exit);
-//        FileUtil.notifySystemToScan(app, getProjectPath().getAbsolutePath());
+        FileUtil.notifySystemToScan(app, getProjectPath());
     }
 
 
@@ -59,7 +55,7 @@ public class FileManager extends FileTemplate {
         } else if (CustomManager.getInstance().isSynerMax()) {
             return new File(getAppRootPath(), "Synermax");
         }
-        return new File(getAppRootPath(), "shared");
+        return new File(getAppRootPath(), "SharedCharger");
     }
 
     @Override
