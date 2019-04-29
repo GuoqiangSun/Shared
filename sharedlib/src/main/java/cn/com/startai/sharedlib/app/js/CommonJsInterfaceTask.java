@@ -7,14 +7,20 @@ import org.json.JSONException;
 import cn.com.shared.weblib.js.XWalkCommonJsRequest;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
-import cn.com.startai.sharedlib.app.js.requestBeanImpl.BindPhoneJsRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.AppInstallRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BindPhoneRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.CallPhoneRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.GetIdentityCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.LanguageSetRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.MapNavRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.MobileLoginByIDCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdBindRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdLoginRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayOrderRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdUnBindRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.swain.baselib.jsInterface.request.AbsCommonJsInterfaceProxy;
 import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
@@ -67,6 +73,19 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
                 mCallBack.onJsAliLogin();
 
                 break;
+            case JsMsgType.TYPE_REQUEST_THIRD_LOGIN:
+
+                ThirdLoginRequestBean mThirdLoginRequestBean = new ThirdLoginRequestBean(mData);
+                mCallBack.onJsThirdLogin(mThirdLoginRequestBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_THIRD_BIND:
+
+                ThirdBindRequestBean mThirdBindRequestBean = new ThirdBindRequestBean(mData);
+                mCallBack.onJsThirdBind(mThirdBindRequestBean);
+
+                break;
 
             case JsMsgType.TYPE_REQUEST_WX_BIND:
 
@@ -89,6 +108,27 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
             case JsMsgType.TYPE_REQUEST_UNBIND_ALI:
 
                 mCallBack.onJsAliUnBind();
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_THIRD_UNBIND:
+
+                ThirdUnBindRequestBean mThirdUnBindRequestBean = new ThirdUnBindRequestBean(mData);
+                mCallBack.onJsThirdUnbind(mThirdUnBindRequestBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_CALL_PHONE:
+
+                CallPhoneRequestBean callPhoneRequestBean = new CallPhoneRequestBean(mData);
+                mCallBack.onJsCallPhone(callPhoneRequestBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_IS_INSTALL:
+
+                AppInstallRequestBean appInstallRequestBean = new AppInstallRequestBean(mData);
+                mCallBack.onJsAppIsInstall(appInstallRequestBean);
 
                 break;
 
@@ -197,7 +237,7 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
             case JsMsgType.TYPE_REQUEST_BIND_PHONE:
 
-                BindPhoneJsRequestBean mBindPhoneBean = new BindPhoneJsRequestBean(mData);
+                BindPhoneRequestBean mBindPhoneBean = new BindPhoneRequestBean(mData);
                 mCallBack.onJsBindPhone(mBindPhoneBean);
 
                 break;
@@ -206,6 +246,13 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
                 ThirdPayOrderRequestBean mThirdPayBean = new ThirdPayOrderRequestBean(mData);
                 mCallBack.onJsThirdPayOrder(mThirdPayBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_MAP_NAV:
+
+                MapNavRequestBean mapNavRequestBean = new MapNavRequestBean(mData);
+                mCallBack.onJsMapNav(mapNavRequestBean);
 
                 break;
 
@@ -296,12 +343,23 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJsAliBind();
 
-        void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean);
+        void onJsBindPhone(BindPhoneRequestBean mBindPhoneBean);
 
         void onJsWXUnBind();
 
         void onJsAliUnBind();
 
+        void onJsThirdLogin(ThirdLoginRequestBean mThirdLoginRequestBean);
+
+        void onJsThirdUnbind(ThirdUnBindRequestBean mThirdUnBindRequestBean);
+
+        void onJsThirdBind(ThirdBindRequestBean mThirdBindRequestBean);
+
+        void onJsCallPhone(CallPhoneRequestBean callPhoneRequestBean);
+
+        void onJsAppIsInstall(AppInstallRequestBean appInstallRequestBean);
+
+        void onJsMapNav(MapNavRequestBean mapNavRequestBean);
     }
 
 

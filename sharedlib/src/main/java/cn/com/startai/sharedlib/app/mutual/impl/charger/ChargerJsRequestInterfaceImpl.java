@@ -1,6 +1,17 @@
 package cn.com.startai.sharedlib.app.mutual.impl.charger;
 
 import android.app.Application;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
+
+import com.eghl.sdk.EGHL;
+import com.eghl.sdk.ELogger;
+import com.eghl.sdk.params.PaymentParams;
+import com.eghl.sdk.response.QueryResponse;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import cn.com.startai.chargersdk.ChargerBusiManager;
 import cn.com.startai.chargersdk.entity.C_0x8304;
@@ -9,11 +20,14 @@ import cn.com.startai.chargersdk.entity.C_0x8309;
 import cn.com.startai.chargersdk.entity.C_0x8312;
 import cn.com.startai.chargersdk.entity.C_0x8313;
 import cn.com.startai.chargersdk.entity.C_0x8314;
+import cn.com.startai.mqttsdk.StartAI;
 import cn.com.startai.mqttsdk.base.StartaiError;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.js.ChargerJsInterfaceTask;
+import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
+import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.BalanceDepositResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.BalancePayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.BorrowDeviceResponseMethod;
@@ -28,8 +42,8 @@ import cn.com.startai.sharedlib.app.js.method2Impl.charger.NearByStoreByMapRespo
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.OrderDetailResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.OrderListResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.StoreInfoResponseMethod;
-import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.charger.TransactionDetailResponseMethod;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.BalancePayRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.BorrowDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.DeviceInfoJsRequestBean;
@@ -41,11 +55,11 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.OrderListRequestB
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.StoresDetailLstRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.StoresInfoRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.StoresMapLstRequestBean;
-import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.TransactionDetailsRequestBean;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
 import cn.com.startai.sharedlib.app.mutual.impl.CommonJsRequestInterfaceImpl;
+import cn.com.startai.sharedlib.app.mutual.utils.EGHLConsts;
 import cn.com.swain.baselib.log.Tlog;
 
 /**
@@ -238,11 +252,70 @@ public class ChargerJsRequestInterfaceImpl extends CommonJsRequestInterfaceImpl
     @Override
     public void onJSThirdPayBalance(ThirdPayBalanceRequestBean mRechargerBean) {
 
-        C_0x8307.Req.ContentBean req = new C_0x8307.Req.ContentBean(mRechargerBean.getFee(),
-                mRechargerBean.getPlatform(),
-                mRechargerBean.getType());
-        ChargerBusiManager.getInstance().requestRecharge(req, mThirdPayBalanceLsn);
+        if (mRechargerBean.getPlatform() == 3) {
+            pay(mRechargerBean.getFee());
+        } else {
+            C_0x8307.Req.ContentBean req = new C_0x8307.Req.ContentBean(mRechargerBean.getFee(),
+                    mRechargerBean.getPlatform(),
+                    mRechargerBean.getType());
+            ChargerBusiManager.getInstance().requestRecharge(req, mThirdPayBalanceLsn);
+        }
     }
+
+    /**
+     * 请求充值
+     * see {@link #onEghlPayResult(int, Intent)}
+     */
+    private void pay(float amountF) {
+
+        EGHL eghl = EGHL.getInstance();
+        ELogger.setLoggable(Debuger.isLogDebug);
+
+        //需要收集的用户信息
+        String custName = "Robin";
+        String custEmail = "419109715@qq.com";//在支付 成功后，eghl支付系统会将支付结果发送到此邮箱
+        String custPhone = "15818171995";
+
+        //订单信息
+        String paymentID = eghl.generateId(EGHLConsts.SERVICE_ID); //支付单号，
+        //支付金额 单位 马来币 1马来币 = 1.64元人民币 浮点型 最多保留两位小数， "1.5" "1.50" 都可以
+        // 支付金额必须大于1.0 否则无法调起支付页面 也无法调起银行支付页面
+        String amount = Float.toString(amountF);
+        String orderId = paymentID;//订单号 由具体业务订单决定
+        String paymentDesc = "synermax-Order pay"; //订单描述
+
+        //startai云端需要 携带自定义参数 param6 param7
+        String appidAndUserId = "f7cc35b33c8f579fae3df9f3e5941608-4e0ab3cae0174c92";
+        //appid 和 userid  以  "appid-userid"的方式拼接
+
+        PaymentParams.Builder params = new PaymentParams.Builder()
+                .setServiceId(EGHLConsts.SERVICE_ID)
+                .setPassword(Debuger.isDebug ? EGHLConsts.PASSWORD_TEST : EGHLConsts.PASSWORD)
+                .setMerchantName(EGHLConsts.MERCHANT_NAME)
+                .setPaymentId(paymentID)
+                .setOrderNumber(orderId)
+                .setPaymentDesc(paymentDesc)
+                .setAmount(amount)
+                .setCurrencyCode(EGHLConsts.CURRENCY_CODE)
+                .setPageTimeout(EGHLConsts.PAGE_TIMEOUT)
+                .setTransactionType(EGHLConsts.TRANSACTION_TYPE)
+                .setPaymentMethod(EGHLConsts.PAYMENT_METHOD)
+//                .setCustName(custName) //如果此处没有填写用户信息，那么在支付界面也会强制要求输入相关信息
+//                .setCustPhone(custPhone)
+//                .setCustEmail(custEmail)
+                .setMerchantReturnUrl(EGHLConsts.CALLBACK_URL)
+                .setMerchantCallbackUrl(EGHLConsts.CALLBACK_URL)
+                .setTriggerReturnURL(true)
+                .setPaymentGateway(Debuger.isDebug ? EGHLConsts.PAYMENT_GATEWAY_TEST : EGHLConsts.PAYMENT_GATEWAY)
+                .setLanguageCode("EN")
+                .setParam6(appidAndUserId)
+                .setParam7(paymentDesc);
+
+        Bundle paymentParams = params.build();
+        eghl.executePayment(paymentParams, getActivity());
+
+    }
+
 
     private IOnCallListener mTransactionDetailLsn = new IOnCallListener() {
         @Override
@@ -563,4 +636,140 @@ public class ChargerJsRequestInterfaceImpl extends CommonJsRequestInterfaceImpl
                 mGiveBackBorrowDeviceLsn);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == EGHL.REQUEST_PAYMENT) {
+            onEghlPayResult(resultCode, data);
+        }
+    }
+
+    private void onEghlPayResult(int resultCode, Intent data) {
+
+        if (data == null) {
+            Tlog.e(TAG, " onEghlPayResult data==null ");
+            return;
+        }
+
+        if (Debuger.isLogDebug) {
+            StringBuilder sb = new StringBuilder(128);
+            String stringExtra = data.getStringExtra(EGHL.RAW_RESPONSE);
+            sb.append(stringExtra);
+            if (!TextUtils.isEmpty(stringExtra)) {
+                if (data.getStringExtra(EGHL.TXN_MESSAGE) != null
+                        && !TextUtils.isEmpty(data.getStringExtra(EGHL.TXN_MESSAGE))) {
+                    sb.append(data.getStringExtra(EGHL.TXN_MESSAGE));
+                } else {
+                    sb.append(data.getStringExtra(QueryResponse.QUERY_DESC));
+                }
+
+                sb.append("TxnStatus = ")
+                        .append(data.getIntExtra(EGHL.TXN_STATUS, EGHL.TRANSACTION_NO_STATUS))
+                        .append("\n").append("TxnMessage = ")
+                        .append(data.getStringExtra(EGHL.TXN_MESSAGE))
+                        .append("\nRaw Response:\n")
+                        .append(data.getStringExtra(EGHL.RAW_RESPONSE));
+
+            }
+            Tlog.d(TAG, " onEghlPayResult:" + sb.toString());
+        }
+
+        switch (resultCode) {
+            case EGHL.TRANSACTION_SUCCESS:
+                Tlog.d(TAG, " onEghlPayResult: payment successful");
+                String response = data.getStringExtra(EGHL.RAW_RESPONSE);
+                Object orderNumber;
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    orderNumber = jsonObject.get("OrderNumber");
+                    Tlog.i(TAG, " onEghlPayResult OrderNumber： " + orderNumber);
+                    //TODO:支付成功 调用startai sdk的'查询真实支付结果'接口
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    orderNumber = null;
+                    Tlog.e(TAG, " onEghlParResult: JSON parse Exception", e);
+
+                }
+
+                if (orderNumber instanceof String) {
+                    StartAI.getInstance().getBaseBusiManager().getRealOrderPayStatus((String) orderNumber,
+                            new IOnCallListener() {
+                                @Override
+                                public void onSuccess(MqttPublishRequest request) {
+                                    if (Debuger.isLogDebug) {
+                                        Tlog.v(TAG, " getRealOrderPayStatus msg send success");
+                                    }
+                                }
+
+                                @Override
+                                public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+
+                                    if (Debuger.isLogDebug) {
+                                        Tlog.e(TAG, " getRealOrderPayStatus msg send fail "
+                                                + startaiError.getErrorCode());
+                                    }
+
+                                    ThirdPayResponseMethod thirdPayResponseMethod =
+                                            ThirdPayResponseMethod.getThirdPayResponseMethod();
+                                    thirdPayResponseMethod.setResult(false);
+                                    thirdPayResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                                    callJs(thirdPayResponseMethod);
+                                }
+
+                            });
+
+                } else {
+
+                    ThirdPayResponseMethod thirdPayResponseMethod =
+                            ThirdPayResponseMethod.getThirdPayResponseMethod();
+                    thirdPayResponseMethod.setResult(false);
+                    thirdPayResponseMethod.setErrorCode(JSErrorCode.THIRD_PAR_INTER_ERROR);
+                    callJs(thirdPayResponseMethod);
+                }
+
+                break;
+            case EGHL.TRANSACTION_FAILED:
+                Tlog.e(TAG, " onEghlPayResult: payment failure");
+                //支付失败
+                ThirdPayResponseMethod thirdPayResponseMethod_FAIL =
+                        ThirdPayResponseMethod.getThirdPayResponseMethod();
+                thirdPayResponseMethod_FAIL.setResult(false);
+                thirdPayResponseMethod_FAIL.setErrorCode(JSErrorCode.THIRD_PAR_FAIL);
+                callJs(thirdPayResponseMethod_FAIL);
+
+                break;
+            case EGHL.TRANSACTION_CANCELLED:
+                Tlog.d(TAG, " onEghlPayResult: payment cancelled");
+                //支付取消
+                ThirdPayResponseMethod thirdPayResponseMethod_CANCLE =
+                        ThirdPayResponseMethod.getThirdPayResponseMethod();
+                thirdPayResponseMethod_CANCLE.setResult(false);
+                thirdPayResponseMethod_CANCLE.setErrorCode(JSErrorCode.THIRD_PAR_USER_CANCLE);
+                callJs(thirdPayResponseMethod_CANCLE);
+
+                break;
+            case EGHL.TRANSACTION_AUTHORIZED:
+                Tlog.e(TAG, " onEghlPayResult: payment Authorized");
+                //商户未认证审核
+
+                ThirdPayResponseMethod thirdPayResponseMethod_AUTH =
+                        ThirdPayResponseMethod.getThirdPayResponseMethod();
+                thirdPayResponseMethod_AUTH.setResult(false);
+                thirdPayResponseMethod_AUTH.setErrorCode(JSErrorCode.THIRD_PAR_NO_AUTHORIZED);
+                callJs(thirdPayResponseMethod_AUTH);
+
+                break;
+            default:
+
+                ThirdPayResponseMethod thirdPayResponseMethod_DEFAULT =
+                        ThirdPayResponseMethod.getThirdPayResponseMethod();
+                thirdPayResponseMethod_DEFAULT.setResult(false);
+                thirdPayResponseMethod_DEFAULT.setErrorCode(JSErrorCode.THIRD_PAR_INTER_ERROR);
+                callJs(thirdPayResponseMethod_DEFAULT);
+
+                Tlog.e(TAG, " onEghlPayResult: default" + resultCode);
+                break;
+        }
+    }
 }

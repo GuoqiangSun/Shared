@@ -62,7 +62,9 @@ import cn.com.startai.sharedlib.app.js.method2Impl.MobileLoginByIDCodeResponseMe
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserPwdResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.PhoneBindResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ThirdBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ThirdUnbindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
@@ -485,7 +487,6 @@ public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartai
 
 
         }
-
 
 
         userInfoResponseMethod.setContent(contentBean);
@@ -927,6 +928,39 @@ public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartai
 
                 break;
 
+            case C_0x8037.THIRD_FACEBOOK:
+
+                ThirdBindResponseMethod thirdBindResponseMethod_FACEBOOK =
+                        ThirdBindResponseMethod.getThirdBindResponseMethod();
+                thirdBindResponseMethod_FACEBOOK.setResult(resp.getResult() == 1);
+                thirdBindResponseMethod_FACEBOOK.setIsBind(resp.getResult() == 1);
+                thirdBindResponseMethod_FACEBOOK.setFacebookType();
+                thirdBindResponseMethod_FACEBOOK.setErrorCode(String.valueOf(content.getErrcode()));
+                callJs(thirdBindResponseMethod_FACEBOOK);
+
+                break;
+            case C_0x8037.THIRD_GOOGLE:
+
+                ThirdBindResponseMethod thirdBindResponseMethod_GOOGLE =
+                        ThirdBindResponseMethod.getThirdBindResponseMethod();
+                thirdBindResponseMethod_GOOGLE.setResult(resp.getResult() == 1);
+                thirdBindResponseMethod_GOOGLE.setIsBind(resp.getResult() == 1);
+                thirdBindResponseMethod_GOOGLE.setErrorCode(String.valueOf(content.getErrcode()));
+                thirdBindResponseMethod_GOOGLE.setFacebookType();
+                callJs(thirdBindResponseMethod_GOOGLE);
+
+                break;
+            case C_0x8037.THIRD_TWITTER:
+
+                ThirdBindResponseMethod thirdBindResponseMethod_TWITTER =
+                        ThirdBindResponseMethod.getThirdBindResponseMethod();
+                thirdBindResponseMethod_TWITTER.setResult(resp.getResult() == 1);
+                thirdBindResponseMethod_TWITTER.setIsBind(resp.getResult() == 1);
+                thirdBindResponseMethod_TWITTER.setFacebookType();
+                thirdBindResponseMethod_TWITTER.setErrorCode(String.valueOf(content.getErrcode()));
+                callJs(thirdBindResponseMethod_TWITTER);
+
+                break;
         }
 
     }
@@ -959,7 +993,8 @@ public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartai
         switch (content.getType()) {
             case C_0x8036.THIRD_WECHAT:
 
-                WxUnBindResponseMethod wxUnBindResponseMethod = WxUnBindResponseMethod.getWXUnBindResponseMethod();
+                WxUnBindResponseMethod wxUnBindResponseMethod =
+                        WxUnBindResponseMethod.getWXUnBindResponseMethod();
                 wxUnBindResponseMethod.setResult(resp.getResult() == 1);
                 wxUnBindResponseMethod.setUnBind(resp.getResult() == 1);
                 wxUnBindResponseMethod.setErrorCode(content.getErrcode());
@@ -969,12 +1004,42 @@ public class CommonMqttLsnImpl extends MutualSharedWrapper implements IOnStartai
 
             case C_0x8036.THIRD_ALIPAY:
 
-                AliUnBindResponseMethod aliUnBindResponseMethod = AliUnBindResponseMethod.getAliUnBindResponseMethod();
+                AliUnBindResponseMethod aliUnBindResponseMethod =
+                        AliUnBindResponseMethod.getAliUnBindResponseMethod();
                 aliUnBindResponseMethod.setResult(resp.getResult() == 1);
                 aliUnBindResponseMethod.setUnBind(resp.getResult() == 1);
                 aliUnBindResponseMethod.setErrorCode(content.getErrcode());
                 callJs(aliUnBindResponseMethod);
 
+                break;
+            case C_0x8036.THIRD_FACEBOOK:
+                ThirdUnbindResponseMethod thirdUnbindResponseMethodFACEBOOK
+                        = ThirdUnbindResponseMethod.getThirdUnbindResponseMethod();
+                thirdUnbindResponseMethodFACEBOOK.setResult(resp.getResult() == 1);
+                thirdUnbindResponseMethodFACEBOOK.setUnbind(resp.getResult() == 1);
+                thirdUnbindResponseMethodFACEBOOK.setErrorCode(content.getErrcode());
+                thirdUnbindResponseMethodFACEBOOK.setFacebookType();
+                callJs(thirdUnbindResponseMethodFACEBOOK);
+                break;
+
+            case C_0x8036.THIRD_GOOGLE:
+                ThirdUnbindResponseMethod thirdUnbindResponseMethodGOOGLE
+                        = ThirdUnbindResponseMethod.getThirdUnbindResponseMethod();
+                thirdUnbindResponseMethodGOOGLE.setResult(resp.getResult() == 1);
+                thirdUnbindResponseMethodGOOGLE.setUnbind(resp.getResult() == 1);
+                thirdUnbindResponseMethodGOOGLE.setErrorCode(content.getErrcode());
+                thirdUnbindResponseMethodGOOGLE.setGoogleType();
+                callJs(thirdUnbindResponseMethodGOOGLE);
+                break;
+
+            case C_0x8036.THIRD_TWITTER:
+                ThirdUnbindResponseMethod thirdUnbindResponseMethodTWITTER
+                        = ThirdUnbindResponseMethod.getThirdUnbindResponseMethod();
+                thirdUnbindResponseMethodTWITTER.setResult(resp.getResult() == 1);
+                thirdUnbindResponseMethodTWITTER.setUnbind(resp.getResult() == 1);
+                thirdUnbindResponseMethodTWITTER.setErrorCode(content.getErrcode());
+                thirdUnbindResponseMethodTWITTER.setTwitterType();
+                callJs(thirdUnbindResponseMethodTWITTER);
                 break;
         }
 

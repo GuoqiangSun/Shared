@@ -102,4 +102,59 @@ public class JSErrorCode {
      */
     public static final String UPDATE_HEAD_PIC_COMPRESS_ERROR = "0x802596";
 
+
+    /////支付
+
+    /**
+     * 支付失败
+     */
+    public static final String THIRD_PAR_FAIL = "0x524301";
+
+    /**
+     * 支付失败,内部错误
+     */
+    public static final String THIRD_PAR_INTER_ERROR = "0x524302";
+
+    /**
+     * 支付失败,用户取消
+     */
+    public static final String THIRD_PAR_USER_CANCLE = "0x524303";
+
+    /**
+     * 支付失败,商户未认证审核
+     */
+    public static final String THIRD_PAR_NO_AUTHORIZED = "0x524304";
+
+    /**
+     * 第三方登录用户取消
+     */
+    public static final String THIRD_LOGIN_USER_CANCEL = "0x510B01";
+
+    /**
+     * 第三方登录内部错误
+     */
+    public static final String THIRD_LOGIN_INTER_ERROR = "0x510B02";
+
+    /**
+     * 第三方绑定用户取消
+     */
+    public static final String THIRD_BIND_USER_CANCEL = "0x510C01";
+
+    /**
+     * 第三方绑定内部错误
+     */
+    public static final String THIRD_BIND_INTER_ERROR = "0x510C02";
+
+
+    /**
+     * 未安装相应地图
+     */
+    public static final String MAP_NAV_ERROR_NO_CLIENT = "0x530201";
+
+    /**
+     * 失败
+     */
+    public static final String MAP_NAV_ERROR = "0x530201";
+
+
 }

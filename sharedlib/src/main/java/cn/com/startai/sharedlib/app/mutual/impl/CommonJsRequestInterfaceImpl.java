@@ -3,18 +3,42 @@ package cn.com.startai.sharedlib.app.mutual.impl;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import cn.com.startai.fssdk.FSDownloadCallback;
 import cn.com.startai.fssdk.FSUploadCallback;
@@ -30,9 +54,11 @@ import cn.com.startai.mqttsdk.busi.entity.C_0x8021;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8022;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8024;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8025;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8027;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8028;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8033;
 import cn.com.startai.mqttsdk.busi.entity.C_0x8036;
+import cn.com.startai.mqttsdk.busi.entity.C_0x8037;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
@@ -46,33 +72,46 @@ import cn.com.startai.sharedlib.app.js.Utils.Language;
 import cn.com.startai.sharedlib.app.js.method2Impl.AliBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.AliUnBindResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.AppInstallResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.CallPhoneResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetAppVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetIdentityCodeResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLeastVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.LanguageResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.MapNavResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.MobileLoginByIDCodeResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyHeadpicResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyUserPwdResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.PhoneBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ScanORResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ThirdBindResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ThirdLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ThirdPayResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.ThirdUnbindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UpdateProgressResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.UserInfoResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.WxUnBindResponseMethod;
-import cn.com.startai.sharedlib.app.js.requestBeanImpl.BindPhoneJsRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.AppInstallRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.BindPhoneRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.CallPhoneRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.GetIdentityCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.LanguageSetRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.MapNavRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.MobileLoginByIDCodeRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyNickNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserNameRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ModifyUserPwdRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdBindRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdLoginRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayOrderRequestBean;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdUnBindRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
+import cn.com.startai.sharedlib.app.mutual.utils.MapUtils;
 import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
 import cn.com.startai.sharedlib.app.view.app.SharedApplication;
 import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
@@ -302,7 +341,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
      * see {@link CommonMqttLsnImpl#onCheckIdetifyResult(C_0x8022.Resp)}
      */
     @Override
-    public void onJsBindPhone(BindPhoneJsRequestBean mBindPhoneBean) {
+    public void onJsBindPhone(BindPhoneRequestBean mBindPhoneBean) {
 
         //发送请求 接口调用前需要先 调用 获取验证码，检验验证码
         StartAI.getInstance().getBaseBusiManager().checkIdentifyCode(mBindPhoneBean.getPhone(), mBindPhoneBean.getCode(),
@@ -393,6 +432,435 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
     }
 
 
+    @Override
+    public void onJsThirdUnbind(final ThirdUnBindRequestBean mThirdUnBindRequestBean) {
+        C_0x8036.Req.ContentBean req = new C_0x8036.Req.ContentBean();
+        req.setUserid(getUserID());
+        if (mThirdUnBindRequestBean.isFacebookType()) {
+            req.setType(C_0x8036.THIRD_FACEBOOK);
+        } else if (mThirdUnBindRequestBean.isGoogleType()) {
+            req.setType(C_0x8036.THIRD_GOOGLE);
+        } else if (mThirdUnBindRequestBean.isTwitterType()) {
+            req.setType(C_0x8036.THIRD_TWITTER);
+        }
+
+        StartAI.getInstance().getBaseBusiManager().unBindThirdAccount(req, new IOnCallListener() {
+            @Override
+            public void onSuccess(MqttPublishRequest request) {
+                if (Debuger.isLogDebug) {
+                    Tlog.v(TAG, " unBindThirdAccount msg send success ");
+                }
+            }
+
+            @Override
+            public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                if (Debuger.isLogDebug) {
+                    Tlog.e(TAG, " unbindAli msg send fail " + startaiError.getErrorCode());
+                }
+                ThirdUnbindResponseMethod thirdUnbindResponseMethod
+                        = ThirdUnbindResponseMethod.getThirdUnbindResponseMethod();
+                thirdUnbindResponseMethod.setResult(false);
+                thirdUnbindResponseMethod.setType(mThirdUnBindRequestBean.getType());
+                thirdUnbindResponseMethod.setUnbind(false);
+                callJs(thirdUnbindResponseMethod);
+            }
+        });
+    }
+
+
+    private int mFacebookStatus = 0;
+    private static final int FACEBOOK_LOGIN = 0x01;
+    private static final int FACEBOOK_BIND = 0x02;
+
+    /**
+     * see at {@link #onActivityResult(int, int, Intent)}
+     */
+    @Override
+    public void onJsThirdLogin(ThirdLoginRequestBean mThirdLoginRequestBean) {
+        if (mThirdLoginRequestBean.isFacebookType()) {
+            mFacebookStatus = FACEBOOK_LOGIN;
+            loginFacebook();
+        } else if (mThirdLoginRequestBean.isGoogleType()) {
+            loginGoogle(RC_SIGN_IN);
+        }
+
+    }
+
+    @Override
+    public void onJsThirdBind(ThirdBindRequestBean mThirdBindRequestBean) {
+        if (mThirdBindRequestBean.isFacebookType()) {
+            mFacebookStatus = FACEBOOK_BIND;
+            bindFacebook();
+        } else if (mThirdBindRequestBean.isGoogleType()) {
+            loginGoogle(RC_BIND_IN);
+        }
+    }
+
+    @Override
+    public void onJsCallPhone(CallPhoneRequestBean callPhoneRequestBean) {
+        String phone = callPhoneRequestBean.getPhone();
+
+        CallPhoneResponseMethod callPhoneResponseMethod
+                = CallPhoneResponseMethod.getCallPhoneResponseMethod();
+        callPhoneResponseMethod.setPhone(phone);
+
+        try {
+            Intent intent = new Intent(Intent.ACTION_DIAL);
+            Uri data = Uri.parse("tel:" + phone);
+            intent.setData(data);
+            getActivity().startActivity(intent);
+            callPhoneResponseMethod.setResult(true);
+            callPhoneResponseMethod.setState(true);
+        } catch (Exception e) {
+            callPhoneResponseMethod.setResult(false);
+            callPhoneResponseMethod.setState(false);
+        }
+
+        callJs(callPhoneResponseMethod);
+    }
+
+    @Override
+    public void onJsAppIsInstall(AppInstallRequestBean appInstallRequestBean) {
+
+        AppInstallResponseMethod appInstallResponseMethod
+                = AppInstallResponseMethod.getAppInstallResponseMethod();
+
+        boolean appInstalled;
+        if (appInstallRequestBean.isWechat()) {
+
+            appInstalled = AppUtils.isAppInstalled(app, "com.tencent.mm");
+            appInstallResponseMethod.setResult(true);
+        } else if (appInstallRequestBean.isAli()) {
+
+            appInstalled = AppUtils.isAppInstalled(app, "com.eg.android.AlipayGphone");
+            appInstallResponseMethod.setResult(true);
+        } else {
+            appInstalled = false;
+            appInstallResponseMethod.setResult(false);
+        }
+
+        appInstallResponseMethod.setType(appInstallRequestBean.getType());
+        appInstallResponseMethod.setState(appInstalled);
+
+    }
+
+    @Override
+    public void onJsMapNav(MapNavRequestBean mapNavRequestBean) {
+
+        MapNavResponseMethod mapNavResponseMethod
+                = MapNavResponseMethod.getMapNavResponseMethod();
+
+        Intent intent = null;
+
+        if (mapNavRequestBean.isBaidu()) {
+
+            if (MapUtils.isBaiduMapInstall(app)) {
+                intent = MapUtils.getBaiduMap(mapNavRequestBean.getLat(),
+                        mapNavRequestBean.getLng(),
+                        mapNavRequestBean.getAddress(),
+                        app.getPackageName());
+            }
+
+        } else if (mapNavRequestBean.isGaode()) {
+            if (MapUtils.isGaodeMapInstall(app)) {
+                intent = MapUtils.getGaodeMap(mapNavRequestBean.getLat(),
+                        mapNavRequestBean.getLng(),
+                        mapNavRequestBean.getAddress());
+            }
+        } else if (mapNavRequestBean.isGoogle()) {
+            if (MapUtils.isGoogleMapInstall(app)) {
+                intent = MapUtils.getGoogleMap(mapNavRequestBean.getLat(),
+                        mapNavRequestBean.getLng(),
+                        mapNavRequestBean.getAddress());
+            }
+        }
+
+        if (intent != null) {
+            try {
+                getActivity().startActivity(intent);
+            } catch (Exception e) {
+                mapNavResponseMethod.setErrorCode(JSErrorCode.MAP_NAV_ERROR);
+            }
+        } else {
+            mapNavResponseMethod.setErrorCode(JSErrorCode.MAP_NAV_ERROR_NO_CLIENT);
+        }
+        mapNavResponseMethod.setType(mapNavRequestBean.getType());
+        mapNavResponseMethod.setSuccess(intent != null);
+        mapNavResponseMethod.setResult(intent != null);
+        callJs(mapNavResponseMethod);
+    }
+
+    private static final int RC_SIGN_IN = 9001;
+    private static final int RC_BIND_IN = 9002;
+
+    private void loginGoogle(int rc) {
+
+        Tlog.v(TAG, " loginGoogle() ");
+
+        Activity mAct = getActivity();
+        Context applicationContext = mAct.getApplicationContext();
+        GoogleApiClient mGoogleApiClient = getGoogleApiClient((FragmentActivity) mAct);
+
+//        GoogleSignInClient mGoogleSignInClient = getGoogleSignInClient(mAct);
+//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(applicationContext);
+//        getGoogleAccount(account);
+
+        int googlePlayServicesAvailable = GoogleApiAvailability.getInstance()
+                .isGooglePlayServicesAvailable(applicationContext);
+        Tlog.v(TAG, " isGooglePlayServicesAvailable : " + googlePlayServicesAvailable);
+
+        if (googlePlayServicesAvailable != ConnectionResult.SUCCESS) {
+            Dialog errorDialog = GoogleApiAvailability.getInstance().getErrorDialog(mAct, googlePlayServicesAvailable, 0);
+            errorDialog.show();
+        } else {
+//            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+//            mAct.startActivityForResult(signInIntent, RC_SIGN_IN);
+
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+            mAct.startActivityForResult(signInIntent, rc);
+
+        }
+
+    }
+
+
+    private GoogleApiClient mGoogleApiClient;
+
+    private GoogleApiClient getGoogleApiClient(final FragmentActivity mContext) {
+
+        if (mGoogleApiClient == null) {
+            GoogleSignInOptions.Builder builder = new GoogleSignInOptions.Builder(
+                    GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestProfile()
+                    .requestId();
+
+//            String serverClientId = mContext.getResources().getString(R.string.server_client_id);
+//            if (serverClientId != null) builder.requestIdToken(serverClientId);
+            GoogleSignInOptions gso = builder.build();
+
+            Context applicationContext = mContext.getApplicationContext();
+            GoogleApiClient.Builder builder1 = new GoogleApiClient.Builder(applicationContext).enableAutoManage(mContext, new GoogleApiClient.OnConnectionFailedListener() {
+                @Override
+                public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+                }
+            }).addApi(Auth.GOOGLE_SIGN_IN_API, gso);
+            mGoogleApiClient = builder1.build();
+
+        }
+
+        return mGoogleApiClient;
+    }
+
+
+    private CallbackManager facebookBindCallbackManager;
+
+    private CallbackManager getFacebookBindCallbackManager() {
+
+        return facebookBindCallbackManager;
+    }
+
+    private FacebookCallback<LoginResult> facebookBindCallback;
+
+    private void bindFacebook() {
+
+        if (facebookBindCallbackManager == null) {
+            facebookBindCallbackManager = CallbackManager.Factory.create();
+        }
+
+        if (facebookBindCallback == null) {
+            facebookBindCallback = new FacebookCallback<LoginResult>() {
+
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    Tlog.v(TAG, " facebook bindResult onSuccess() ");
+
+                    AccessToken accessToken = loginResult.getAccessToken();
+                    GraphRequest request = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            Tlog.v(TAG, " getFacebookBindInfo：" + String.valueOf(object));
+
+                            C_0x8037.Req.ContentBean mBean = new C_0x8037.Req.ContentBean();
+                            mBean.fromFacebookJSONObject(object);
+                            StartAI.getInstance().getBaseBusiManager().bindThirdAccount(mBean,
+                                    new IOnCallListener() {
+                                        @Override
+                                        public void onSuccess(MqttPublishRequest request) {
+                                            Tlog.w(TAG, " bind facebook msg send success  ");
+                                        }
+
+                                        @Override
+                                        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                                            Tlog.e(TAG, " bind facebook msg send fail ");
+                                            ThirdBindResponseMethod thirdBindResponseMethodd =
+                                                    ThirdBindResponseMethod.getThirdBindResponseMethod();
+                                            thirdBindResponseMethodd.setResult(false);
+                                            thirdBindResponseMethodd.setIsBind(false);
+                                            thirdBindResponseMethodd.setFacebookType();
+                                            thirdBindResponseMethodd.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                                            callJs(thirdBindResponseMethodd);
+                                        }
+
+                                    });
+
+                        }
+                    });
+                    Bundle parameters = new Bundle();
+                    parameters.putString("fields",
+                            "id,name,link,gender,birthday,email,picture,locale,updated_time,timezone,age_range,first_name,last_name");
+                    request.setParameters(parameters);
+                    request.executeAsync();
+
+                }
+
+                @Override
+                public void onCancel() {
+                    Tlog.i(TAG, " facebook loginResult onCancel() ");
+                    ThirdBindResponseMethod thirdBindResponseMethodd =
+                            ThirdBindResponseMethod.getThirdBindResponseMethod();
+                    thirdBindResponseMethodd.setResult(false);
+                    thirdBindResponseMethodd.setIsBind(false);
+                    thirdBindResponseMethodd.setFacebookType();
+                    thirdBindResponseMethodd.setErrorCode(JSErrorCode.THIRD_BIND_USER_CANCEL);
+                    callJs(thirdBindResponseMethodd);
+                }
+
+                @Override
+                public void onError(FacebookException error) {
+                    Tlog.e(TAG, " facebook loginResult onError() ", error);
+                    ThirdBindResponseMethod thirdBindResponseMethodd =
+                            ThirdBindResponseMethod.getThirdBindResponseMethod();
+                    thirdBindResponseMethodd.setResult(false);
+                    thirdBindResponseMethodd.setIsBind(false);
+                    thirdBindResponseMethodd.setFacebookType();
+                    thirdBindResponseMethodd.setErrorCode(JSErrorCode.THIRD_BIND_INTER_ERROR);
+                    callJs(thirdBindResponseMethodd);
+                }
+            };
+        }
+
+        loginFacebook(getActivity(), facebookBindCallbackManager, facebookBindCallback);
+    }
+
+
+    private CallbackManager facebookLoginCallbackManager;
+
+    private CallbackManager getFacebookLoginCallbackManager() {
+
+        return facebookLoginCallbackManager;
+    }
+
+    private FacebookCallback<LoginResult> facebookLoginCallback;
+
+    private void loginFacebook() {
+
+        if (facebookLoginCallbackManager == null) {
+            facebookLoginCallbackManager = CallbackManager.Factory.create();
+        }
+
+        if (facebookLoginCallback == null) {
+            facebookLoginCallback = new FacebookCallback<LoginResult>() {
+
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    Tlog.v(TAG, " facebook loginResult onSuccess() ");
+
+                    AccessToken accessToken = loginResult.getAccessToken();
+                    GraphRequest request = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            Tlog.v(TAG, " getFacebookLoginInfo：" + String.valueOf(object));
+
+                            C_0x8027.Req.ContentBean mBean = new C_0x8027.Req.ContentBean();
+                            mBean.fromFacebookJSONObject(object);
+                            StartAI.getInstance().getBaseBusiManager().loginWithThirdAccount(mBean,
+                                    new IOnCallListener() {
+                                        @Override
+                                        public void onSuccess(MqttPublishRequest request) {
+                                            Tlog.w(TAG, " login facebook msg send success  ");
+                                        }
+
+                                        @Override
+                                        public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                                            Tlog.e(TAG, " login facebook msg send fail ");
+                                            ThirdLoginResponseMethod thirdLoginResponseMethod
+                                                    = ThirdLoginResponseMethod.getThirdLoginResponseMethod();
+                                            thirdLoginResponseMethod.setResult(false);
+                                            thirdLoginResponseMethod.setIsLogin(false);
+                                            thirdLoginResponseMethod.setFacebookType();
+                                            thirdLoginResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                                            callJs(thirdLoginResponseMethod);
+                                        }
+
+                                    });
+
+                        }
+                    });
+                    Bundle parameters = new Bundle();
+                    parameters.putString("fields",
+                            "id,name,link,gender,birthday,email,picture,locale,updated_time,timezone,age_range,first_name,last_name");
+                    request.setParameters(parameters);
+                    request.executeAsync();
+
+                }
+
+                @Override
+                public void onCancel() {
+                    Tlog.i(TAG, " facebook loginResult onCancel() ");
+                    ThirdLoginResponseMethod thirdLoginResponseMethod
+                            = ThirdLoginResponseMethod.getThirdLoginResponseMethod();
+                    thirdLoginResponseMethod.setResult(false);
+                    thirdLoginResponseMethod.setIsLogin(false);
+                    thirdLoginResponseMethod.setFacebookType();
+                    thirdLoginResponseMethod.setErrorCode(JSErrorCode.THIRD_LOGIN_USER_CANCEL);
+                    callJs(thirdLoginResponseMethod);
+                }
+
+                @Override
+                public void onError(FacebookException error) {
+                    Tlog.e(TAG, " facebook loginResult onError() ", error);
+                    ThirdLoginResponseMethod thirdLoginResponseMethod
+                            = ThirdLoginResponseMethod.getThirdLoginResponseMethod();
+                    thirdLoginResponseMethod.setResult(false);
+                    thirdLoginResponseMethod.setIsLogin(false);
+                    thirdLoginResponseMethod.setFacebookType();
+                    thirdLoginResponseMethod.setErrorCode(JSErrorCode.THIRD_LOGIN_INTER_ERROR);
+                    callJs(thirdLoginResponseMethod);
+                }
+            };
+        }
+
+        loginFacebook(getActivity(), facebookLoginCallbackManager, facebookLoginCallback);
+    }
+
+    private void loginFacebook(Activity mAct,
+                               CallbackManager callbackManager,
+                               FacebookCallback<LoginResult> callback) {
+        Tlog.v(TAG, " loginFacebook() ");
+
+        if (!FacebookSdk.isInitialized()) {
+            FacebookSdk.sdkInitialize(mAct.getApplication());
+        }
+        AppEventsLogger.activateApp(mAct.getApplication());
+
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
+        Tlog.v(TAG, " Facebook isLoggedIn : " + isLoggedIn);
+
+        // Callback registration
+        LoginManager.getInstance().registerCallback(callbackManager, callback);
+
+        LoginManager.getInstance().logInWithReadPermissions(mAct,
+                Collections.singletonList("public_profile"
+//                        Arrays.asList("public_profile"
+//                , "user_friends", "email"
+                ));
+
+    }
+
+
     private IOnCallListener mThirdPayOrderLsn = new IOnCallListener() {
         @Override
         public void onSuccess(MqttPublishRequest request) {
@@ -420,6 +888,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
      */
     @Override
     public void onJsThirdPayOrder(ThirdPayOrderRequestBean mPayBean) {
+
         C_0x8028.Req.ContentBean req = new C_0x8028.Req.ContentBean(
                 Type.ThirdPayment.TYPE_ORDER,
                 mPayBean.getPlatform(),
@@ -946,7 +1415,9 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
     private static final int TAKE_PHOTO_CODE = 0x0369;
     private static final int CROP_TAKE_PHOTO = 0x036A;
 
+    // 扫描二维码
     private static final int REQUEST_SCAN_QR_RESULT = 0x6532;
+
 
     private File localPhotoFile;
 
@@ -958,7 +1429,182 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
             onScanQRCodeResult(resultCode, data);
         } else if (requestCode >= LOCAL_PHOTO_CODE && requestCode <= CROP_TAKE_PHOTO) {
             onPhotoResult(requestCode, resultCode, data);
+        } else if (requestCode == RC_SIGN_IN) {
+            callGoogleLoginResult(data);
+        } else if (requestCode == RC_BIND_IN) {
+            callGoogleBindResult(data);
         }
+
+        if (mFacebookStatus == FACEBOOK_LOGIN) {
+            try {
+                Tlog.d(TAG, " onActivityResult is facebook login status");
+                CallbackManager facebookCallbackManager = getFacebookLoginCallbackManager();
+                if (facebookCallbackManager != null) {
+                    facebookCallbackManager.onActivityResult(requestCode, resultCode, data);
+                }
+            } catch (Exception e) {
+                Tlog.e(TAG, " facebook login Error", e);
+                ThirdLoginResponseMethod thirdLoginResponseMethod
+                        = ThirdLoginResponseMethod.getThirdLoginResponseMethod();
+                thirdLoginResponseMethod.setResult(false);
+                thirdLoginResponseMethod.setIsLogin(false);
+                thirdLoginResponseMethod.setFacebookType();
+                thirdLoginResponseMethod.setErrorCode(JSErrorCode.THIRD_LOGIN_INTER_ERROR);
+                callJs(thirdLoginResponseMethod);
+            }
+
+        } else if (mFacebookStatus == FACEBOOK_BIND) {
+            try {
+                Tlog.d(TAG, " onActivityResult is facebook bind status");
+                CallbackManager facebookCallbackManager = getFacebookBindCallbackManager();
+                if (facebookCallbackManager != null) {
+                    facebookCallbackManager.onActivityResult(requestCode, resultCode, data);
+                }
+
+            } catch (Exception e) {
+                Tlog.e(TAG, " facebook bind Error", e);
+                ThirdBindResponseMethod thirdBindResponseMethod_GOOGLE =
+                        ThirdBindResponseMethod.getThirdBindResponseMethod();
+                thirdBindResponseMethod_GOOGLE.setResult(false);
+                thirdBindResponseMethod_GOOGLE.setIsBind(false);
+                thirdBindResponseMethod_GOOGLE.setFacebookType();
+                thirdBindResponseMethod_GOOGLE.setErrorCode(JSErrorCode.THIRD_BIND_INTER_ERROR);
+                callJs(thirdBindResponseMethod_GOOGLE);
+            }
+
+        }
+
+
+    }
+
+
+    private void callGoogleBindResult(Intent data) {
+        // The Task returned from this call is always completed, no need to attach
+        // a listener.
+
+//            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+//            callGoogleLoginIn(task);
+
+        GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+        GoogleSignInAccount account = null;
+
+        if (result.isSuccess()) {
+            // Signed in successfully, show authenticated UI.
+            account = result.getSignInAccount();
+        }
+
+        if (account == null) {
+            ThirdBindResponseMethod thirdBindResponseMethod_GOOGLE =
+                    ThirdBindResponseMethod.getThirdBindResponseMethod();
+            thirdBindResponseMethod_GOOGLE.setResult(false);
+            thirdBindResponseMethod_GOOGLE.setIsBind(false);
+            thirdBindResponseMethod_GOOGLE.setGoogleType();
+            thirdBindResponseMethod_GOOGLE.setErrorCode(JSErrorCode.THIRD_BIND_INTER_ERROR);
+            callJs(thirdBindResponseMethod_GOOGLE);
+            return;
+        }
+
+        C_0x8037.Req.ContentBean mBean = new C_0x8037.Req.ContentBean();
+        C_0x8037.Req.ContentBean.UserinfoBean userinfo = new C_0x8037.Req.ContentBean.UserinfoBean();
+        userinfo.setUnionid(account.getId());
+        userinfo.setOpenid(account.getId());
+        userinfo.setNickname(account.getDisplayName());
+        userinfo.setLastName(account.getFamilyName());
+        userinfo.setFirstName(account.getGivenName());
+        Uri photoUrl = account.getPhotoUrl();
+        userinfo.setHeadimgurl(photoUrl != null ? photoUrl.toString() : null);
+        mBean.setUserinfo(userinfo);
+        mBean.setType(C_0x8027.THIRD_GOOGLE);
+
+        StartAI.getInstance().getBaseBusiManager().bindThirdAccount(mBean, new IOnCallListener() {
+            @Override
+            public void onSuccess(MqttPublishRequest request) {
+                Tlog.w(TAG, " bind google msg send success  ");
+            }
+
+            @Override
+            public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                Tlog.e(TAG, " bind google msg send fail ");
+
+                ThirdBindResponseMethod thirdBindResponseMethod_GOOGLE =
+                        ThirdBindResponseMethod.getThirdBindResponseMethod();
+                thirdBindResponseMethod_GOOGLE.setResult(false);
+                thirdBindResponseMethod_GOOGLE.setIsBind(false);
+                thirdBindResponseMethod_GOOGLE.setGoogleType();
+                thirdBindResponseMethod_GOOGLE.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                callJs(thirdBindResponseMethod_GOOGLE);
+
+            }
+
+        });
+
+    }
+
+
+    private void callGoogleLoginResult(Intent data) {
+        // The Task returned from this call is always completed, no need to attach
+        // a listener.
+
+//            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+//            callGoogleLoginIn(task);
+
+        GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+        GoogleSignInAccount account = null;
+
+        if (result.isSuccess()) {
+            // Signed in successfully, show authenticated UI.
+            account = result.getSignInAccount();
+        }
+
+        if (account == null) {
+            ThirdLoginResponseMethod thirdLoginResponseMethod
+                    = ThirdLoginResponseMethod.getThirdLoginResponseMethod();
+            thirdLoginResponseMethod.setResult(false);
+            thirdLoginResponseMethod.setIsLogin(false);
+            thirdLoginResponseMethod.setGoogleType();
+            thirdLoginResponseMethod.setErrorCode(JSErrorCode.THIRD_LOGIN_INTER_ERROR);
+            callJs(thirdLoginResponseMethod);
+            return;
+        }
+
+        C_0x8027.Req.ContentBean mBean = new C_0x8027.Req.ContentBean();
+        C_0x8027.Req.ContentBean.UserinfoBean userinfo = new C_0x8027.Req.ContentBean.UserinfoBean();
+        userinfo.setUnionid(account.getId());
+        userinfo.setOpenid(account.getId());
+        userinfo.setNickname(account.getDisplayName());
+        userinfo.setLastName(account.getFamilyName());
+        userinfo.setFirstName(account.getGivenName());
+        Uri photoUrl = account.getPhotoUrl();
+        userinfo.setHeadimgurl(photoUrl != null ? photoUrl.toString() : null);
+        mBean.setUserinfo(userinfo);
+        mBean.setType(C_0x8027.THIRD_GOOGLE);
+
+//                    StartAI.getInstance().getBaseBusiManager().bindThirdAccount();
+
+        StartAI.getInstance().getBaseBusiManager().loginWithThirdAccount(mBean, new IOnCallListener() {
+            @Override
+            public void onSuccess(MqttPublishRequest request) {
+                Tlog.w(TAG, " login google msg send success  ");
+            }
+
+            @Override
+            public void onFailed(MqttPublishRequest request, StartaiError startaiError) {
+                Tlog.e(TAG, " login google msg send fail ");
+
+                ThirdLoginResponseMethod thirdLoginResponseMethod
+                        = ThirdLoginResponseMethod.getThirdLoginResponseMethod();
+                thirdLoginResponseMethod.setResult(false);
+                thirdLoginResponseMethod.setIsLogin(false);
+                thirdLoginResponseMethod.setGoogleType();
+                thirdLoginResponseMethod.setErrorCode(String.valueOf(startaiError.getErrorCode()));
+                callJs(thirdLoginResponseMethod);
+
+            }
+
+        });
+
 
     }
 

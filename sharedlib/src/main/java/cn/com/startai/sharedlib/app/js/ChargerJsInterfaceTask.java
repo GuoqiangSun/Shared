@@ -4,6 +4,7 @@ import android.os.Looper;
 
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
+import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.BalancePayRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.BorrowDeviceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.DeviceInfoJsRequestBean;
@@ -15,7 +16,6 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.OrderListRequestB
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.StoresDetailLstRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.StoresInfoRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.StoresMapLstRequestBean;
-import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdPayBalanceRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.charger.TransactionDetailsRequestBean;
 import cn.com.startai.sharedlib.app.mutual.impl.charger.ChargerJsRequestInterfaceImpl;
 import cn.com.swain.baselib.jsInterface.request.bean.BaseCommonJsRequestBean;
@@ -37,7 +37,6 @@ public class ChargerJsInterfaceTask extends CommonJsInterfaceTask {
 
     @Override
     protected void onJsUnknownRequest(BaseCommonJsRequestBean mData) {
-        super.onJsUnknownRequest(mData);
 
         switch (mData.getMsgType()) {
 

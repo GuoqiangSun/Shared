@@ -15,6 +15,72 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_REQUEST_JS_ERROR = "0x5011";
 
+
+    /********版本更新*******/
+
+    /**
+     * 检查是否有版本更新请求
+     */
+    public static final String TYPE_REQUEST_IS_NEWVERSION = "0x5021";
+
+    /**
+     * 检查是否有版本更新返回
+     */
+    public static final String TYPE_RESPONSE_IS_NEWVERSION = "0x5022";
+
+    /**
+     * 版本更新请求
+     */
+    public static final String TYPE_REQUEST_APP_UPGRADE = "0x5023";
+    /**
+     * 取消版本更新请求
+     */
+    public static final String TYPE_REQUEST_CANCEL_APP_UPGRADE = "0x5024";
+
+    /**
+     * 版本更新返回
+     */
+    public static final String TYPE_RESPONSE_APP_UPGRADE = "0x5025";
+
+    /**
+     * 版本号请求
+     */
+    public static final String TYPE_REQUEST_APP_VERSION = "0x5026";
+    /**
+     * 版本号返回
+     */
+    public static final String TYPE_RESPONSE_APP_VERSION = "0x5027";
+
+    /**
+     * MQTT状态返回
+     */
+    public static final String TYPE_RESPONSE_MQTT = "0x5032";
+
+    /**
+     * 网络状态返回
+     */
+    public static final String TYPE_RESPONSE_NETWORK = "0x5033";
+
+
+    /*********国际化****/
+
+    /**
+     * 查询系统语言
+     */
+    public static final String TYPE_REQUEST_QUERY_SYSTEM_LANGUAGE = "0x5041";
+
+
+    /**
+     * 设置系统语言
+     */
+    public static final String TYPE_REQUEST_SET_SYSTEM_LANGUAGE = "0x5042";
+
+    /**
+     * 系统语言返回
+     */
+    public static final String TYPE_RESPONSE_SYSTEM_LANGUAGE = "0x5043";
+
+
     /*******登录*****/
 
     /**
@@ -68,6 +134,30 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_ALI_LOGIN = "0x510A";
 
+    /**
+     * 第三方登录请求
+     */
+    public static final String TYPE_REQUEST_THIRD_LOGIN = "0x510B";
+
+    /**
+     * 第三方登录返回
+     */
+    public static final String TYPE_RESPONSE_THIRD_LOGIN = "0x510C";
+
+    public static final String THIRD_LOGIN_TYPE_GOOGLE = "Google";
+    public static final String THIRD_LOGIN_TYPE_TWITTER = "Twitter";
+    public static final String THIRD_LOGIN_TYPE_FACEBOOK = "Facebook";
+
+    /**
+     * 第三方绑定请求
+     */
+    public static final String TYPE_REQUEST_THIRD_BIND = "0x510D";
+
+    /**
+     * 第三方绑定返回
+     */
+    public static final String TYPE_RESPONSE_THIRD_BIND = "0x510E";
+
 
     /**
      * 用户登出请求
@@ -79,113 +169,6 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_LOGIN_OUT = "0x5122";
 
-
-    /*****扫码充电*****/
-
-    /**
-     * 调用摄像头扫描二维码请求
-     */
-    public static final String TYPE_REQUEST_SCAN_OR = "0x5201";
-
-    /**
-     * 扫描二维码数据返回
-     */
-    public static final String TYPE_RESPONSE_SCAN_OR = "0x5202";
-
-    /**
-     * 查询设备是否在线请求
-     */
-    public static final String TYPE_REQUEST_QUERY_DEVICE_INFO = "0x5203";
-
-    /**
-     * 查询设备是否在线返回
-     */
-    public static final String TYPE_RESPONSE_QUERY_DEVICE_INFO = "0x5204";
-
-    /**
-     * 借出充电宝请求
-     */
-    public static final String TYPE_REQUEST_BORROW_DEVICE = "0x5205";
-
-    /**
-     * 借出充电宝返回
-     */
-    public static final String TYPE_RESPONSE_BORROW_DEVICE = "0x5206";
-
-    /**
-     * 归还充电宝请求
-     */
-    public static final String TYPE_REQUEST_GIVEBACK_DEVICE = "0x5211";
-
-    /**
-     * 归还充电宝返回
-     */
-    public static final String TYPE_RESPONSE_GIVEBACK_DEVICE = "0x5212";
-
-    /**
-     * 租借归还充电宝请求
-     */
-    public static final String TYPE_REQUEST_GIVEBACK_DEVICE_BORROW = "0x5213";
-
-    /**
-     * 租借归还充电宝返回
-     */
-    public static final String TYPE_RESPONSE_GIVEBACK_DEVICE_BORROW = "0x5214";
-
-
-    /*********国际化****/
-
-    /**
-     * 查询系统语言
-     */
-    public static final String TYPE_REQUEST_QUERY_SYSTEM_LANGUAGE = "0x5041";
-
-
-    /**
-     * 设置系统语言
-     */
-    public static final String TYPE_REQUEST_SET_SYSTEM_LANGUAGE = "0x5042";
-
-    /**
-     * 系统语言返回
-     */
-    public static final String TYPE_RESPONSE_SYSTEM_LANGUAGE = "0x5043";
-
-
-    /********版本更新*******/
-
-    /**
-     * 检查是否有版本更新请求
-     */
-    public static final String TYPE_REQUEST_IS_NEWVERSION = "0x5021";
-
-    /**
-     * 检查是否有版本更新返回
-     */
-    public static final String TYPE_RESPONSE_IS_NEWVERSION = "0x5022";
-
-    /**
-     * 版本更新请求
-     */
-    public static final String TYPE_REQUEST_APP_UPGRADE = "0x5023";
-    /**
-     * 取消版本更新请求
-     */
-    public static final String TYPE_REQUEST_CANCEL_APP_UPGRADE = "0x5024";
-
-    /**
-     * 版本更新返回
-     */
-    public static final String TYPE_RESPONSE_APP_UPGRADE = "0x5025";
-
-    /**
-     * 版本号请求
-     */
-    public static final String TYPE_REQUEST_APP_VERSION = "0x5026";
-    /**
-     * 版本号返回
-     */
-    public static final String TYPE_RESPONSE_APP_VERSION = "0x5027";
 
     /********用户信息*******/
 
@@ -288,6 +271,92 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_UNBIND_ALI = "0x516D";
 
+    /**
+     * 第三方解绑请求
+     */
+    public static final String TYPE_REQUEST_THIRD_UNBIND = "0x5110";
+
+    /**
+     * 第三方解绑返回
+     */
+    public static final String TYPE_RESPONSE_THIRD_UNBIND = "0x5111";
+
+    /**
+     * 调用手机拨号功能
+     */
+    public static final String TYPE_REQUEST_CALL_PHONE = "0x5170";
+
+    /**
+     * 调用手机拨号返回
+     */
+    public static final String TYPE_RESPONSE_CALL_PHONE = "0x5171";
+
+    /**
+     * 调用手机拨号功能
+     */
+    public static final String TYPE_REQUEST_IS_INSTALL = "0x5172";
+
+    /**
+     * 调用手机拨号返回
+     */
+    public static final String TYPE_RESPONSE_IS_INSTALL = "0x5173";
+
+    public static final int WECHAT_TYPE = 10;
+    public static final int ALI_TYPE = 13;
+
+
+    /*****扫码充电*****/
+
+    /**
+     * 调用摄像头扫描二维码请求
+     */
+    public static final String TYPE_REQUEST_SCAN_OR = "0x5201";
+
+    /**
+     * 扫描二维码数据返回
+     */
+    public static final String TYPE_RESPONSE_SCAN_OR = "0x5202";
+
+    /**
+     * 查询设备是否在线请求
+     */
+    public static final String TYPE_REQUEST_QUERY_DEVICE_INFO = "0x5203";
+
+    /**
+     * 查询设备是否在线返回
+     */
+    public static final String TYPE_RESPONSE_QUERY_DEVICE_INFO = "0x5204";
+
+    /**
+     * 借出充电宝请求
+     */
+    public static final String TYPE_REQUEST_BORROW_DEVICE = "0x5205";
+
+    /**
+     * 借出充电宝返回
+     */
+    public static final String TYPE_RESPONSE_BORROW_DEVICE = "0x5206";
+
+    /**
+     * 归还充电宝请求
+     */
+    public static final String TYPE_REQUEST_GIVEBACK_DEVICE = "0x5211";
+
+    /**
+     * 归还充电宝返回
+     */
+    public static final String TYPE_RESPONSE_GIVEBACK_DEVICE = "0x5212";
+
+    /**
+     * 租借归还充电宝请求
+     */
+    public static final String TYPE_REQUEST_GIVEBACK_DEVICE_BORROW = "0x5213";
+
+    /**
+     * 租借归还充电宝返回
+     */
+    public static final String TYPE_RESPONSE_GIVEBACK_DEVICE_BORROW = "0x5214";
+
 
     /********订单*******/
 
@@ -325,12 +394,12 @@ public class JsMsgType extends BaseCommonJsUtils {
     /********支付*******/
 
     /**
-     * 第三方支付未付款单请求
+     * 第三方支付付款单请求
      */
     public static final String TYPE_REQUEST_THIRD_PAY_ORDER = "0x5231";
 
     /**
-     * 第三方支付未付款单返回
+     * 第三方支付付款单返回
      */
     public static final String TYPE_RESPONSE_THIRD_PAY = "0x5232";
 
@@ -383,16 +452,17 @@ public class JsMsgType extends BaseCommonJsUtils {
      */
     public static final String TYPE_RESPONSE_DEPOSIT_FEE_RULE = "0x5246";
 
-
     /**
      * 查询收费标准请求
      */
-    public static final String TYPE_REQUEST_FEE_RULE = "0xAAAA";
+    public static final String TYPE_REQUEST_FEE_RULE = "0x5247";
     /**
      * 查询收费标准返回
      */
-    public static final String TYPE_RESPONSE_FEE_RULE = "0xAAAA";
+    public static final String TYPE_RESPONSE_FEE_RULE = "0x5248";
 
+
+    /********店铺*******/
 
     /**
      * 获取指定坐标附近店铺信息（完整版本，适合列表显示时调用）
@@ -422,14 +492,18 @@ public class JsMsgType extends BaseCommonJsUtils {
     public static final String TYPE_RESPONSE_STORES_INFO = "0x5286";
 
 
-    /**
-     * MQTT状态返回
-     */
-    public static final String TYPE_RESPONSE_MQTT = "0x5032";
+    /******导航*********/
 
     /**
-     * 网络状态返回
+     * 调用第三方地图导航请求
      */
-    public static final String TYPE_RESPONSE_NETWORK = "0x5033";
+    public static final String TYPE_REQUEST_MAP_NAV = "0x5301";
+    /**
+     * 调用第三方地图导航返回
+     */
+    public static final String TYPE_RESPONSE_MAP_NAV = "0x5302";
 
+    public static final int MAP_TYPE_GAODE = 1;
+    public static final int MAP_TYPE_BAIDU = 2;
+    public static final int MAP_TYPE_GOOGLE = 3;
 }
