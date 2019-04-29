@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name_pika">Pika Power</string>
+
+    <string name="facebook_app_id">987696798087841</string>
+    <string name="fb_login_protocol_scheme">fb987696798087841</string>
+
+</resources>
