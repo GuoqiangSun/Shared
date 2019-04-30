@@ -85,7 +85,7 @@ dependencies {
     //startai mqtt  sdk包
     implementation 'cn.com.startai:mqsdk:3.1.73'
     //startai mqtt charger sdk 包
-    implementation 'cn.com.startai:charger:1.1.113'
+    implementation 'cn.com.startai:charger:1.1.116'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
 

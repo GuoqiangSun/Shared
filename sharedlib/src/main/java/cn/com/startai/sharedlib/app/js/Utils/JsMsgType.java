@@ -506,4 +506,38 @@ public class JsMsgType extends BaseCommonJsUtils {
     public static final int MAP_TYPE_GAODE = 1;
     public static final int MAP_TYPE_BAIDU = 2;
     public static final int MAP_TYPE_GOOGLE = 3;
+
+
+    /******定位*********/
+
+    /**
+     * 判断手机是否开启定位服务请求
+     */
+    public static final String TYPE_REQUEST_LOCATION_ENABLED = "0x5401";
+    /**
+     * 判断手机是否开启定位服务返回
+     */
+    public static final String TYPE_RESPONSE_LOCATION_ENABLED = "0x5402";
+
+    /**
+     * 请求手机开启定位服务
+     */
+    public static final String TYPE_REQUEST_ENABLE_LOCATION = "0x5403";
+    /**
+     * 请求手机开启定位服务返回
+     */
+    public static final String TYPE_RESPONSE_ENABLE_LOCATION = "0x5404";
+
+    /**
+     * 请求手机定位数据
+     */
+    public static final String TYPE_REQUEST_LOCATION_DATA = "0x5405";
+    /**
+     * 请求手机定位数据返回
+     */
+    public static final String TYPE_RESPONSE_LOCATION_DATA = "0x5406";
+
+    public static final int LOCATION_GPS_IP = 1;
+    public static final int LOCATION_GPS = 2;
+    public static final int LOCATION_IP = 3;
 }

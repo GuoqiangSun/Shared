@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/application" />
+            <option value="$PROJECT_DIR$/pika" />
             <option value="$PROJECT_DIR$/sharedCharger" />
             <option value="$PROJECT_DIR$/sharedlib" />
             <option value="$PROJECT_DIR$/synermax" />

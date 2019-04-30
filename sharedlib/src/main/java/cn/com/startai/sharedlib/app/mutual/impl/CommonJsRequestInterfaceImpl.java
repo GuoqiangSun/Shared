@@ -1,13 +1,18 @@
 package cn.com.startai.sharedlib.app.mutual.impl;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
@@ -66,6 +71,7 @@ import cn.com.startai.scansdk.ChargerScanActivity;
 import cn.com.startai.sharedlib.R;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.global.FileManager;
+import cn.com.startai.sharedlib.app.global.LooperManager;
 import cn.com.startai.sharedlib.app.js.CommonJsInterfaceTask;
 import cn.com.startai.sharedlib.app.js.Utils.JSErrorCode;
 import cn.com.startai.sharedlib.app.js.Utils.Language;
@@ -74,11 +80,14 @@ import cn.com.startai.sharedlib.app.js.method2Impl.AliLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.AliUnBindResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.AppInstallResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.CallPhoneResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.EnableLocationResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetAppVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.GetIdentityCodeResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLeastVersionResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.IsLoginResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.LanguageResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.LocationDataResponseMethod;
+import cn.com.startai.sharedlib.app.js.method2Impl.LocationEnabledResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.MapNavResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.MobileLoginByIDCodeResponseMethod;
 import cn.com.startai.sharedlib.app.js.method2Impl.ModifyHeadpicResponseMethod;
@@ -589,6 +598,153 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
         mapNavResponseMethod.setResult(intent != null);
         callJs(mapNavResponseMethod);
     }
+
+
+    @Override
+    public void onJsLocationEnabled() {
+        LocationEnabledResponseMethod locationEnabledResponseMethod
+                = LocationEnabledResponseMethod.getLocationEnabledResponseMethod();
+        locationEnabledResponseMethod.setResult(true);
+        locationEnabledResponseMethod.setEnabled(locationEnabled());
+        callJs(locationEnabledResponseMethod);
+    }
+
+    private static final int REQUEST_LOCATION = 0x6598;
+
+    @Override
+    public void onJsEnableLocation() {
+        try {
+            Intent i = new Intent();
+            i.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            getActivity().startActivityForResult(i, REQUEST_LOCATION);
+        } catch (Exception e) {
+            Tlog.w(TAG, " enable location", e);
+        }
+    }
+
+    @Override
+    public void onJsGetLocationData() {
+
+        if (!locationEnabled()) {
+            LooperManager.getInstance().execute(new Runnable() {
+                @Override
+                public void run() {
+                    MapUtils.LatLng locationData = MapUtils.getLocationData();
+                    LocationDataResponseMethod locationDataResponseMethod
+                            = LocationDataResponseMethod.getLocationDataResponseMethod();
+                    locationDataResponseMethod.setResult(locationData != null);
+                    locationDataResponseMethod.setEnabled(locationData != null);
+                    if (locationData != null) {
+                        locationDataResponseMethod.setLat(locationData.mLatitude);
+                        locationDataResponseMethod.setLng(locationData.mLongitude);
+                    }
+                    callJs(locationDataResponseMethod);
+                }
+            });
+        } else {
+
+            final String bestProvider = getBestProvider();
+            Location lastKnownLocation = getLastKnownLocation(bestProvider);
+            if (lastKnownLocation != null) {
+                callJsLocationData(lastKnownLocation);
+            } else {
+                LooperManager.getInstance().execute(new Runnable() {
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public void run() {
+                        String locationProvider = bestProvider;
+                        int request = 0;
+
+                        Location lastKnownLocationInFor = null;
+                        while (lastKnownLocationInFor == null && ++request < 3) {
+                            locationProvider = changeProvider(locationProvider);
+                            lastKnownLocationInFor = getLastKnownLocation(locationProvider);
+                        }
+                        if (lastKnownLocationInFor != null) {
+                            callJsLocationData(lastKnownLocationInFor);
+                        } else {
+                            locationProvider = changeProvider(locationProvider);
+                            Tlog.w(TAG, " requestLocationUpdates " + locationProvider);
+                            final LocationManager locationManager = getLocationManager();
+                            locationManager.requestLocationUpdates(locationProvider,
+                                    1000,
+                                    1,
+                                    locationListener);
+                            LooperManager.getInstance().execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Thread.sleep(3000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    String locationProvider = getBestProvider();
+                                    Location lastKnownLocation = getLastKnownLocation(locationProvider);
+                                    if (lastKnownLocation != null) {
+                                        callJsLocationData(lastKnownLocation);
+                                    } else {
+                                        MapUtils.LatLng locationData = MapUtils.getLocationData();
+                                        LocationDataResponseMethod locationDataResponseMethod
+                                                = LocationDataResponseMethod.getLocationDataResponseMethod();
+                                        locationDataResponseMethod.setResult(locationData != null);
+                                        locationDataResponseMethod.setEnabled(locationData != null);
+                                        if (locationData != null) {
+                                            locationDataResponseMethod.setLat(locationData.mLatitude);
+                                            locationDataResponseMethod.setLng(locationData.mLongitude);
+                                        }
+                                        callJs(locationDataResponseMethod);
+                                    }
+
+                                    locationManager.removeUpdates(locationListener);
+
+                                }
+                            });
+                        }
+
+                    }
+                });
+            }
+        }
+
+    }
+
+    private void callJsLocationData(Location lastKnownLocation) {
+        LocationDataResponseMethod locationDataResponseMethod
+                = LocationDataResponseMethod.getLocationDataResponseMethod();
+        locationDataResponseMethod.setResult(lastKnownLocation != null);
+        locationDataResponseMethod.setEnabled(lastKnownLocation != null);
+        if (lastKnownLocation != null) {
+            locationDataResponseMethod.setLat(String.valueOf(lastKnownLocation.getLatitude()));
+            locationDataResponseMethod.setLng(String.valueOf(lastKnownLocation.getLongitude()));
+        }
+        callJs(locationDataResponseMethod);
+    }
+
+
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            Tlog.e(TAG, " onLocationChanged " + String.valueOf(location));
+            callJsLocationData(location);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Tlog.e(TAG, " onStatusChanged " + provider);
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            Tlog.e(TAG, " onProviderEnabled " + provider);
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            Tlog.e(TAG, " onProviderDisabled " + provider);
+
+        }
+    };
 
     private static final int RC_SIGN_IN = 9001;
     private static final int RC_BIND_IN = 9002;
@@ -1130,7 +1286,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
 
 
     @Override
-    public void onJsRequestUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean) {
+    public void onJsUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean) {
         if (Debuger.isLogDebug) {
             Tlog.v(TAG, " upgrade app downloadUrl:" + mUpgradeAppRequestBean.getPath());
         }
@@ -1184,7 +1340,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
     }
 
     @Override
-    public void onJsRequestAppVersion() {
+    public void onJsAppVersion() {
         GetAppVersionResponseMethod appVersionResponseMethod =
                 GetAppVersionResponseMethod.getAppVersionResponseMethod();
         appVersionResponseMethod.setResult(true);
@@ -1222,7 +1378,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
      * see {@link CommonMqttLsnImpl#onGetUserInfoResult(C_0x8024.Resp)}
      */
     @Override
-    public void onJsRequestUserInfo() {
+    public void onJsGetUserInfo() {
         StartAI.getInstance().getBaseBusiManager().getUserInfo(mGetUserInfoLsn);
     }
 
@@ -1230,7 +1386,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
      * see {@link #onActivityResult(int, int, Intent)}
      */
     @Override
-    public void onJsRequestTakePhoto() {
+    public void onJsTakePhoto() {
 
         PermissionHelper.requestPermission(app, new PermissionRequest.OnPermissionResult() {
             @Override
@@ -1270,7 +1426,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
      * see {@link #onActivityResult(int, int, Intent)}
      */
     @Override
-    public void onJsRequestLocalPhoto() {
+    public void onJsLocalPhoto() {
         PermissionHelper.requestSinglePermission(app, new PermissionRequest.OnPermissionResult() {
             @Override
             public boolean onPermissionRequestResult(String permission, boolean granted) {
@@ -1433,6 +1589,27 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
             callGoogleLoginResult(data);
         } else if (requestCode == RC_BIND_IN) {
             callGoogleBindResult(data);
+        } else if (requestCode == REQUEST_LOCATION) {
+            LooperManager.getInstance().getWorkHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    EnableLocationResponseMethod enableLocationResponseMethod
+                            = EnableLocationResponseMethod.getEnableLocationResponseMethod();
+                    enableLocationResponseMethod.setResult(true);
+                    boolean gps = gpsEnabled();
+                    boolean ip = ipEnabled();
+                    enableLocationResponseMethod.setEnabled(gps || ip);
+                    if (gps && ip) {
+                        enableLocationResponseMethod.setGpsIpType();
+                    } else if (gps) {
+                        enableLocationResponseMethod.setGpsType();
+                    } else if (ip) {
+                        enableLocationResponseMethod.setIpType();
+                    }
+                    callJs(enableLocationResponseMethod);
+                }
+            });
+
         }
 
         if (mFacebookStatus == FACEBOOK_LOGIN) {

@@ -5,11 +5,11 @@
 
     <application
         android:name=".SharedChargerApplication"
-        android:label="@string/shared_charger_app_name"
         android:icon="@mipmap/ic_launcher_qvik"
+        android:label="@string/shared_charger_app_name"
         android:roundIcon="@mipmap/ic_launcher_qvik"
-        tools:replace="android:label"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:replace="android:label">
 
         <activity
             android:name="cn.com.startai.sharedlib.app.view.activity.SharedMainActivity"

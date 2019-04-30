@@ -9,8 +9,7 @@ import cn.com.startai.chargersdk.ChargerBusiHandler;
 import cn.com.startai.chargersdk.PersistentEventChargerDispatcher;
 import cn.com.startai.mqttsdk.StartAI;
 import cn.com.startai.mqttsdk.base.DistributeParam;
-import cn.com.startai.mqttsdk.busi.entity.C_0x8018;
-import cn.com.startai.mqttsdk.localbusi.UserBusi;
+import cn.com.startai.mqttsdk.localbusi.SUserManager;
 import cn.com.startai.mqttsdk.mqtt.MqttInitParam;
 import cn.com.startai.sharedlib.BuildConfig;
 import cn.com.startai.sharedlib.app.global.LooperManager;
@@ -57,9 +56,11 @@ public class MutualManager implements IUserIDManager, IService {
 
     @Override
     public String getUserIDFromMq() {
-        UserBusi userBusi = new UserBusi();
-        C_0x8018.Resp.ContentBean currUser = userBusi.getCurrUser();
-        return currUser != null ? currUser.getUserid() : null;
+//        UserBusi userBusi = new UserBusi();
+//        C_0x8018.Resp.ContentBean currUser = userBusi.getCurrUser();
+//        return currUser != null ? currUser.getUserid() : null;
+
+        return SUserManager.getInstance().getUserId();
     }
 
     private ChargerMqttLsnImpl mChargerMqttLsnImpl;
@@ -81,6 +82,9 @@ public class MutualManager implements IUserIDManager, IService {
         // mqtt
         DistributeParam.THIRDPAYMENTUNIFIEDORDER_DISTRIBUTE = true;
         MqttInitParam mqttInitParam = DeveloperInfoFactory.produceMqttInitParam();
+        if (mqttInitParam == null) {
+            throw new NullPointerException(" not custom ");
+        }
         StartAI.getInstance().initialization(app, mqttInitParam);
         StartAI.getInstance().getPersisitnet().setBusiHandler(new ChargerBusiHandler());
         StartAI.getInstance().getPersisitnet().setEventDispatcher(PersistentEventChargerDispatcher.getInstance());

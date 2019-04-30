@@ -2,7 +2,6 @@ package cn.com.startai.sharedlib.app.global;
 
 import android.Manifest;
 import android.app.Application;
-import android.media.MediaScannerConnection;
 
 import com.blankj.utilcode.util.PermissionUtils;
 
@@ -54,6 +53,8 @@ public class FileManager extends FileTemplate {
             return new File(getAppRootPath(), "SharedCharger");
         } else if (CustomManager.getInstance().isSynerMax()) {
             return new File(getAppRootPath(), "Synermax");
+        } else if (CustomManager.getInstance().isPikaPower()) {
+            return new File(getAppRootPath(), "Pika");
         }
         return new File(getAppRootPath(), "SharedCharger");
     }

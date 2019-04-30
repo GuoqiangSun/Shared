@@ -1,7 +1,10 @@
 package cn.com.startai.sharedlib.app.js.method2Impl.charger;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import cn.com.startai.chargersdk.entity.C_0x8304;
 import cn.com.startai.sharedlib.app.js.Utils.JsMsgType;
@@ -35,7 +38,6 @@ public class StoreInfoResponseMethod extends BaseResponseMethod2 {
         this.contentBean2 = contentBean;
     }
 
-
     /**
      * merchantId : 114
      * name : 亓行
@@ -45,6 +47,12 @@ public class StoreInfoResponseMethod extends BaseResponseMethod2 {
      * consumption : 888
      * fullyCount : 0
      * vacancyCount : 0
+     * logo : img/002.jpg
+     * banners : ["img/001.jpg","img/002.jpg","img/003.jpg"]
+     * type : 1
+     * lng : 113.367631
+     * lat : 23.130691
+     * distance : 1000
      */
 
     @Override
@@ -62,6 +70,17 @@ public class StoreInfoResponseMethod extends BaseResponseMethod2 {
                     data.put("consumption", contentBean2.getConsumption());
                     data.put("fullyCount", contentBean2.getFullyCount());
                     data.put("vacancyCount", contentBean2.getVacancyCount());
+                    data.put("logo", contentBean2.getLogo());
+                    JSONArray array = new JSONArray();
+                    List<String> banners = contentBean2.getBanners();
+                    for (String banner : banners) {
+                        array.put(banner);
+                    }
+                    data.put("logo", contentBean2.getLogo());
+                    data.put("type", contentBean2.getType());
+                    data.put("lng", contentBean2.getLng());
+                    data.put("lat", contentBean2.getLat());
+                    data.put("distance", contentBean2.getDistance());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

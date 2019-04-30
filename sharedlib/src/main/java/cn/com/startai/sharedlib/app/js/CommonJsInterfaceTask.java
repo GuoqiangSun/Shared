@@ -187,7 +187,7 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
             case JsMsgType.TYPE_REQUEST_APP_UPGRADE:
 
                 UpgradeAppRequestBean mUpgradeAppRequestBean = new UpgradeAppRequestBean(mData);
-                mCallBack.onJsRequestUpgradeApp(mUpgradeAppRequestBean);
+                mCallBack.onJsUpgradeApp(mUpgradeAppRequestBean);
 
                 break;
 
@@ -199,23 +199,23 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
                 break;
             case JsMsgType.TYPE_REQUEST_APP_VERSION:
 
-                mCallBack.onJsRequestAppVersion();
+                mCallBack.onJsAppVersion();
 
                 break;
 
             case JsMsgType.TYPE_REQUEST_USER_INFO:
 
-                mCallBack.onJsRequestUserInfo();
+                mCallBack.onJsGetUserInfo();
 
                 break;
             case JsMsgType.TYPE_REQUEST_TAKE_PHOTO:
 
-                mCallBack.onJsRequestTakePhoto();
+                mCallBack.onJsTakePhoto();
 
                 break;
             case JsMsgType.TYPE_REQUEST_LOCAL_PHOTO:
 
-                mCallBack.onJsRequestLocalPhoto();
+                mCallBack.onJsLocalPhoto();
 
                 break;
             case JsMsgType.TYPE_REQUEST_MODIFY_USERNAME:
@@ -253,6 +253,24 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
                 MapNavRequestBean mapNavRequestBean = new MapNavRequestBean(mData);
                 mCallBack.onJsMapNav(mapNavRequestBean);
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_LOCATION_ENABLED:
+
+                mCallBack.onJsLocationEnabled();
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_ENABLE_LOCATION:
+
+                mCallBack.onJsEnableLocation();
+
+                break;
+
+            case JsMsgType.TYPE_REQUEST_LOCATION_DATA:
+
+                mCallBack.onJsGetLocationData();
 
                 break;
 
@@ -317,17 +335,17 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
 
         void onJsCheckAppIsNew();
 
-        void onJsRequestUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
+        void onJsUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
 
         void onJsCancelUpgradeApp(UpgradeAppRequestBean mUpgradeAppRequestBean);
 
-        void onJsRequestAppVersion();
+        void onJsAppVersion();
 
-        void onJsRequestUserInfo();
+        void onJsGetUserInfo();
 
-        void onJsRequestTakePhoto();
+        void onJsTakePhoto();
 
-        void onJsRequestLocalPhoto();
+        void onJsLocalPhoto();
 
         void onJsModifyUserName(ModifyUserNameRequestBean mModifyNameBean);
 
@@ -360,6 +378,13 @@ public class CommonJsInterfaceTask extends AbsCommonJsInterfaceProxy {
         void onJsAppIsInstall(AppInstallRequestBean appInstallRequestBean);
 
         void onJsMapNav(MapNavRequestBean mapNavRequestBean);
+
+        void onJsLocationEnabled();
+
+        void onJsEnableLocation();
+
+        void onJsGetLocationData();
+        
     }
 
 

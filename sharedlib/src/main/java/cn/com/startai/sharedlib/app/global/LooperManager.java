@@ -1,6 +1,7 @@
 package cn.com.startai.sharedlib.app.global;
 
 import android.app.Application;
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
@@ -30,7 +31,7 @@ public class LooperManager implements IApp {
         return ClassHolder.LM;
     }
 
-    private static final ExecutorService pool = Executors.newSingleThreadExecutor();
+    private static final ExecutorService pool = Executors.newFixedThreadPool(12);
 
     public void execute(Runnable r) {
         pool.execute(r);
@@ -40,6 +41,23 @@ public class LooperManager implements IApp {
     public void init(Application app) {
 
         Tlog.i(" LooperManager init success...");
+    }
+
+    private Handler mWorkHandler;
+
+    public Handler getWorkHandler() {
+        initWorkHandler();
+        return mWorkHandler;
+    }
+
+    private void initWorkHandler() {
+        if (mWorkHandler == null) {
+            synchronized (this) {
+                if (mWorkHandler == null) {
+                    mWorkHandler = new Handler(getWorkLooper());
+                }
+            }
+        }
     }
 
     /**

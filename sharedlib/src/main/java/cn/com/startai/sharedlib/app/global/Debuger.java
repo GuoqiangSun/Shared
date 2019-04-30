@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
 
+import com.tencent.bugly.crashreport.CrashReport;
+
 import java.io.File;
 
 import cn.com.startai.sharedlib.BuildConfig;
@@ -157,6 +159,16 @@ public class Debuger implements IApp, IService {
 
         if (isLogDebug) {
             Tlog.i(AppUtils.generalSsl(app));
+        }
+
+        if (!Debuger.isDebug) {
+            if (CustomManager.getInstance().isSynerMax()) {
+                CrashReport.initCrashReport(app, "c19bfd8c71", false);
+            } else if (CustomManager.getInstance().isSharedCharger()) {
+                CrashReport.initCrashReport(app, "a73c492835", false);
+            }else if(CustomManager.getInstance().isPikaPower()){
+                CrashReport.initCrashReport(app, "c43ed849c1", false);
+            }
         }
 
         Tlog.i(" Debuger init success...");

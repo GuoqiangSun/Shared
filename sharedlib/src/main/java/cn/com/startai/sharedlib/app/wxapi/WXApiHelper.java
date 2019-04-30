@@ -41,9 +41,11 @@ public class WXApiHelper implements IApp {
 
                     if (CustomManager.getInstance().isSharedCharger()) {
                         appid = Constants.APP_ID_RUIOO;
-                    } else if(CustomManager.getInstance().isSynerMax()){
+                    } else if (CustomManager.getInstance().isSynerMax()) {
                         appid = Constants.APP_ID_SYNERMAX;
-                    }else {
+                    } else if (CustomManager.getInstance().isPikaPower()) {
+                        appid = Constants.APP_ID_PIKA;
+                    } else {
                         Tlog.e("WXApiHelper unknown custom ");
                     }
 
@@ -87,6 +89,10 @@ public class WXApiHelper implements IApp {
 
         public static final String APP_ID_SYNERMAX = "wx8754b00a740c1a20";
         public static final String APP_SECRET_SYNERMAX = "8b1fa11f15b771cd4411facd3bbf5339";
+
+        public static final String APP_ID_PIKA = "wxf202fb4182b13986";
+        public static final String APP_SECRET_PIKA = "eb787a3cc8f7b94f2ed8d1907ff4f720";
+
 
         //https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code
 

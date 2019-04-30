@@ -26,13 +26,23 @@ public class CustomManager implements IApp {
     private boolean isTestProject = false;
     private boolean isSharedChargerProject = false;
     private boolean isSynerMaxProject = false;
+    private boolean isPikaPowerProject = false;
 
     public boolean isSharedCharger() {
         return isSharedChargerProject;
     }
 
+    public boolean isPikaPower() {
+        return isPikaPowerProject;
+    }
+
     public boolean isSynerMax() {
         return isSynerMaxProject;
+    }
+
+    public void initPikaPowerProject() {
+        Tlog.i(" init pika power project ");
+        this.isPikaPowerProject = true;
     }
 
     public void initSynerMaxProject() {
@@ -55,11 +65,6 @@ public class CustomManager implements IApp {
     public void init(Application app) {
         Tlog.i("CustomManager init : ");
 
-        if (isSharedCharger()) {
-
-        } else if (isSynerMax()) {
-
-        }
     }
 
 

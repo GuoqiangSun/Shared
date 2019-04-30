@@ -19,6 +19,8 @@ public class DeveloperInfoFactory {
             return new SharedChargerDeveloperInfo();
         } else if (CustomManager.getInstance().isSynerMax()) {
             return new SynermaxChargerDeveloperInfo();
+        } else if (CustomManager.getInstance().isPikaPower()) {
+            return new PikaChargerDeveloperInfo();
         }
         return null;
 
