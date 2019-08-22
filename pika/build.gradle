@@ -10,16 +10,16 @@ android {
             storePassword 'startai'
         }
     }
-    aaptOptions.cruncherEnabled = false
-    aaptOptions.useNewCruncher = false
+//    aaptOptions.cruncherEnabled = false
+//    aaptOptions.useNewCruncher = false
     defaultConfig {
         applicationId "cn.com.startai.pika"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode 10003
+        versionName "1.0.003"
         signingConfig signingConfigs.config
-
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }

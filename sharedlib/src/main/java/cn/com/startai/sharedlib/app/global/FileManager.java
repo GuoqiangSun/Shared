@@ -36,14 +36,14 @@ public class FileManager extends FileTemplate {
     public void init(Application app) {
         super.init(app);
         Tlog.i(" FileManager init finish ; success:" + exit);
-        FileUtil.notifySystemToScan(app, getProjectPath());
+//        FileUtil.notifySystemToScan(app, getProjectPath());
     }
 
 
     public void recreate(Application app) {
         super.init(app);
         Tlog.i(" FileManager recreate finish ; success:" + exit);
-        FileUtil.notifySystemToScan(app, getProjectPath());
+//        FileUtil.notifySystemToScan(app, getProjectPath());
     }
 
 

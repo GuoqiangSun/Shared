@@ -1,1 +1,3 @@
 /build
+/src/main/assets/UI/static/css/*.css.map
+/src/main/assets/UI/static/css/*.js.map

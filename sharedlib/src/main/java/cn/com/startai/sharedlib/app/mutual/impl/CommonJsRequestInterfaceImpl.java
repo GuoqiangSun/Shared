@@ -67,7 +67,7 @@ import cn.com.startai.mqttsdk.busi.entity.C_0x8037;
 import cn.com.startai.mqttsdk.busi.entity.type.Type;
 import cn.com.startai.mqttsdk.listener.IOnCallListener;
 import cn.com.startai.mqttsdk.mqtt.request.MqttPublishRequest;
-import cn.com.startai.scansdk.ChargerScanActivity;
+import cn.com.startai.scansdk.ChargerScanScanActivity;
 import cn.com.startai.sharedlib.R;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.global.FileManager;
@@ -120,7 +120,6 @@ import cn.com.startai.sharedlib.app.js.requestBeanImpl.ThirdUnBindRequestBean;
 import cn.com.startai.sharedlib.app.js.requestBeanImpl.UpgradeAppRequestBean;
 import cn.com.startai.sharedlib.app.mutual.IMutualCallBack;
 import cn.com.startai.sharedlib.app.mutual.IUserIDManager;
-import cn.com.startai.sharedlib.app.mutual.utils.MapUtils;
 import cn.com.startai.sharedlib.app.mutual.utils.RuiooORCodeUtils;
 import cn.com.startai.sharedlib.app.view.app.SharedApplication;
 import cn.com.startai.sharedlib.app.wxapi.WXApiHelper;
@@ -130,6 +129,7 @@ import cn.com.swain.baselib.log.Tlog;
 import cn.com.swain.baselib.permission.PermissionGroup;
 import cn.com.swain.baselib.permission.PermissionHelper;
 import cn.com.swain.baselib.permission.PermissionRequest;
+import cn.com.swain.baselib.util.MapUtils;
 import cn.com.swain.baselib.util.PhotoUtils;
 
 /**
@@ -1070,7 +1070,7 @@ public class CommonJsRequestInterfaceImpl extends MutualSharedWrapper
             scanORResponseMethod.setErrorCode(JSErrorCode.ERROR_CODE_SCAN_UNKNOWN);
             callJs(scanORResponseMethod);
         } else {
-            ChargerScanActivity.showActivityForResult(activity, REQUEST_SCAN_QR_RESULT);
+            ChargerScanScanActivity.showActivityForResult(activity, REQUEST_SCAN_QR_RESULT);
         }
 
     }

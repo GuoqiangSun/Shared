@@ -14,7 +14,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
-import cn.com.startai.scansdk.ChargerScanActivity;
+import cn.com.startai.scansdk.ChargerScanScanActivity;
 import cn.com.startai.sharedlib.app.controller.Controller;
 import cn.com.startai.sharedlib.app.global.Debuger;
 import cn.com.startai.sharedlib.app.global.FileManager;
@@ -25,7 +25,7 @@ import cn.com.startai.sharedlib.app.mutual.MutualManager;
 import cn.com.startai.sharedlib.app.view.fragment.BaseFragment;
 import cn.com.startai.sharedlib.app.view.fragment.SharedGuideFragment;
 import cn.com.swain.baselib.app.IApp.IService;
-import cn.com.swain.baselib.app.utils.StatusBarUtil;
+import cn.com.swain.baselib.display.StatusBarUtil;
 import cn.com.swain.baselib.jsInterface.AbsJsInterface;
 import cn.com.swain.baselib.jsInterface.response.BaseResponseMethod;
 import cn.com.swain.baselib.log.Tlog;
@@ -225,7 +225,7 @@ public class SharedMainActivity extends WebHomeActivity
 
     @Override
     public void scanQR(int requestCode) {
-        ChargerScanActivity.showActivityForResult(this, requestCode);
+        ChargerScanScanActivity.showActivityForResult(this, requestCode);
     }
 
     @Override

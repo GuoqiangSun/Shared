@@ -10,14 +10,14 @@ android {
         }
     }
     compileSdkVersion 28
-    aaptOptions.cruncherEnabled = false
-    aaptOptions.useNewCruncher = false
+//    aaptOptions.cruncherEnabled = false
+//    aaptOptions.useNewCruncher = false
     defaultConfig {
         applicationId "cn.com.startai.sharedcharger"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 10045
-        versionName "1.0.045"
+        versionCode 10049
+        versionName "1.0.049"
         signingConfig signingConfigs.config
         multiDexEnabled true
 

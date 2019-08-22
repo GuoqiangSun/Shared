@@ -10,14 +10,14 @@ android {
         }
     }
     compileSdkVersion 28
-    aaptOptions.cruncherEnabled = false
-    aaptOptions.useNewCruncher = false
+//    aaptOptions.cruncherEnabled = false
+//    aaptOptions.useNewCruncher = false
     defaultConfig {
         applicationId "cn.com.startai.synermax"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 10005
-        versionName "1.0.005"
+        versionCode 12009
+        versionName "1.2.009"
         multiDexEnabled true
         signingConfig signingConfigs.config
 
